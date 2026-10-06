@@ -195,3 +195,77 @@ export function expectMatchesCompare(actual: Record<string, any>, expected: Comp
     near(a.delta, e.delta, valueTol, `${label} delta`);
   });
 }
+
+export const relationsDir = join(fixturesDir, "relations");
+export const solverDir = join(fixturesDir, "solver");
+
+export interface RelationsExpected {
+  readonly scene: string;
+  readonly tolerance: { readonly value: number };
+  readonly results: readonly {
+    readonly id: string;
+    readonly rel: string;
+    readonly hard: boolean;
+    readonly status: string;
+    readonly violation: number | null;
+    readonly ids: readonly string[];
+  }[];
+}
+
+export function relationsScenePath(): string {
+  return join(relationsDir, "relations.scene.json");
+}
+
+export function loadRelationsScene(): Scene {
+  return parseScene(readFileSync(relationsScenePath(), "utf8"));
+}
+
+export function loadRelationsExpected(): RelationsExpected {
+  return JSON.parse(readFileSync(join(relationsDir, "relations.expected.json"), "utf8")) as RelationsExpected;
+}
+
+/** Relation results against `relations.expected.json`: every stated field, violations within its tolerance. */
+export function expectMatchesRelations(results: readonly Record<string, unknown>[], expected: RelationsExpected): void {
+  expect(results.map((r) => r.id), "relation ids").toEqual(expected.results.map((r) => r.id));
+  expected.results.forEach((e, i) => {
+    const a = results[i] as Record<string, unknown>;
+    expect(a.rel, `${e.id} rel`).toBe(e.rel);
+    expect(a.hard, `${e.id} hard`).toBe(e.hard);
+    expect(a.status, `${e.id} status`).toBe(e.status);
+    near(a.violation, e.violation, expected.tolerance.value, `${e.id} violation`);
+    expect(a.ids, `${e.id} ids`).toEqual(e.ids);
+  });
+}
+
+export interface SolverExpected {
+  readonly scene: string;
+  readonly only: readonly string[] | null;
+  readonly status: "solved" | "conflict";
+  readonly conflict: readonly string[];
+  readonly hardViolated: readonly string[] | null;
+  readonly maxSoftPenalty: number | null;
+  readonly maxDistance: number | null;
+  readonly unchanged: readonly string[];
+  readonly referenceSoftPenalty: number;
+  readonly referenceDistance: number;
+}
+
+/** Names of the solver fixtures (`tests/fixtures/solver/<name>.scene.json`), sorted. */
+export function solverFixtureNames(): string[] {
+  return readdirSync(solverDir)
+    .filter((f) => f.endsWith(".scene.json"))
+    .map((f) => f.slice(0, -".scene.json".length))
+    .sort();
+}
+
+export function solverScenePath(name: string): string {
+  return join(solverDir, `${name}.scene.json`);
+}
+
+export function loadSolverScene(name: string): Scene {
+  return parseScene(readFileSync(solverScenePath(name), "utf8"));
+}
+
+export function loadSolverExpected(name: string): SolverExpected {
+  return JSON.parse(readFileSync(join(solverDir, `${name}.expected.json`), "utf8")) as SolverExpected;
+}

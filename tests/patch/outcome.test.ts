@@ -25,7 +25,7 @@ describe("runPatch: the order of outcomes", () => {
     expect([o.status, o.error?.code, o.locks]).toEqual(["invalid", "E_PATCH", []]);
   });
 
-  it("a command of a later stage is invalid with E_USAGE", () => {
+  it("solve, which is not a patch command, is invalid with E_USAGE", () => {
     const o = runPatch(base(), "solve");
     expect([o.status, o.error?.code]).toEqual(["invalid", "E_USAGE"]);
     expect(patchExitCode(o)).toBe(2);

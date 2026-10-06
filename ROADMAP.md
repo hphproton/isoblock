@@ -65,27 +65,27 @@ Not in stage 3: the solver and relation evaluation (stage 4), states (stage 6), 
 
 **Done when:** all tests pass, earlier fixtures still match, and the stage 3 criteria in SPEC section 17 hold.
 
-## Stage 4 · open
+## Stage 4 · done (0.4.0)
 
 Relations, solver and minimal conflict set (SPEC sections 7, 8, 11, 17). Fixtures: `tests/fixtures/relations/` (22 relations of every kind with expected results) and `tests/fixtures/solver/` (`feasible`, `only`, `conflict`, `perf`).
 
-- [ ] Relation measures of SPEC section 7 for every `rel` (`facing` is `skip`); status, violation, soft penalty
-- [ ] `isoblock relations` with text and `--json` output and its exit codes
-- [ ] Solver: movable objects, `pos.u` and `pos.v` locks, view and overlap constraints, 0.05 grid, objective order, determinism (SPEC section 8)
-- [ ] Minimal conflict set by deletion filtering in file order
-- [ ] `isoblock solve` with `--only`, `-o`, `--patch` and `--json`; the input file is never written; exit codes
-- [ ] A `solve` line in a patch is a usage error that points to `isoblock solve`
-- [ ] Performance test on `tests/fixtures/solver/perf.scene.json` (SPEC section 8); the log reports the numbers
-- [ ] Tests load `tests/fixtures/relations/` and `tests/fixtures/solver/` and check every expected field
-- [ ] `docs/AGENT_GUIDE.md` covers relations, `relations`, `solve` and the workflow `relate` → `solve --patch` → `patch`
-- [ ] Session log says `branch ready for review`
+- [x] Relation measures of SPEC section 7 for every `rel` (`facing` is `skip`); status, violation, soft penalty
+- [x] `isoblock relations` with text and `--json` output and its exit codes
+- [x] Solver: movable objects, `pos.u` and `pos.v` locks, view and overlap constraints, 0.05 grid, objective order, determinism (SPEC section 8)
+- [x] Minimal conflict set by deletion filtering in file order
+- [x] `isoblock solve` with `--only`, `-o`, `--patch` and `--json`; the input file is never written; exit codes
+- [x] A `solve` line in a patch is a usage error that points to `isoblock solve`
+- [x] Performance test on `tests/fixtures/solver/perf.scene.json` (SPEC section 8); the log reports the numbers
+- [x] Tests load `tests/fixtures/relations/` and `tests/fixtures/solver/` and check every expected field
+- [x] `docs/AGENT_GUIDE.md` covers relations, `relations`, `solve` and the workflow `relate` → `solve --patch` → `patch`
+- [x] Session log says `branch ready for review`
 
 Not in stage 4: `facing`, relation rows in `compare`, a solve button in the editor, rotation by the solver.
 
 **Done when:** all tests pass, earlier fixtures still match, and the stage 4 criteria in SPEC section 17 hold.
 
 ## Stage 5 · not open
-Export targets `runtime`, `godot`, `gen-bbox`; Godot adapter; PNG render (SPEC sections 13, 14, 17).
+Export targets `runtime`, `godot`, `gen-bbox`; Godot adapter; PNG render (SPEC sections 13, 14, 17). Before it opens: the owner decides the engine, and the maintainer specifies the export formats and adds the fixtures.
 
 ## Stage 6 · not open
 States, `sort_consistency`, `reachable`, `capacity` (SPEC sections 9, 13.4, 17).

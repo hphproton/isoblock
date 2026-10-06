@@ -142,3 +142,32 @@ Template:
   - `state` is `default` in the text and the JSON until stage 6.
   - In the `md` format a vertical bar inside a cell is written `\|`.
 - Answer (maintainer): Approved as written. SPEC 11.1 now states that every column runs the base's checks, how a scene variant is recognised, the variant names, the null-versus-number row rule and the 1e-9 threshold for `moved`.
+
+## Q-016 · Relation measures where SPEC 7 is silent
+- Spec section: 7, 6 (schema)
+- Question: The schema accepts relations that section 7 cannot measure, and a few measuring details are not stated.
+- Reading chosen for now:
+  - Parameters the schema does not enforce make the relation `skip` with a message: `aligned` without `axis` `u` or `v`; `order_along` with fewer than 2 ids, an id that is not an object, or an `axis` other than `u` or `v`; a relation without `b` (the schema requires only `a`). The schema is not changed.
+  - A target of a kind the table does not list is `skip` (for example `left_of` a zone, `inside` an object, `clear_of` a strip edge, an `a` that is not an object).
+  - `ids` of a result are the objects named in `a`, `b` and `ids`, in object order, also when the relation is skipped (as in the fixture).
+  - "Distance to a lane" (`against`, `clear_of`) uses the lane rectangle of 9.1, so only 2-point axis-parallel lanes; `on_lane` uses the polyline of any lane longer than 0. Segments of length 0 are passed over. "Equally near" means within EPS. `clear_of` to a lane adds the overlap with the lane rectangle.
+  - `inside`: a corner within EPS of the zone boundary is on it.
+  - `violation` is reported rounded to 6 decimals; status and the soft penalty use the unrounded values.
+  - `relations --json` prints exactly `{ "scene", "results" }`; the soft penalty is only in the text summary line: `relations <id>: <n> relations, <s> satisfied, <v> violated, <k> skipped; hard: <h> of <H> satisfied; soft penalty <p>` (`relations <id>: 0 relations` without relations). Messages of hard relations start with `hard; `.
+- Answer (maintainer): Approved as written. SPEC section 7 now states the skip cases for parameters, the `ids` of a result and the 6-decimal `violation`.
+
+## Q-017 · Solver details where SPEC 8 is silent
+- Spec section: 8, 11, 12
+- Question: A few cases of the solver contract are not stated.
+- Reading chosen for now:
+  - A JSON Pointer lock (in the `locks` of any object) that is `/objects/<i>/pos/<k>`, or a pointer that contains it (`/objects/<i>/pos`, `/objects/<i>`, `/objects`), fixes that coordinate. Otherwise `patch` would reject the `--patch` output.
+  - Without a view region (every region has `blocksScene`), every moved object breaks the view constraint, so no solution moves anything.
+  - "Moved" in the constraints means `pos` differs from the input; an object back at its start is not constrained.
+  - The search measures broken constraints as amounts (corner distance outside the view, in units; overlap as in `clear_of`) and adds them to the hard violations; "no violated hard relation and no broken constraint" is the case where that sum is 0. Ties are compared within 1e-9.
+  - For `conflict` the proposal (`-o`, `--patch`, `moved`) is the best layout found for all hard relations; it may break constraints. `hardViolated` lists hard relations with status `violated` in the proposal (skipped ones are not listed).
+  - `--only`: comma-separated ids, spaces trimmed, repeats counted once; an empty entry or an unknown id is `E_USAGE` (exit 2). `-o` or `--patch` naming the input file, or both naming the same file, is `E_USAGE`; paths are compared after resolving them.
+  - `-o` writes the proposal with every `assumptions[].value` following its path, as `patch` does, so `patch` with the `--patch` output gives the same bytes as `-o`.
+  - `--patch` offsets are plain decimals with a sign and at most 12 decimals (never an exponent, which the `move` syntax does not accept).
+  - The text output is `solve <id>: solved|conflict`, then `move <id> <u>,<v> -> <u>,<v>` per moved object, `hard violated: <ids|none>`, `soft penalty <p>, distance <d>`, and `conflict: <ids>` for a conflict; `wrote <file>` lines follow when files are written.
+  - The performance test times `solveScene` (model, search, proposal, relation results) in Node through the test runner, median of 5 runs after one warm-up run.
+- Answer (maintainer): Approved as written. SPEC section 8 now states pointer locks on a position, the proposal of a `conflict`, `--only` and output path errors, and that `-o` follows assumption values like `patch`.

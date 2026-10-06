@@ -207,9 +207,9 @@ Definitions (footprints, corners and centers as in 9.1; `EPS` and the lane shape
 - **`on_lane`:** p = center of a; q = the point of the lane polyline nearest to p (the first one along the lane when several are equally near); e = |p − q|; t = length along the lane up to q divided by the lane length. Violation `max(0, e − width/2) + length × (band violation of t with the `t` range)`. A lane of length 0 is `skip`.
 - **`clear_of`:** violation `max(0, min − distance) + overlap`, where overlap = min(overlap along u, overlap along v) when the footprints overlap (both > EPS), else 0.
 - **`aligned`:** violation = the center difference. **`order_along`:** sum over consecutive ids of `max(0, center_i − center_(i+1))` along the axis.
-- **Status:** `skip` when the relation, its targets or a lane shape is not supported (`violation: null`, the message says why); `satisfied` when the violation is at most 1e-6; else `violated`.
+- **Status:** `skip` when the relation, its targets, a lane shape or a parameter the schema does not enforce (`axis` of `aligned`, 2 or more ids of `order_along`, a missing `b`) is not supported (`violation: null`, the message says why); `satisfied` when the violation is at most 1e-6; else `violated`.
 - **Soft penalty:** the sum of `weight × violation` over soft relations that are not skipped.
-- **Result shape:** `{ id, rel, hard, status, violation, ids, message }`; `ids` = the objects involved, in object order.
+- **Result shape:** `{ id, rel, hard, status, violation, ids, message }`; `ids` = the objects named in `a`, `b` and `ids`, in object order, also for `skip`; `violation` is rounded to 6 decimals (status and soft penalty use the exact value).
 
 `isoblock relations scene.json [--json]` prints the results: `--json` gives `{ "scene", "results" }`; the text format gives a summary line, then `OK|BAD|SKIP <id> <rel>: <message>` per relation. It exits 0 when every hard relation is satisfied, else 1 (a skipped hard relation is not satisfied).
 
@@ -217,7 +217,7 @@ Definitions (footprints, corners and centers as in 9.1; `EPS` and the lane shape
 
 `isoblock solve scene.json [--only a,b] [-o proposal.json] [--patch moves.patch] [--json]`
 
-- **Movable:** the objects (only those in `--only`, when given) without a `pos` lock. A `pos.u` or `pos.v` lock fixes that coordinate. The solver never changes rotation, type or sizes, never edits relations and never writes the input file. It proposes; a person or agent accepts.
+- **Movable:** the objects (only those in `--only`, when given) without a `pos` lock. A `pos.u` or `pos.v` lock fixes that coordinate, and so does a pointer lock on `/objects/<i>/pos/<k>` or on a pointer that contains it. An empty or unknown id in `--only`, or `-o` or `--patch` naming the input file or each other, is `E_USAGE`. The solver never changes rotation, type or sizes, never edits relations and never writes the input file. It proposes; a person or agent accepts.
 - **Constraints** on a proposal besides the hard relations: the 4 corners of every moved footprint project inside the view region (the first frame region without `blocksScene`, edges inclusive); a moved footprint does not overlap another footprint (as in `no_overlap`) unless the two overlapped before solving.
 - **Grid:** a coordinate the solver changes is a multiple of 0.05, rounded to 6 decimals. Everything else keeps its exact value.
 - **Objective,** in this order: no violated hard relation and no broken constraint; the smallest soft penalty; the smallest total ground distance moved.
@@ -228,7 +228,7 @@ Definitions (footprints, corners and centers as in 9.1; `EPS` and the lane shape
   2. For each movable object, try grid positions inside the view region, coarse to fine. Score by the objective.
   3. Repeat until no improvement or N rounds.
 - **Report:** `--json` prints `{ "scene", "status", "hardViolated", "softPenalty", "distance", "moved": [{ "id", "from", "to" }], "conflict", "relations" }`: `hardViolated` = ids of hard relations violated in the proposal; `relations` = the results of section 7 for the proposal. The text format starts with `solve <scene id>: solved|conflict`, then one line per moved object and the conflict set.
-- **Outputs:** `-o` writes the proposal (the scene with the new positions) in the saved format of section 10. `--patch` writes a short-command patch: the line `# solve proposal`, then one `move` per moved object in object order with its offsets (an axis with no offset is left out), so that `patch` applies the proposal with lock checks and the log.
+- **Outputs:** for `conflict` the proposal is the best layout found with all hard relations and may break constraints. `-o` writes the proposal (the scene with the new positions, assumption values following their paths as in `patch`) in the saved format of section 10. `--patch` writes a short-command patch: the line `# solve proposal`, then one `move` per moved object in object order with its offsets (an axis with no offset is left out), so that `patch` applies the proposal with lock checks and the log.
 - **Exit:** 0 when `solved` and every check of the proposal is `pass` or `warn`; else 1.
 - **Performance:** 50 objects in under 200 ms in a browser. Measured as the core solve of `tests/fixtures/solver/perf.scene.json` in Node, median of 5 runs.
 
@@ -493,7 +493,7 @@ dist/        build output, not committed
   - fixed seeds;
   - coded errors;
   - TypeScript strict mode.
-- **Size budget (guide):** core about 5,500 lines after stage 6 (3,578 after stage 3); editor 1,500–2,000; each adapter 150–300.
+- **Size budget (guide):** core about 6,500 lines after stage 6 (4,866 after stage 4); editor 1,500–2,000; each adapter 150–300.
 - Engine adapters live outside this package until stage 5 decides their layout.
 
 ## 17. Roadmap and acceptance criteria

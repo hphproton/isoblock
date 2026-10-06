@@ -1,6 +1,6 @@
 import { IsoblockError } from "../core/errors";
 
-export type Command = "validate" | "check" | "render" | "describe";
+export type Command = "validate" | "check" | "render" | "describe" | "relations";
 export type CompareFormat = "text" | "md" | "json";
 
 export interface VariantArg {
@@ -27,6 +27,15 @@ export type Parsed =
     }
   | { readonly kind: "diff"; readonly file: string; readonly other: string; readonly json: boolean }
   | {
+      readonly kind: "solve";
+      readonly file: string;
+      readonly json: boolean;
+      /** Object ids of `--only`; absent when every object may move. */
+      readonly only?: readonly string[];
+      readonly output?: string;
+      readonly patchOutput?: string;
+    }
+  | {
       readonly kind: "compare";
       readonly file: string;
       readonly variants: readonly VariantArg[];
@@ -41,6 +50,9 @@ export const USAGE = [
   "  isoblock check    <scene.json> [--json]    run the scene's checks",
   "  isoblock render   <scene.json> -o <out.svg>  draw the scene as SVG",
   "  isoblock describe <scene.json>             compact summary for agents",
+  "  isoblock relations <scene.json> [--json]   measure the scene's relations",
+  "  isoblock solve    <scene.json> [--only a,b] [-o <proposal.json>] [--patch <moves.patch>] [--json]",
+  "                                             propose positions that meet the relations",
   "  isoblock patch    <scene.json> <patch> [-o <out.json>] [--dry-run] [--json]",
   "                                             apply a patch (JSON Patch or short commands)",
   "  isoblock diff     <a.json> <b.json> [--json]  list the changes from a to b",
@@ -48,22 +60,25 @@ export const USAGE = [
   "                                             compare the scene with 1 to 4 variants",
   "  isoblock --help",
   "",
-  "Exit codes: 0 success, 1 a check failed or was skipped, 2 invalid input or usage,",
+  "Exit codes: 0 success, 1 a check failed or was skipped (relations: a hard relation is not",
+  "satisfied; solve: also a conflict), 2 invalid input or usage,",
   "3 a patch touches a lock, 70 internal error.",
 ].join("\n");
 
-const COMMANDS: readonly string[] = ["validate", "check", "render", "describe", "patch", "diff", "compare"];
+const COMMANDS: readonly string[] = ["validate", "check", "render", "describe", "relations", "solve", "patch", "diff", "compare"];
 /** Commands from later stages: name -> stage that adds it. */
-const LATER_COMMANDS: Readonly<Record<string, number>> = { solve: 4, export: 5 };
+const LATER_COMMANDS: Readonly<Record<string, number>> = { export: 5 };
 /** Flags of later stages: name -> stage that adds it. */
-const LATER_FLAGS: Readonly<Record<string, number>> = { "--state": 6, "--only": 4, "--target": 5 };
+const LATER_FLAGS: Readonly<Record<string, number>> = { "--state": 6, "--target": 5 };
 const NOT_SCHEDULED_TARGETS: readonly string[] = ["phaser", "tiled"];
 /** Flags that take a value. */
-const WITH_VALUE: readonly string[] = ["-o", "--variant", "--format"];
+const WITH_VALUE: readonly string[] = ["-o", "--variant", "--format", "--only", "--patch"];
 /** The commands each flag applies to. */
 const FLAG_COMMANDS: Readonly<Record<string, readonly string[]>> = {
-  "--json": ["check", "patch", "diff"],
-  "-o": ["render", "patch"],
+  "--json": ["check", "relations", "solve", "patch", "diff"],
+  "-o": ["render", "solve", "patch"],
+  "--only": ["solve"],
+  "--patch": ["solve"],
   "--dry-run": ["patch"],
   "--variant": ["compare"],
   "--format": ["compare"],
@@ -101,6 +116,8 @@ interface Scanned {
   readonly output?: string;
   readonly variants: readonly string[];
   readonly format?: string;
+  readonly only?: string;
+  readonly patchOutput?: string;
 }
 
 function scan(command: string, rest: readonly string[]): Scanned {
@@ -110,6 +127,8 @@ function scan(command: string, rest: readonly string[]): Scanned {
   let dryRun = false;
   let output: string | undefined;
   let format: string | undefined;
+  let only: string | undefined;
+  let patchOutput: string | undefined;
   for (let i = 0; i < rest.length; i++) {
     const [flag, inline] = split(rest[i] as string);
     if (!flag.startsWith("-")) {
@@ -128,9 +147,33 @@ function scan(command: string, rest: readonly string[]): Scanned {
     else if (flag === "--dry-run") dryRun = true;
     else if (flag === "-o") output = value;
     else if (flag === "--format") format = value;
+    else if (flag === "--only") only = value;
+    else if (flag === "--patch") patchOutput = value;
     else variants.push(value as string);
   }
-  return { positional, json, dryRun, ...(output === undefined ? {} : { output }), variants, ...(format === undefined ? {} : { format }) };
+  return {
+    positional, json, dryRun, variants,
+    ...(output === undefined ? {} : { output }),
+    ...(format === undefined ? {} : { format }),
+    ...(only === undefined ? {} : { only }),
+    ...(patchOutput === undefined ? {} : { patchOutput }),
+  };
+}
+
+/** `--only a,b`: object ids separated by commas, none empty; repeated ids count once. */
+function parseOnly(value: string): readonly string[] {
+  const ids = value.split(",").map((id) => id.trim());
+  if (ids.some((id) => id === "")) throw usage(`--only '${value}' must list object ids separated by commas`);
+  return [...new Set(ids)];
+}
+
+function parseSolve(file: string, s: Scanned): Parsed {
+  return {
+    kind: "solve", file, json: s.json,
+    ...(s.only === undefined ? {} : { only: parseOnly(s.only) }),
+    ...(s.output === undefined ? {} : { output: s.output }),
+    ...(s.patchOutput === undefined ? {} : { patchOutput: s.patchOutput }),
+  };
 }
 
 function parseVariants(values: readonly string[]): readonly VariantArg[] {
@@ -177,6 +220,7 @@ export function parseArgs(argv: readonly string[]): Parsed {
     return { kind: "diff", file, other, json: s.json };
   }
   const [file] = files(s.positional, ["scene file"]) as [string];
+  if (command === "solve") return parseSolve(file, s);
   if (command === "compare") {
     const format = s.format ?? "text";
     if (!FORMATS.includes(format)) throw usage(`unknown format '${format}': use text, md or json`);

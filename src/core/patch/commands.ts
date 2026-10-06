@@ -137,7 +137,7 @@ export function parseCommand(tokens: readonly string[]): Command {
     case "relate":
       return parseRelate(args);
     case "solve":
-      throw new IsoblockError("E_USAGE", "command 'solve' is added in stage 4");
+      throw new IsoblockError("E_USAGE", "'solve' is not a patch command: run 'isoblock solve <scene> --patch <file>' and apply the patch it writes");
     default:
       throw fail(`unknown command "${name ?? ""}"`);
   }

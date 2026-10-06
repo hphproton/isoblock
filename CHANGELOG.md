@@ -2,6 +2,24 @@
 
 ## Unreleased
 
+## 0.4.0
+
+Stage 4: relations, solver and minimal conflict set.
+
+### Added
+
+- Relation measures (SPEC section 7) for every `rel`: screen-x separation (`left_of`, `right_of`), ground-depth separation (`in_front_of`, `behind`), band violations of the edge-to-edge distance (`gap`) and of the distance to an object, lane or strip edge (`against`), corner distance to a zone (`inside`), center difference (`aligned`), offset and position along a lane polyline (`on_lane`), distance and overlap (`clear_of`), backward steps (`order_along`). `facing`, unsupported targets, lane shapes and missing parameters give `skip` with a message. Status `satisfied` up to a violation of 1e-6; soft penalty is the sum of `weight * violation` over soft relations that are not skipped.
+- `isoblock relations <scene> [--json]`: a summary line and `OK|BAD|SKIP <id> <rel>: <message>` per relation, or `{ "scene", "results" }`; exit 0 when every hard relation is satisfied, else 1.
+- `isoblock solve <scene> [--only a,b] [-o proposal.json] [--patch moves.patch] [--json]` (SPEC section 8): moves the objects without a `pos` lock (only those in `--only`, when given; `pos.u`, `pos.v` and pointer locks on a position fix that coordinate) to positions on the 0.05 grid that meet the hard relations, keep moved footprints inside the view region and off other footprints, then lower the soft penalty, then the distance moved. Deterministic local search (pattern moves per object and per group of related objects, then seeded perturbations). `solved`, or `conflict` with a minimal conflict set found by deletion filtering in file order. `-o` writes the proposal in the saved format, `--patch` writes it as `move` commands that `patch` applies to the same bytes; the input file is never written. Exit 0 when solved and every check of the proposal passes, else 1.
+- Core: `src/core/relations/` (`prepareRelations`, `evaluateRelations`, report) and `src/core/solver/` (`buildModel`, `search`, `solveScene`, `minimalConflict`, report and patch output).
+- Tests that load `tests/fixtures/relations/` and `tests/fixtures/solver/` and check every expected field, in the core, through the CLI with in-memory files and through `dist/isoblock.mjs`; the solver constraints, determinism, locks, `--only`, conflicts and the performance of `perf` (median of 5 runs under 200 ms).
+- `docs/AGENT_GUIDE.md` covers relations, `relations`, `solve` and the workflow `relate` -> `solve --patch` -> `patch`.
+
+### Changed
+
+- `solve` and `--only` are no longer usage errors. A `solve` line in a patch is still `E_USAGE`; its message now points to `isoblock solve --patch`.
+- `followAssumptions` in `src/core/patch/apply.ts` is exported, for the solver proposal.
+
 ## 0.3.0
 
 Stage 3: patches, patch log, `diff`, `compare`.

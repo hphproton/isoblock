@@ -11,7 +11,7 @@ function isRecord(value: unknown): value is Readonly<Record<string, unknown>> {
 }
 
 /** Set every `assumptions[].value` to the value its `path` points to (SPEC section 12). A path that does not resolve is left for validation. */
-function followAssumptions(doc: unknown): unknown {
+export function followAssumptions(doc: unknown): unknown {
   const list = resolvePointer(doc, "/assumptions").value;
   if (!Array.isArray(list)) return doc;
   return list.reduce<unknown>((current, item, k) => {

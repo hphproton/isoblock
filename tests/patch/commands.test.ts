@@ -102,9 +102,9 @@ describe("parseCommand: relate", () => {
 });
 
 describe("parseCommand: other names", () => {
-  it("names stage 4 for solve (E_USAGE)", () => {
+  it("points solve to isoblock solve --patch (E_USAGE)", () => {
     expect(code("solve only=a")).toBe("E_USAGE");
-    expect(() => parse("solve")).toThrowError(/stage 4/);
+    expect(() => parse("solve")).toThrowError(/'solve' is not a patch command: run 'isoblock solve <scene> --patch <file>'/);
   });
 
   it("rejects an unknown command", () => {

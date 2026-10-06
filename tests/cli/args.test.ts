@@ -37,7 +37,6 @@ describe("parseArgs", () => {
   });
 
   it("names the stage that adds a command", () => {
-    expect(usageError(["solve", "a.json"])).toMatch(/'solve' is added in stage 4/);
     expect(usageError(["export", "a.json", "--target", "runtime"])).toMatch(/'export' is added in stage 5/);
   });
 
@@ -50,7 +49,7 @@ describe("parseArgs", () => {
     expect(usageError(["check", "a.json", "--state", "night"])).toMatch(/'--state' is added in stage 6/);
     expect(usageError(["render", "a.json", "--state=night", "-o", "o.svg"])).toMatch(/'--state' is added in stage 6/);
     expect(usageError(["render", "a.json", "-o", "out.png"])).toMatch(/PNG output is added in stage 5/);
-    expect(usageError(["check", "a.json", "--only", "a"])).toMatch(/'--only' is added in stage 4/);
+    expect(usageError(["check", "a.json", "--only", "a"])).toMatch(/'--only' does not apply to 'check'/);
   });
 
   it("parses patch, diff and compare", () => {
