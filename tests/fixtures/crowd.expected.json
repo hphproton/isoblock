@@ -1,0 +1,58 @@
+{
+  "scene": "crowd",
+  "tolerance": {
+    "value": 0.01,
+    "valuePx": 1.0
+  },
+  "results": [
+    {
+      "id": "c1",
+      "check": "in_region",
+      "status": "pass",
+      "value": 0,
+      "threshold": 0,
+      "ids": []
+    },
+    {
+      "id": "c2",
+      "check": "in_region",
+      "status": "fail",
+      "value": 4,
+      "threshold": 0,
+      "ids": [
+        "o183",
+        "o189",
+        "o195",
+        "o200"
+      ]
+    },
+    {
+      "id": "c3",
+      "check": "no_overlap",
+      "status": "fail",
+      "value": 1,
+      "threshold": 0,
+      "ids": [
+        "o199",
+        "o200"
+      ],
+      "pairs": [
+        [
+          "o199",
+          "o200"
+        ]
+      ]
+    },
+    {
+      "id": "c4",
+      "check": "clearance",
+      "status": "pass",
+      "value": 0.5,
+      "threshold": 0.25,
+      "ids": [
+        "o001",
+        "o002"
+      ]
+    }
+  ]
+}

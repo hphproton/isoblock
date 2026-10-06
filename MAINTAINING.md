@@ -40,7 +40,7 @@ Write the result in `log/<yyyy-mm-dd>-maintainer-<n>.md`: steps run, outcomes, d
 ## Release
 
 1. On the reviewed builder branch, make one release commit: set `version` in `package.json` (stage N → `0.N.0`); rename `Unreleased` in `CHANGELOG.md` to that version; mark the stage done and open the next one in `ROADMAP.md`; add the fixtures and expected results the next stage needs (SPEC section 17); add your review log. Push the branch.
-2. Comment on the builder's pull request: the review result and a squash commit message. Use a comment, not a formal approval.
+2. Comment on the builder's pull request: the review result and a squash commit message without session links. Use a comment, not a formal approval.
 3. Tell the owner the pull request is ready. The owner squash-merges it. Do not merge or push to `main` yourself.
 4. After the merge, check that the new commit on `main` carries the owner's identity, and write the outcome in your next log.
 
@@ -57,4 +57,4 @@ Do not give builders material from any specific game or client project.
 ## Before making the repository public
 
 - Choose a license and add `LICENSE`.
-- Confirm the whole history follows the content rules in SPEC section 20. If it does not, publish a new repository from a clean snapshot instead of the existing history.
+- Confirm the whole history, commit messages included, follows the content rules in SPEC section 20. If it does not, publish a new repository from a clean snapshot instead of the existing history. Commits up to release 0.1.0 contain session links, so a clean snapshot is expected.

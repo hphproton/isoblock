@@ -1,0 +1,362 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "IsoBlock scene, format isoblock/1",
+  "type": "object",
+  "required": ["schema", "id", "units", "camera", "frame", "types", "objects"],
+  "additionalProperties": false,
+  "patternProperties": { "^x-": {} },
+  "properties": {
+    "schema": { "const": "isoblock/1" },
+    "id": { "type": "string", "minLength": 1 },
+    "units": {
+      "type": "object",
+      "required": ["name"],
+      "additionalProperties": false,
+      "patternProperties": { "^x-": {} },
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "note": { "type": "string" },
+        "perMeter": { "type": ["number", "null"], "exclusiveMinimum": 0 }
+      }
+    },
+    "camera": {
+      "type": "object",
+      "required": ["angleU", "angleV", "pxPerUnit", "origin"],
+      "additionalProperties": false,
+      "patternProperties": { "^x-": {} },
+      "properties": {
+        "angleU": { "type": "number" },
+        "angleV": { "type": "number" },
+        "pxPerUnit": { "type": "number", "exclusiveMinimum": 0 },
+        "verticalScale": { "type": "number", "exclusiveMinimum": 0, "default": 1 },
+        "origin": { "$ref": "#/definitions/vec2" }
+      }
+    },
+    "frame": {
+      "type": "object",
+      "required": ["w", "h", "regions"],
+      "additionalProperties": false,
+      "patternProperties": { "^x-": {} },
+      "properties": {
+        "w": { "type": "number", "exclusiveMinimum": 0 },
+        "h": { "type": "number", "exclusiveMinimum": 0 },
+        "regions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["id", "rect"],
+            "additionalProperties": false,
+            "patternProperties": { "^x-": {} },
+            "properties": {
+              "id": { "type": "string", "minLength": 1 },
+              "rect": { "type": "array", "items": { "type": "number" }, "minItems": 4, "maxItems": 4 },
+              "blocksScene": { "type": "boolean" }
+            }
+          }
+        }
+      }
+    },
+    "strips": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "v"],
+        "additionalProperties": false,
+        "patternProperties": { "^x-": {} },
+        "properties": {
+          "id": { "type": "string", "minLength": 1 },
+          "v": { "type": "array", "items": { "type": ["number", "null"] }, "minItems": 2, "maxItems": 2 },
+          "kind": { "type": "string" },
+          "scale": { "type": "string" }
+        }
+      }
+    },
+    "types": {
+      "type": "object",
+      "propertyNames": { "minLength": 1 },
+      "additionalProperties": {
+        "type": "object",
+        "required": ["size"],
+        "additionalProperties": false,
+        "patternProperties": { "^x-": {} },
+        "properties": {
+          "size": { "$ref": "#/definitions/size3" },
+          "parts": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["id", "box"],
+              "additionalProperties": false,
+              "patternProperties": { "^x-": {} },
+              "properties": {
+                "id": { "type": "string", "minLength": 1 },
+                "box": { "type": "array", "items": { "type": "number" }, "minItems": 6, "maxItems": 6 }
+              }
+            }
+          },
+          "anchors": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["id", "at"],
+              "additionalProperties": false,
+              "patternProperties": { "^x-": {} },
+              "properties": {
+                "id": { "type": "string", "minLength": 1 },
+                "at": { "type": "array", "items": { "type": "number" }, "minItems": 3, "maxItems": 3 },
+                "facing": { "type": "string" },
+                "kind": { "type": "string" }
+              }
+            }
+          },
+          "genHint": { "type": "string" }
+        }
+      }
+    },
+    "objects": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "type", "pos"],
+        "additionalProperties": false,
+        "patternProperties": { "^x-": {} },
+        "properties": {
+          "id": { "type": "string", "minLength": 1 },
+          "type": { "type": "string", "minLength": 1 },
+          "pos": { "$ref": "#/definitions/vec2" },
+          "rot": { "enum": [0, 90, 180, 270], "default": 0 },
+          "locks": {
+            "type": "array",
+            "items": {
+              "anyOf": [
+                { "enum": ["pos", "pos.u", "pos.v", "rot", "type"] },
+                { "type": "string", "pattern": "^/" }
+              ]
+            }
+          },
+          "tags": { "type": "array", "items": { "type": "string" } }
+        }
+      }
+    },
+    "zones": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id"],
+        "additionalProperties": false,
+        "patternProperties": { "^x-": {} },
+        "properties": {
+          "id": { "type": "string", "minLength": 1 },
+          "kind": { "type": "string" },
+          "points": { "type": "array", "items": { "$ref": "#/definitions/vec2" }, "minItems": 3 }
+        }
+      }
+    },
+    "lanes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "width", "points"],
+        "additionalProperties": false,
+        "patternProperties": { "^x-": {} },
+        "properties": {
+          "id": { "type": "string", "minLength": 1 },
+          "kind": { "type": "string" },
+          "width": { "type": "number", "minimum": 0 },
+          "dir": { "type": "string" },
+          "points": { "type": "array", "items": { "$ref": "#/definitions/vec2" }, "minItems": 2 }
+        }
+      }
+    },
+    "relations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "rel"],
+        "additionalProperties": false,
+        "patternProperties": { "^x-": {} },
+        "properties": {
+          "id": { "type": "string", "minLength": 1 },
+          "rel": {
+            "enum": [
+              "left_of", "right_of", "in_front_of", "behind", "against", "gap",
+              "inside", "aligned", "facing", "on_lane", "clear_of", "order_along"
+            ]
+          },
+          "a": { "type": "string", "minLength": 1 },
+          "b": { "type": "string", "minLength": 1 },
+          "ids": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+          "gap": { "type": "array", "items": { "type": "number" }, "minItems": 2, "maxItems": 2 },
+          "min": { "type": "number" },
+          "axis": { "type": "string" },
+          "t": { "type": "array", "items": { "type": "number" }, "minItems": 2, "maxItems": 2 },
+          "hard": { "type": "boolean", "default": false },
+          "weight": { "type": "number", "default": 1 },
+          "source": { "type": "string" }
+        },
+        "if": { "properties": { "rel": { "const": "order_along" } } },
+        "then": { "required": ["ids"] },
+        "else": { "required": ["a"] }
+      }
+    },
+    "checks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "check"],
+        "properties": {
+          "id": { "type": "string", "minLength": 1 },
+          "check": {
+            "enum": [
+              "in_region", "no_overlap", "clearance", "lane_clear", "lane_reaches", "reachable",
+              "capacity", "visible", "min_screen_size", "sort_consistency", "state_stable"
+            ]
+          }
+        },
+        "oneOf": [
+          { "$ref": "#/definitions/checkInRegion" },
+          { "$ref": "#/definitions/checkNoOverlap" },
+          { "$ref": "#/definitions/checkClearance" },
+          { "$ref": "#/definitions/checkLaneClear" },
+          { "$ref": "#/definitions/checkLaneReaches" },
+          { "$ref": "#/definitions/checkVisible" },
+          { "$ref": "#/definitions/checkNotImplemented" }
+        ],
+        "discriminator": { "propertyName": "check" }
+      }
+    },
+    "states": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "hide": { "type": "array", "items": { "type": "string" } }
+        }
+      }
+    },
+    "assumptions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["path", "value"],
+        "additionalProperties": false,
+        "patternProperties": { "^x-": {} },
+        "properties": {
+          "path": { "type": "string", "pattern": "^/" },
+          "value": {},
+          "note": { "type": "string" },
+          "origin": { "type": "string" },
+          "owner": { "type": "string" }
+        }
+      }
+    },
+    "meta": {
+      "type": "object",
+      "additionalProperties": false,
+      "patternProperties": { "^x-": {} },
+      "properties": {
+        "version": { "type": "number" },
+        "status": { "type": "string" },
+        "approvedBy": { "type": ["string", "null"] },
+        "approvedAt": { "type": ["string", "null"] }
+      }
+    }
+  },
+  "definitions": {
+    "vec2": { "type": "array", "items": { "type": "number" }, "minItems": 2, "maxItems": 2 },
+    "size3": {
+      "type": "array",
+      "items": { "type": "number", "minimum": 0 },
+      "minItems": 3,
+      "maxItems": 3
+    },
+    "idList": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+    "checkInRegion": {
+      "type": "object",
+      "required": ["id", "check", "region"],
+      "additionalProperties": false,
+      "patternProperties": { "^x-": {} },
+      "properties": {
+        "id": { "type": "string" },
+        "check": { "const": "in_region" },
+        "region": { "type": "string", "minLength": 1 },
+        "strip": { "type": "string", "minLength": 1 },
+        "ids": { "$ref": "#/definitions/idList" }
+      }
+    },
+    "checkNoOverlap": {
+      "type": "object",
+      "required": ["id", "check"],
+      "additionalProperties": false,
+      "patternProperties": { "^x-": {} },
+      "properties": {
+        "id": { "type": "string" },
+        "check": { "const": "no_overlap" },
+        "ids": { "$ref": "#/definitions/idList" },
+        "allow": {
+          "type": "array",
+          "items": { "type": "array", "items": { "type": "string" }, "minItems": 2, "maxItems": 2 }
+        }
+      }
+    },
+    "checkClearance": {
+      "type": "object",
+      "required": ["id", "check", "a", "b", "min"],
+      "additionalProperties": false,
+      "patternProperties": { "^x-": {} },
+      "properties": {
+        "id": { "type": "string" },
+        "check": { "const": "clearance" },
+        "a": { "type": "string", "minLength": 1 },
+        "b": { "type": "string", "minLength": 1 },
+        "min": { "type": "number", "minimum": 0 }
+      }
+    },
+    "checkLaneClear": {
+      "type": "object",
+      "required": ["id", "check", "lane"],
+      "additionalProperties": false,
+      "patternProperties": { "^x-": {} },
+      "properties": {
+        "id": { "type": "string" },
+        "check": { "const": "lane_clear" },
+        "lane": { "type": "string", "minLength": 1 },
+        "ignore": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "checkLaneReaches": {
+      "type": "object",
+      "required": ["id", "check", "lane", "edge", "region"],
+      "additionalProperties": false,
+      "patternProperties": { "^x-": {} },
+      "properties": {
+        "id": { "type": "string" },
+        "check": { "const": "lane_reaches" },
+        "lane": { "type": "string", "minLength": 1 },
+        "edge": { "enum": ["right", "left", "top", "bottom"] },
+        "region": { "type": "string", "minLength": 1 }
+      }
+    },
+    "checkVisible": {
+      "type": "object",
+      "required": ["id", "check", "target", "maxOccluded"],
+      "additionalProperties": false,
+      "patternProperties": { "^x-": {} },
+      "properties": {
+        "id": { "type": "string" },
+        "check": { "const": "visible" },
+        "target": { "type": "string", "minLength": 1 },
+        "from": { "type": "number", "minimum": 0, "maximum": 1, "default": 0.55 },
+        "maxOccluded": { "type": "number", "minimum": 0, "maximum": 1 }
+      }
+    },
+    "checkNotImplemented": {
+      "type": "object",
+      "required": ["id", "check"],
+      "properties": {
+        "id": { "type": "string" },
+        "check": { "enum": ["reachable", "capacity", "min_screen_size", "sort_consistency", "state_stable"] }
+      }
+    }
+  }
+}

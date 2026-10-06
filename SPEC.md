@@ -169,6 +169,16 @@ Schema rules (`schema/isoblock-1.json`):
 - `ids`, when present on a check, must be non-empty. Absent means all objects.
 - `checks[].check` must be a name from section 9. For checks not implemented in the current stage, only `id` and `check` are validated.
 - A file that fails the schema or a reference check stops with an error message.
+- Also schema errors (`E_SCHEMA`): a camera whose ground axes are parallel (`angleU` equal to `angleV` modulo 180); a negative size or lane width; a `locks` entry that is not `pos`, `pos.u`, `pos.v`, `rot`, `type` or a JSON Pointer.
+
+Reference rules (`E_REF`):
+
+- Ids are unique within `frame.regions`, `strips`, `objects`, `zones`, `lanes`, `relations` and `checks`, and within the parts and the anchors of one type.
+- `objects[].type` names a key of `types`.
+- Relation `a`, `b` and `ids` resolve to an object id, `zone:<id>`, `lane:<id>`, `strip:<id>.v0` or `strip:<id>.v1`.
+- Parameters of checks implemented in the current stage name existing regions, strips, lanes and objects. Parameters of checks not implemented yet are not resolved.
+- `states.<name>.hide` names existing objects.
+- Every `assumptions[].path` is a JSON Pointer that resolves in the file.
 
 ## 7. Relation vocabulary
 
@@ -240,6 +250,11 @@ Threshold, ids and extra fields per check:
 - `lane_reaches`: `threshold = [y0, y1]` of the region; `ids = [lane id]`.
 - `visible`: `threshold = maxOccluded`; `ids = [target]`; `occluders` = ids of objects with a part that occludes at least one sample.
 
+Further rules:
+- `no_overlap` with `ids`: a pair counts only when both objects are in `ids`.
+- Lane shape (`lane_clear`, `lane_reaches`): the segment widened by `width/2` on each side, not extended past its end points. A lane whose two points are identical is an unsupported shape (`skip`).
+- `visible`: the length compared with EPS is the Euclidean length of the ray inside a part. The check passes when `value <= maxOccluded + EPS`.
+
 Ordering:
 - Results follow the order of `checks` in the scene file.
 - Object ids in `ids` and `occluders` follow the order of `objects`, including `clearance`. Exception: `no_overlap` sorts `ids` alphabetically; each pair in `pairs` is sorted alphabetically, and the list of pairs is sorted ascending.
@@ -275,6 +290,8 @@ isoblock export   scene.json --target runtime|godot|phaser|tiled|gen-bbox
 ```
 
 Commands and flags arrive in the stages listed in section 17. A command, flag, export target or output format not available in the current stage is a usage error (exit 2) that names the stage that adds it, or says it is not scheduled. Examples in stage 1: `--state` (stage 6), `render -o out.png` (stage 5).
+
+`render` requires `-o`; the file extension selects the format (`.svg`, and `.png` from stage 5).
 
 `check` output:
 - Default: one summary line, then one line per check: `PASS|FAIL|WARN|SKIP <id> <check>: <message>`.
@@ -429,7 +446,7 @@ dist/        build output, not committed
 | Stage | Scope | Done when |
 |---|---|---|
 | 1 | Schema, projection, geometry, display list, SVG; checks `in_region`, `no_overlap`, `clearance`, `lane_clear`, `lane_reaches`, `visible`; `skip` for unsupported checks and lane shapes; CLI `validate`, `check`, `render` (SVG), `describe`; exit codes of section 11 | All tests pass; `tests/golden/projection.json` matches; all `tests/fixtures/*.scene.json` match their `*.expected.json` within tolerance; `render` of `yard` produces an SVG that opens and shows the expected layout |
-| 2 | Editor: drag on both views, locks, undo, save, live check panel | 200 objects at 60 fps on a mid-range phone; dragging a locked object is blocked |
+| 2 | Editor: drag on both views, locks, undo, save, live check panel | 200 objects at 60 fps on a mid-range phone, measured on `tests/fixtures/crowd.scene.json`: while dragging, the 95th-percentile frame time is at most 16.7 ms in headless Chromium with 4x CPU slowdown; dragging a locked object is blocked; a saved file parses to the same data as the file opened, and saving twice gives byte-identical files |
 | 3 | Patches: short commands and JSON Patch, lock rejection, log; `diff`; `compare` | 20 sample patches give the expected results; `compare` on the sample scene with 3 variants gives the expected table |
 | 4 | Solver and minimal conflict set | A synthetic scene with conflicting hard relations returns the expected minimal conflict set |
 | 5 | `export` targets `runtime`, `godot`, `gen-bbox`; Godot adapter; cross golden tests; PNG render | The sample scene loaded in Godot differs by at most 1 px |
@@ -487,6 +504,7 @@ Three roles work with this repository:
 **Content rules**
 - Everything under version control is written in plain technical English: code, comments, messages, tests, docs, logs, commit messages.
 - This repository is project-neutral. It never contains names, scenes, measurements or criteria taken from a specific game or client project. Fixtures and examples are synthetic.
+- Commit messages, pull request descriptions and comments contain no links to agent sessions or chats (for example `Claude-Session` lines).
 - A stage's checklist is ticked only for work that was done and verified in that session.
 
 ---
@@ -515,6 +533,10 @@ assumptions: tree.size.h=2.40
 ```
 
 Format rules:
+- Header: starts with `scene <id> v<version> <status>`; without `meta`, `v<version> <status>` is left out. `px/<unit>` uses `units.name`.
+- Object table: columns are left-aligned; each is as wide as its widest cell (header included) plus a gap of 2 spaces after `id`, `type` and `rot`, and 3 after `pos(u,v)` and `size(w,d,h)`. `size` is the type's size before rotation.
+- `*` follows each number that an assumption path points to. The line `(* = provisional value)` appears only when a `*` is printed.
+- Lists inside check lines (ids, occluders) are joined with `, `.
 - Positions, sizes, gaps and assumption values: 2 decimals (up to 4 when 2 would lose information). Pixel values: whole numbers after `≈`. Fractions: whole percentages.
 - Assumption paths are shortened: `/types/<t>/size/<0|1|2>` prints as `<t>.size.<w|d|h>`; `/types/<t>/parts/<k>/box/<0..5>` prints as `<t>.<part id>.<u0|v0|h0|u1|v1|h1>`; any other path prints as the JSON Pointer. Entries are joined with ` · `.
 - Camera label: `iso30`, `dimetric21`, or `u<angleU>/v<angleV>`.
