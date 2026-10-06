@@ -1,0 +1,196 @@
+{
+  "schema": "isoblock/1",
+  "id": "lane",
+  "units": {
+    "name": "u",
+    "note": "abstract unit"
+  },
+  "camera": {
+    "angleU": 30,
+    "angleV": 150,
+    "pxPerUnit": 100,
+    "verticalScale": 1,
+    "origin": [
+      540,
+      250
+    ]
+  },
+  "frame": {
+    "w": 1000,
+    "h": 1000,
+    "regions": [
+      {
+        "id": "hud",
+        "rect": [
+          0,
+          0,
+          1000,
+          150
+        ],
+        "blocksScene": true
+      },
+      {
+        "id": "view",
+        "rect": [
+          0,
+          150,
+          1000,
+          1000
+        ]
+      }
+    ]
+  },
+  "strips": [],
+  "types": {
+    "box": {
+      "size": [
+        1,
+        1,
+        1
+      ]
+    }
+  },
+  "objects": [
+    {
+      "id": "d",
+      "type": "box",
+      "pos": [
+        4,
+        2.2
+      ],
+      "rot": 0
+    },
+    {
+      "id": "e",
+      "type": "box",
+      "pos": [
+        6,
+        5
+      ],
+      "rot": 0
+    }
+  ],
+  "zones": [],
+  "lanes": [
+    {
+      "id": "L1",
+      "kind": "vehicle",
+      "width": 1,
+      "points": [
+        [
+          0,
+          2
+        ],
+        [
+          25,
+          2
+        ]
+      ]
+    },
+    {
+      "id": "L2",
+      "kind": "vehicle",
+      "width": 1,
+      "points": [
+        [
+          0,
+          8
+        ],
+        [
+          40,
+          8
+        ]
+      ]
+    },
+    {
+      "id": "L3",
+      "kind": "walk",
+      "width": 1,
+      "points": [
+        [
+          0,
+          4
+        ],
+        [
+          3,
+          4
+        ]
+      ]
+    },
+    {
+      "id": "L4",
+      "kind": "walk",
+      "width": 1,
+      "points": [
+        [
+          0,
+          0
+        ],
+        [
+          3,
+          1
+        ],
+        [
+          6,
+          1
+        ]
+      ]
+    }
+  ],
+  "relations": [],
+  "checks": [
+    {
+      "id": "c1",
+      "check": "lane_clear",
+      "lane": "L1"
+    },
+    {
+      "id": "c2",
+      "check": "lane_clear",
+      "lane": "L1",
+      "ignore": [
+        "d"
+      ]
+    },
+    {
+      "id": "c3",
+      "check": "lane_reaches",
+      "lane": "L1",
+      "edge": "right",
+      "region": "view"
+    },
+    {
+      "id": "c4",
+      "check": "lane_reaches",
+      "lane": "L2",
+      "edge": "right",
+      "region": "view"
+    },
+    {
+      "id": "c5",
+      "check": "lane_reaches",
+      "lane": "L3",
+      "edge": "right",
+      "region": "view"
+    },
+    {
+      "id": "c6",
+      "check": "lane_clear",
+      "lane": "L4"
+    },
+    {
+      "id": "c7",
+      "check": "reachable",
+      "from": "L3",
+      "to": "e"
+    }
+  ],
+  "states": {},
+  "assumptions": [],
+  "meta": {
+    "version": 1,
+    "status": "draft",
+    "approvedBy": null,
+    "approvedAt": null
+  }
+}

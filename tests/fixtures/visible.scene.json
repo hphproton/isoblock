@@ -1,0 +1,172 @@
+{
+  "schema": "isoblock/1",
+  "id": "visible",
+  "units": {
+    "name": "u",
+    "note": "abstract unit"
+  },
+  "camera": {
+    "angleU": 30,
+    "angleV": 150,
+    "pxPerUnit": 100,
+    "verticalScale": 1,
+    "origin": [
+      540,
+      250
+    ]
+  },
+  "frame": {
+    "w": 1000,
+    "h": 1000,
+    "regions": [
+      {
+        "id": "hud",
+        "rect": [
+          0,
+          0,
+          1000,
+          150
+        ],
+        "blocksScene": true
+      },
+      {
+        "id": "view",
+        "rect": [
+          0,
+          150,
+          1000,
+          1000
+        ]
+      }
+    ]
+  },
+  "strips": [],
+  "types": {
+    "actor": {
+      "size": [
+        0.3,
+        0.3,
+        1
+      ]
+    },
+    "wall": {
+      "size": [
+        2,
+        2,
+        3
+      ]
+    },
+    "shed": {
+      "size": [
+        2,
+        1,
+        1.6
+      ],
+      "parts": [
+        {
+          "id": "base",
+          "box": [
+            0,
+            0,
+            0,
+            2,
+            1,
+            0.6
+          ]
+        },
+        {
+          "id": "roof",
+          "box": [
+            -0.1,
+            -0.1,
+            1.3,
+            2.1,
+            1.1,
+            1.6
+          ]
+        }
+      ]
+    }
+  },
+  "objects": [
+    {
+      "id": "h1",
+      "type": "actor",
+      "pos": [
+        2,
+        2
+      ],
+      "rot": 0
+    },
+    {
+      "id": "w",
+      "type": "wall",
+      "pos": [
+        2.5,
+        2.5
+      ],
+      "rot": 0
+    },
+    {
+      "id": "h2",
+      "type": "actor",
+      "pos": [
+        8,
+        0
+      ],
+      "rot": 0
+    },
+    {
+      "id": "k",
+      "type": "shed",
+      "pos": [
+        12,
+        0
+      ],
+      "rot": 0
+    },
+    {
+      "id": "h3",
+      "type": "actor",
+      "pos": [
+        11.5,
+        0.3
+      ],
+      "rot": 0
+    }
+  ],
+  "zones": [],
+  "lanes": [],
+  "relations": [],
+  "checks": [
+    {
+      "id": "c1",
+      "check": "visible",
+      "target": "h1",
+      "from": 0.55,
+      "maxOccluded": 0.05
+    },
+    {
+      "id": "c2",
+      "check": "visible",
+      "target": "h2",
+      "from": 0.55,
+      "maxOccluded": 0.05
+    },
+    {
+      "id": "c3",
+      "check": "visible",
+      "target": "h3",
+      "from": 0.55,
+      "maxOccluded": 0.05
+    }
+  ],
+  "states": {},
+  "assumptions": [],
+  "meta": {
+    "version": 1,
+    "status": "draft",
+    "approvedBy": null,
+    "approvedAt": null
+  }
+}

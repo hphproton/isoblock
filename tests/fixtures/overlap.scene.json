@@ -1,0 +1,160 @@
+{
+  "schema": "isoblock/1",
+  "id": "overlap",
+  "units": {
+    "name": "u",
+    "note": "abstract unit"
+  },
+  "camera": {
+    "angleU": 30,
+    "angleV": 150,
+    "pxPerUnit": 100,
+    "verticalScale": 1,
+    "origin": [
+      540,
+      250
+    ]
+  },
+  "frame": {
+    "w": 1000,
+    "h": 1000,
+    "regions": [
+      {
+        "id": "hud",
+        "rect": [
+          0,
+          0,
+          1000,
+          150
+        ],
+        "blocksScene": true
+      },
+      {
+        "id": "view",
+        "rect": [
+          0,
+          150,
+          1000,
+          1000
+        ]
+      }
+    ]
+  },
+  "strips": [],
+  "types": {
+    "box": {
+      "size": [
+        1,
+        1,
+        1
+      ]
+    },
+    "long": {
+      "size": [
+        2,
+        1,
+        1
+      ]
+    }
+  },
+  "objects": [
+    {
+      "id": "a",
+      "type": "box",
+      "pos": [
+        2,
+        2
+      ],
+      "rot": 0
+    },
+    {
+      "id": "b",
+      "type": "box",
+      "pos": [
+        2.5,
+        2.5
+      ],
+      "rot": 0
+    },
+    {
+      "id": "c",
+      "type": "box",
+      "pos": [
+        5,
+        2
+      ],
+      "rot": 0
+    },
+    {
+      "id": "d",
+      "type": "box",
+      "pos": [
+        12,
+        0
+      ],
+      "rot": 0
+    },
+    {
+      "id": "r",
+      "type": "long",
+      "pos": [
+        2,
+        6
+      ],
+      "rot": 90
+    }
+  ],
+  "zones": [],
+  "lanes": [],
+  "relations": [],
+  "checks": [
+    {
+      "id": "c1",
+      "check": "no_overlap"
+    },
+    {
+      "id": "c2",
+      "check": "clearance",
+      "a": "a",
+      "b": "c",
+      "min": 1.5
+    },
+    {
+      "id": "c3",
+      "check": "clearance",
+      "a": "c",
+      "b": "a",
+      "min": 2.5
+    },
+    {
+      "id": "c4",
+      "check": "clearance",
+      "a": "a",
+      "b": "r",
+      "min": 0
+    },
+    {
+      "id": "c5",
+      "check": "in_region",
+      "region": "view"
+    },
+    {
+      "id": "c6",
+      "check": "no_overlap",
+      "allow": [
+        [
+          "b",
+          "a"
+        ]
+      ]
+    }
+  ],
+  "states": {},
+  "assumptions": [],
+  "meta": {
+    "version": 1,
+    "status": "draft",
+    "approvedBy": null,
+    "approvedAt": null
+  }
+}

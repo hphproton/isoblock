@@ -1,0 +1,78 @@
+{
+  "scene": "overlap",
+  "tolerance": {
+    "value": 0.01,
+    "valuePx": 1.0
+  },
+  "results": [
+    {
+      "id": "c1",
+      "check": "no_overlap",
+      "status": "fail",
+      "value": 1,
+      "threshold": 0,
+      "ids": [
+        "a",
+        "b"
+      ],
+      "pairs": [
+        [
+          "a",
+          "b"
+        ]
+      ]
+    },
+    {
+      "id": "c2",
+      "check": "clearance",
+      "status": "pass",
+      "value": 2.0,
+      "threshold": 1.5,
+      "ids": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "c3",
+      "check": "clearance",
+      "status": "fail",
+      "value": 2.0,
+      "threshold": 2.5,
+      "ids": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "c4",
+      "check": "clearance",
+      "status": "pass",
+      "value": 3.0,
+      "threshold": 0,
+      "ids": [
+        "a",
+        "r"
+      ]
+    },
+    {
+      "id": "c5",
+      "check": "in_region",
+      "status": "fail",
+      "value": 1,
+      "threshold": 0,
+      "ids": [
+        "d"
+      ]
+    },
+    {
+      "id": "c6",
+      "check": "no_overlap",
+      "status": "pass",
+      "value": 0,
+      "threshold": 0,
+      "ids": [],
+      "pairs": []
+    }
+  ]
+}

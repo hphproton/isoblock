@@ -1,0 +1,324 @@
+{
+  "schema": "isoblock/1",
+  "id": "yard",
+  "units": {
+    "name": "u",
+    "note": "abstract unit"
+  },
+  "camera": {
+    "angleU": 30,
+    "angleV": 150,
+    "pxPerUnit": 80,
+    "verticalScale": 1,
+    "origin": [
+      300,
+      300
+    ]
+  },
+  "frame": {
+    "w": 1000,
+    "h": 1000,
+    "regions": [
+      {
+        "id": "hud",
+        "rect": [
+          0,
+          0,
+          1000,
+          150
+        ],
+        "blocksScene": true
+      },
+      {
+        "id": "view",
+        "rect": [
+          0,
+          150,
+          1000,
+          1000
+        ]
+      }
+    ]
+  },
+  "strips": [
+    {
+      "id": "back",
+      "v": [
+        -1.5,
+        0
+      ],
+      "kind": "decor",
+      "scale": "art-directed"
+    },
+    {
+      "id": "floor",
+      "v": [
+        0,
+        4
+      ],
+      "kind": "walkable"
+    }
+  ],
+  "types": {
+    "tree": {
+      "size": [
+        1.2,
+        1.2,
+        2.4
+      ],
+      "parts": [
+        {
+          "id": "trunk",
+          "box": [
+            0.45,
+            0.45,
+            0,
+            0.75,
+            0.75,
+            1.4
+          ]
+        },
+        {
+          "id": "canopy",
+          "box": [
+            -0.2,
+            -0.2,
+            1.4,
+            1.4,
+            1.4,
+            2.4
+          ]
+        }
+      ],
+      "genHint": "young tree with a round canopy"
+    },
+    "actor": {
+      "size": [
+        0.4,
+        0.4,
+        1.2
+      ]
+    },
+    "crate": {
+      "size": [
+        0.6,
+        0.6,
+        0.6
+      ]
+    },
+    "bench": {
+      "size": [
+        1.2,
+        0.4,
+        0.5
+      ],
+      "anchors": [
+        {
+          "id": "seat1",
+          "at": [
+            0.3,
+            0.2,
+            0.5
+          ],
+          "facing": "back",
+          "kind": "seat"
+        }
+      ]
+    }
+  },
+  "objects": [
+    {
+      "id": "tree",
+      "type": "tree",
+      "pos": [
+        3,
+        0.2
+      ],
+      "rot": 0,
+      "locks": [
+        "pos"
+      ],
+      "tags": [
+        "static"
+      ]
+    },
+    {
+      "id": "actor",
+      "type": "actor",
+      "pos": [
+        2.3,
+        0.97
+      ],
+      "rot": 0
+    },
+    {
+      "id": "crate1",
+      "type": "crate",
+      "pos": [
+        6,
+        0.5
+      ],
+      "rot": 0
+    },
+    {
+      "id": "crate2",
+      "type": "crate",
+      "pos": [
+        6.8,
+        0.5
+      ],
+      "rot": 0
+    },
+    {
+      "id": "bench",
+      "type": "bench",
+      "pos": [
+        3.4,
+        2.6
+      ],
+      "rot": 0
+    }
+  ],
+  "zones": [],
+  "lanes": [
+    {
+      "id": "path",
+      "kind": "walk",
+      "width": 0.6,
+      "dir": "both",
+      "points": [
+        [
+          0,
+          2.0
+        ],
+        [
+          9,
+          2.0
+        ]
+      ]
+    },
+    {
+      "id": "haul",
+      "kind": "vehicle",
+      "width": 0.8,
+      "dir": "to_screen_right",
+      "points": [
+        [
+          5,
+          4.6
+        ],
+        [
+          16,
+          4.6
+        ]
+      ]
+    }
+  ],
+  "relations": [
+    {
+      "id": "r1",
+      "a": "bench",
+      "rel": "in_front_of",
+      "b": "tree",
+      "gap": [
+        1,
+        1.5
+      ],
+      "hard": false,
+      "weight": 1,
+      "source": "example relation"
+    },
+    {
+      "id": "r2",
+      "a": "crate1",
+      "rel": "aligned",
+      "b": "crate2",
+      "axis": "v",
+      "hard": true,
+      "source": "example relation"
+    }
+  ],
+  "checks": [
+    {
+      "id": "c1",
+      "check": "in_region",
+      "region": "view"
+    },
+    {
+      "id": "c2",
+      "check": "in_region",
+      "region": "view",
+      "strip": "floor",
+      "ids": [
+        "bench",
+        "crate1",
+        "crate2"
+      ]
+    },
+    {
+      "id": "c3",
+      "check": "no_overlap"
+    },
+    {
+      "id": "c4",
+      "check": "clearance",
+      "a": "crate2",
+      "b": "crate1",
+      "min": 0.5
+    },
+    {
+      "id": "c5",
+      "check": "clearance",
+      "a": "tree",
+      "b": "bench",
+      "min": 1.0
+    },
+    {
+      "id": "c6",
+      "check": "lane_clear",
+      "lane": "path"
+    },
+    {
+      "id": "c7",
+      "check": "lane_reaches",
+      "lane": "haul",
+      "edge": "right",
+      "region": "view"
+    },
+    {
+      "id": "c8",
+      "check": "visible",
+      "target": "actor",
+      "from": 0.55,
+      "maxOccluded": 0.05
+    },
+    {
+      "id": "c9",
+      "check": "visible",
+      "target": "bench",
+      "from": 0.55,
+      "maxOccluded": 0.05
+    }
+  ],
+  "states": {
+    "closed": {
+      "hide": [
+        "bench"
+      ]
+    }
+  },
+  "assumptions": [
+    {
+      "path": "/types/tree/size/2",
+      "value": 2.4,
+      "note": "height not given in the brief",
+      "owner": "designer"
+    }
+  ],
+  "meta": {
+    "version": 1,
+    "status": "draft",
+    "approvedBy": null,
+    "approvedAt": null
+  }
+}

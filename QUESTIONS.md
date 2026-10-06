@@ -1,0 +1,13 @@
+# Questions
+
+The builder records unclear points here. The maintainer answers under each question.
+
+Template:
+
+```
+## Q-001 · <short title>
+- Spec section: …
+- Question: …
+- Reading chosen for now: …
+- Answer (maintainer): …
+```

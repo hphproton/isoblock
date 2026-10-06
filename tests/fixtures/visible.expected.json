@@ -1,0 +1,46 @@
+{
+  "scene": "visible",
+  "tolerance": {
+    "value": 0.01,
+    "valuePx": 1.0
+  },
+  "results": [
+    {
+      "id": "c1",
+      "check": "visible",
+      "status": "fail",
+      "value": 1.0,
+      "threshold": 0.05,
+      "ids": [
+        "h1"
+      ],
+      "occluders": [
+        "w"
+      ]
+    },
+    {
+      "id": "c2",
+      "check": "visible",
+      "status": "pass",
+      "value": 0.0,
+      "threshold": 0.05,
+      "ids": [
+        "h2"
+      ],
+      "occluders": []
+    },
+    {
+      "id": "c3",
+      "check": "visible",
+      "status": "fail",
+      "value": 0.7604,
+      "threshold": 0.05,
+      "ids": [
+        "h3"
+      ],
+      "occluders": [
+        "k"
+      ]
+    }
+  ]
+}
