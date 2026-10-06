@@ -27,10 +27,16 @@ function solve(ax: Axes, x: number, y: number): Vec2 {
   return [(x * ax.vy - y * ax.vx) / det, (ax.ux * y - ax.uy * x) / det];
 }
 
+/** A `project` function for one camera, with the axes computed once. */
+export function projector(camera: Camera): (u: number, v: number, h: number) => Vec2 {
+  const ax = axes(camera);
+  const [ox, oy] = camera.origin;
+  return (u, v, h) => [ox + u * ax.ux + v * ax.vx, oy + u * ax.uy + v * ax.vy + h * ax.upY];
+}
+
 /** Ground point (u, v) at height h to screen (x, y). SPEC section 5. */
 export function project(camera: Camera, u: number, v: number, h: number): Vec2 {
-  const ax = axes(camera);
-  return [camera.origin[0] + u * ax.ux + v * ax.vx, camera.origin[1] + u * ax.uy + v * ax.vy + h * ax.upY];
+  return projector(camera)(u, v, h);
 }
 
 /** Screen point to the ground point (u, v) at height `h0`. */

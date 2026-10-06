@@ -11,9 +11,14 @@ function files(dir: string): string[] {
 }
 
 const core = files(join(repoRoot, "src", "core"));
-const sources = [...core, ...files(join(repoRoot, "src", "cli")), ...files(join(repoRoot, "tests"))].filter((f) =>
-  f.endsWith(".ts"),
-);
+const editor = files(join(repoRoot, "src", "editor"));
+const sources = [
+  ...core,
+  ...files(join(repoRoot, "src", "cli")),
+  ...editor,
+  ...files(join(repoRoot, "tests")),
+  ...files(join(repoRoot, "scripts")),
+].filter((f) => /\.(ts|mjs|html|css)$/.test(f));
 
 describe("repository rules", () => {
   it("keeps src/core free of Node built-ins, process and DOM globals", () => {
@@ -26,6 +31,13 @@ describe("repository rules", () => {
         expect(ok, `${relative(repoRoot, file)} imports ${name}`).toBe(true);
       }
       expect(/\b(process|document|window)\b/.test(text), `${relative(repoRoot, file)} uses a banned word`).toBe(false);
+    }
+  });
+
+  it("keeps src/core independent of the editor and the command line", () => {
+    for (const file of core) {
+      const text = readFileSync(file, "utf8");
+      expect(/from ['"](\.\.\/)+(editor|cli)\b/.test(text), relative(repoRoot, file)).toBe(false);
     }
   });
 

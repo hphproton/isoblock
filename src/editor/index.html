@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>IsoBlock editor</title>
+<style>/*__STYLE__*/</style>
+</head>
+<body>
+<div id="app" data-mode="split" data-open="false">
+  <header class="bar">
+    <strong class="brand">IsoBlock</strong>
+    <button id="open" type="button">Open</button>
+    <input id="file" type="file" accept=".json,application/json" hidden>
+    <button id="save" type="button" disabled>Save</button>
+    <span class="group" role="group" aria-label="History">
+      <button id="undo" type="button" disabled>Undo</button>
+      <button id="redo" type="button" disabled>Redo</button>
+    </span>
+    <span class="group" role="group" aria-label="View">
+      <button type="button" data-mode="iso" aria-pressed="false">Iso</button>
+      <button type="button" data-mode="plan" aria-pressed="false">Plan</button>
+      <button type="button" data-mode="split" aria-pressed="true">Both</button>
+    </span>
+    <label class="snap">Snap
+      <select id="snap" aria-label="Grid snap step">
+        <option value="0">off</option>
+        <option value="0.05">0.05</option>
+        <option value="0.1" selected>0.1</option>
+        <option value="0.25">0.25</option>
+        <option value="0.5">0.5</option>
+        <option value="1">1</option>
+      </select>
+    </label>
+    <span id="file-name" class="file-name"></span>
+  </header>
+  <div id="status" class="status" role="status" aria-live="polite"></div>
+  <main>
+    <section class="views" aria-label="Scene views">
+      <figure class="view" data-view="iso">
+        <figcaption><span>Isometric</span><button type="button" class="fit" data-fit="iso">Fit</button></figcaption>
+        <div class="stage"><canvas aria-label="Isometric view"></canvas></div>
+      </figure>
+      <figure class="view" data-view="plan">
+        <figcaption><span>Plan</span><button type="button" class="fit" data-fit="plan">Fit</button></figcaption>
+        <div class="stage"><canvas aria-label="Plan view"></canvas></div>
+      </figure>
+      <div id="empty" class="empty">
+        <p>Open a scene file (<code>*.scene.json</code>) or drop it on this page.</p>
+        <button id="open-empty" type="button">Open a scene file</button>
+      </div>
+    </section>
+    <aside class="side">
+      <section id="props" aria-labelledby="props-title">
+        <h2 id="props-title">Properties</h2>
+        <div id="props-body"></div>
+      </section>
+      <section id="checks" aria-labelledby="checks-title">
+        <h2 id="checks-title">Checks <span id="checks-count" class="count"></span></h2>
+        <ul id="checks-list" class="checks"></ul>
+      </section>
+      <section id="overlays" aria-labelledby="overlays-title">
+        <h2 id="overlays-title">Overlays</h2>
+        <div id="overlays-body" class="overlays"></div>
+      </section>
+    </aside>
+  </main>
+</div>
+<script>/*__SCRIPT__*/</script>
+</body>
+</html>

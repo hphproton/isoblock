@@ -22,3 +22,8 @@ export function resolvePointer(root: unknown, pointer: string): { found: boolean
   }
   return { found: true, value: node };
 }
+
+/** Build a JSON Pointer (RFC 6901) from tokens, escaping `~` and `/`. */
+export function pointerOf(...tokens: readonly (string | number)[]): string {
+  return tokens.map((t) => `/${String(t).replace(/~/g, "~0").replace(/\//g, "~1")}`).join("");
+}

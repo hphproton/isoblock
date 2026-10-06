@@ -155,7 +155,7 @@ Conventions:
 - `strips[].v` is `[min, max]` along v; `null` means unbounded on that side.
 - `units.perMeter` is the number of units per meter, or `null` when the unit is not tied to meters.
 - Relation targets (`a`, `b`): an object id, `zone:<id>`, `lane:<id>`, or a strip edge `strip:<id>.v0` / `strip:<id>.v1`.
-- `locks` lists property paths: `pos`, `pos.u`, `pos.v`, `rot`, `type`, or a JSON Pointer.
+- `locks` lists property paths: `pos`, `pos.u`, `pos.v`, `rot`, `type`, or a JSON Pointer. A pointer is absolute in the scene file; a pointer into a type (for example `/types/<t>/size/2`) blocks that value for every object of the type.
 - Every unsettled number has an entry in `assumptions`. The editor marks it as provisional.
 - A strip with `kind: "decor"` is art-directed backdrop. Physical scale is not checked there (section 18).
 
@@ -264,7 +264,8 @@ Messages: builders choose message wording, except the `lane_reaches` message abo
 ## 10. Editor (web page)
 
 - **Two views:** isometric with the scene camera, and a top-down plan (more precise dragging, nothing hidden).
-- **Drag:** screen to ground, grid snap, keep h. Locked objects cannot be dragged and show a lock icon.
+- **Drag:** screen to ground, grid snap, keep h. Locked objects cannot be dragged and show a lock icon. A drag changes `pos` only; snap applies to `pos` (default step 0.1). A press becomes a drag after the pointer moves 3 px (mouse), 4 px (pen) or 8 px (touch).
+- **Plan view:** u to the right, v down; objects drawn by their top faces.
 - **Property panel:** numbers with units; a lock toggle per property; provisional mark for assumptions.
 - **Check panel:** pass/fail updates live; tapping a row highlights the objects involved.
 - **Toggleable overlays:** strips, lanes, zones, anchors, frame regions, occlusion rays, sort points.
@@ -273,7 +274,8 @@ Messages: builders choose message wording, except the `lane_reaches` message abo
 - **Export:** frame image, scene file, engine package, generation boxes.
 - **Touch:** one-finger drag, two-finger zoom, large hit targets.
 - **Performance:** 60 fps with 200 objects on a mid-range phone. Canvas 2D; redraw only on change.
-- **Storage:** reads and writes scene files; no hidden state outside the file.
+- **Storage:** reads and writes scene files; no hidden state outside the file. Saved files are JSON with 2-space indentation and a final newline; keys keep their order, keys added by an edit come last, an empty `locks` list is removed, and numbers are written as JSON numbers (`2.0` becomes `2`).
+- **Assumptions:** editing a provisional number updates its `assumptions[].value`; the entry stays until a person removes it.
 
 ## 11. CLI (headless)
 
@@ -446,7 +448,7 @@ dist/        build output, not committed
 | Stage | Scope | Done when |
 |---|---|---|
 | 1 | Schema, projection, geometry, display list, SVG; checks `in_region`, `no_overlap`, `clearance`, `lane_clear`, `lane_reaches`, `visible`; `skip` for unsupported checks and lane shapes; CLI `validate`, `check`, `render` (SVG), `describe`; exit codes of section 11 | All tests pass; `tests/golden/projection.json` matches; all `tests/fixtures/*.scene.json` match their `*.expected.json` within tolerance; `render` of `yard` produces an SVG that opens and shows the expected layout |
-| 2 | Editor: drag on both views, locks, undo, save, live check panel | 200 objects at 60 fps on a mid-range phone, measured on `tests/fixtures/crowd.scene.json`: while dragging, the 95th-percentile frame time is at most 16.7 ms in headless Chromium with 4x CPU slowdown; dragging a locked object is blocked; a saved file parses to the same data as the file opened, and saving twice gives byte-identical files |
+| 2 | Editor: drag on both views, locks, undo, save, live check panel | 200 objects at 60 fps on a mid-range phone, measured on `tests/fixtures/crowd.scene.json` in headless Chromium with 4x CPU slowdown, phone profile (390x844 CSS px at pixel ratio 2, touch, one view), one pointer move per animation frame: the 95th-percentile interval between animation frames is at most 18.4 ms (1.1 display intervals); dragging a locked object is blocked; a saved file parses to the same data as the file opened, and saving twice gives byte-identical files |
 | 3 | Patches: short commands and JSON Patch, lock rejection, log; `diff`; `compare` | 20 sample patches give the expected results; `compare` on the sample scene with 3 variants gives the expected table |
 | 4 | Solver and minimal conflict set | A synthetic scene with conflicting hard relations returns the expected minimal conflict set |
 | 5 | `export` targets `runtime`, `godot`, `gen-bbox`; Godot adapter; cross golden tests; PNG render | The sample scene loaded in Godot differs by at most 1 px |

@@ -1,4 +1,4 @@
-import { execFileSync, spawnSync } from "node:child_process";
+import { spawnSync } from "node:child_process";
 import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -16,8 +16,7 @@ function node(...args: string[]) {
 
 beforeAll(() => {
   work = mkdtempSync(join(tmpdir(), "isoblock-dist-"));
-  execFileSync("npm", ["run", "build", "--silent"], { cwd: repoRoot, stdio: "pipe" });
-}, 120000);
+});
 
 afterAll(() => {
   rmSync(work, { recursive: true, force: true });

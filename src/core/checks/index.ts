@@ -1,9 +1,9 @@
 import type { CheckResult, CheckSpec, ImplementedCheck, Scene } from "../types";
 import { checkClearance } from "./clearance";
-import { checkInRegion } from "./inRegion";
+import { checkInRegion, updateInRegion } from "./inRegion";
 import { checkLaneClear } from "./laneClear";
 import { checkLaneReaches } from "./laneReaches";
-import { checkNoOverlap } from "./noOverlap";
+import { checkNoOverlap, updateNoOverlap } from "./noOverlap";
 import { canonical, skipResult } from "./result";
 import { checkVisible } from "./visible";
 
@@ -29,6 +29,23 @@ function evaluate(scene: Scene, spec: CheckSpec): CheckResult {
       return checkVisible(scene, implemented);
     default:
       return skipResult(spec, `check "${spec.check}" is not implemented in this stage`);
+  }
+}
+
+/**
+ * The result of a check for `scene`, from its result for the scene before, when only the objects
+ * in `changed` differ. Checks that can update per object do; the others run in full.
+ * The result always equals `runCheck(scene, spec)`.
+ */
+export function updateCheck(scene: Scene, spec: CheckSpec, prev: CheckResult, changed: ReadonlySet<string>): CheckResult {
+  const check = spec as ImplementedCheck;
+  switch (check.check) {
+    case "in_region":
+      return canonical(updateInRegion(scene, check, prev, changed));
+    case "no_overlap":
+      return canonical(updateNoOverlap(scene, check, prev, changed));
+    default:
+      return runCheck(scene, spec);
   }
 }
 

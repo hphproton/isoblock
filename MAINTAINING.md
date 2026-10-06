@@ -26,7 +26,7 @@ Read `ROADMAP.md`, `QUESTIONS.md` and the newest files in `log/`.
 
 Review by behavior. Read code only when a step below fails.
 
-1. Check out the branch. Run `npm ci`, `npm test`, `npm run build`. If the environment cannot install packages, say so in the log; do not claim the tests passed.
+1. Check out the branch. Run `npm ci`, `npm test`, `npm run build`. The run must show no skipped tests. If the environment cannot install packages, say so in the log; do not claim the tests passed.
 2. For every `tests/fixtures/*.scene.json`, run `node dist/isoblock.mjs check --json <file>` and compare status, value, ids, pairs and occluders with the matching `*.expected.json` within the SPEC 9.1 tolerance. Check the exit code: 1 if any expected result is `fail` or `skip`, else 0. Use your own short script; do not reuse the builder's test code.
 3. Run `node dist/isoblock.mjs describe tests/fixtures/yard.scene.json` and compare with SPEC Appendix B.
 4. Run `node dist/isoblock.mjs render tests/fixtures/yard.scene.json -o yard.svg`, convert it to an image and look at it: draw order around the tree, both lanes, the crates.
@@ -34,12 +34,13 @@ Review by behavior. Read code only when a step below fails.
 6. Core purity (no Node built-in modules, no `process`, no DOM): list every module specifier in `src/core` with `grep -rhoE "(from|import\\(|require\\() *['\"][^'\"]+['\"]" src/core | sort -u`; each must be relative (`./`, `../`) or an approved package (`ajv`). `grep -rnwE "process|document|window" src/core` prints nothing. Each file in `src/core/checks/` has at most 150 lines.
 7. Content rules (SPEC section 20): no non-English text, no project-specific names, scenes or measurements. Scan for non-ASCII characters and review each hit; the symbols used by `describe` output (`·`, `×`, `≈`) are expected.
 8. `ROADMAP.md` ticks match what the log reports and what you verified. New questions in `QUESTIONS.md` have answers or a decision to defer.
+9. From stage 2, open `dist/editor.html` in Chromium with your own script: save twice (identical bytes, same data as opened); drag a locked object (no move) and a `pos.u` lock (v only); after a few drags, compare the check panel with `check --json` on the saved file; measure the frame interval on the phone profile of SPEC section 17.
 
 Write the result in `log/<yyyy-mm-dd>-maintainer-<n>.md`: steps run, outcomes, decision.
 
 ## Release
 
-1. On the reviewed builder branch, make one release commit: set `version` in `package.json` (stage N → `0.N.0`); rename `Unreleased` in `CHANGELOG.md` to that version; mark the stage done and open the next one in `ROADMAP.md`; add the fixtures and expected results the next stage needs (SPEC section 17); add your review log. Push the branch.
+1. On the reviewed builder branch, make one release commit: set `version` in `package.json` (stage N → `0.N.0`); rename `Unreleased` in `CHANGELOG.md` to that version; mark the stage done in `ROADMAP.md` and open the next one with the fixtures and expected results it needs (SPEC section 17). When those are not ready, leave the next stage closed and open it later from a maintainer branch; add your review log. Push the branch.
 2. Comment on the builder's pull request: the review result and a squash commit message without session links. Use a comment, not a formal approval.
 3. Tell the owner the pull request is ready. The owner squash-merges it. Do not merge or push to `main` yourself.
 4. After the merge, check that the new commit on `main` carries the owner's identity, and write the outcome in your next log.

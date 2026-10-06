@@ -53,6 +53,12 @@ function toWorld(object: SceneObject, w: number, d: number, x: number, y: number
   }
 }
 
+/** A point in type coordinates (`x` along u, `y` along v) mapped to world (u, v) for the object's `pos` and `rot`. */
+export function worldPoint(scene: Scene, object: SceneObject, x: number, y: number): Vec2 {
+  const [w, d] = typeSize(scene, object);
+  return toWorld(object, w, d, x, y);
+}
+
 /** Footprint rectangle after rotation: `pos` is its (min u, min v) corner. */
 export function footprint(scene: Scene, object: SceneObject): Rect {
   const [w, d] = typeSize(scene, object);

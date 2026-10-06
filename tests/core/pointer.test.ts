@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { pointerTokens, resolvePointer } from "../../src/core/pointer";
+import { pointerOf, pointerTokens, resolvePointer } from "../../src/core/pointer";
 import { percent, plain } from "../../src/core/format";
 import { IsoblockError, exitCodeFor } from "../../src/core/errors";
 
@@ -19,6 +19,19 @@ describe("pointer", () => {
     expect(resolvePointer(doc, "/a/0/c").found).toBe(false);
     expect(resolvePointer(doc, "/a/0/b/c").found).toBe(false);
     expect(resolvePointer(doc, "/toString").found).toBe(false);
+  });
+});
+
+describe("pointerOf", () => {
+  it("builds a JSON Pointer and escapes ~ and /", () => {
+    expect(pointerOf()).toBe("");
+    expect(pointerOf("types", "post", "size", 2)).toBe("/types/post/size/2");
+    expect(pointerOf("types", "a/b~c")).toBe("/types/a~1b~0c");
+  });
+
+  it("round-trips through pointerTokens", () => {
+    const tokens = ["types", "x/y", "~", "0"];
+    expect(pointerTokens(pointerOf(...tokens))).toEqual(tokens);
   });
 });
 

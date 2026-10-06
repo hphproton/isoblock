@@ -2,7 +2,7 @@
 
 How an AI agent uses IsoBlock. The builder fills each section as commands ship.
 
-Commands in this guide are available now (stage 1): `validate`, `check`, `render`, `describe`. Commands from later stages are listed at the end of the Commands section.
+Commands in this guide are available now (stage 2): `validate`, `check`, `render`, `describe`, and the editor page `dist/editor.html`. Commands from later stages are listed at the end of the Commands section.
 
 ## Install and build
 
@@ -14,7 +14,7 @@ npm run build
 node dist/isoblock.mjs --help
 ```
 
-`npm run build` writes one file, `dist/isoblock.mjs`. It has no runtime dependencies beyond Node. The examples below call it as `isoblock`; run it as `node dist/isoblock.mjs`.
+`npm run build` writes two files: `dist/isoblock.mjs`, the command line tool, which has no runtime dependencies beyond Node, and `dist/editor.html`, the editor, one self-contained page (see the Editor section). The examples below call the tool as `isoblock`; run it as `node dist/isoblock.mjs`.
 
 Other scripts: `npm test` runs the test suite, `npm run typecheck` runs the TypeScript checker.
 
@@ -111,6 +111,53 @@ These commands and flags exist in the spec but arrive in later stages. Using one
 | `--state NAME` | 6 |
 
 Export targets `phaser` and `tiled` are not scheduled.
+
+## Editor
+
+`dist/editor.html` is a page for people (and for agents that drive a browser). Build it with `npm run build`, then open the file in a browser: double-click it or use a `file://` address. It is one file, needs no server and makes no network request. It uses the same code as the command line tool for geometry, projection and checks, so its check results equal `isoblock check`.
+
+### Opening and saving
+
+- **Open**, or drop a scene file on the page, reads the file and validates it like `isoblock validate`. A file that is not valid is not opened; the status line starts with the error code (`E_JSON_PARSE`, `E_SCHEMA` or `E_REF`) and the scene that was open stays open.
+- The scene file is the only state. There is no autosave and nothing is kept in the browser: the overlays, the snap step and the view mode are forgotten when the page closes.
+- **Save** downloads the scene under the name of the file that was opened (or `<id>.scene.json`). The same scene always gives the same bytes: two-space indentation, keys in the order of the opened file, one final newline. Saving twice gives byte-identical files, and the saved file parses to the same data as the file that was opened. Numbers are written the JSON way, so `2.0` becomes `2`.
+- `(unsaved)` next to the file name marks changes since the file was opened or saved. Closing the page then asks for confirmation.
+- Keys: Ctrl or Cmd with `S` saves, with `Z` undoes, with `Shift+Z` or `Y` redoes. `Esc` clears the selection and the check highlight.
+
+### Views
+
+- **Isometric** draws the scene with its own camera. **Plan** is top-down: u to the right, v downwards, 40 px per unit; it shows the same objects from above and the frame regions as the ground areas they cover. **Iso**, **Plan** and **Both** in the toolbar choose what is shown; a narrow window starts with Iso only.
+- Drag an empty place to pan, use the wheel or two fingers to zoom, and **Fit** to show everything again. A view repaints only when something changed.
+
+### Moving objects
+
+- Drag an object in either view. The pointer is converted to the ground at the height of the object (h is kept), and `pos` snaps to the grid chosen in **Snap** (off, 0.05, 0.1, 0.25, 0.5 or 1). Only `pos` changes. One drag is one undo step.
+- A locked `pos` cannot be dragged: the object does not move and the status line names the lock. `pos.u` or `pos.v` blocks that axis only; the object still moves along the other one. Every object with a lock shows a lock icon (dark: `pos` locked; orange with `u` or `v`: one axis; grey: another lock).
+- Dragging while a second finger comes down cancels the drag.
+
+### Property panel
+
+Select an object (tap or click it) to see its properties, each with its unit:
+
+- `type`, `pos` (u and v), `rot`, and the size `w`, `d`, `h` of its type. Type the new number and leave the field. A size belongs to the type, so it changes every object of that type.
+- Every property has a lock toggle: `pos` (both axes), `pos.u`, `pos.v`, `rot`, `type`, and for each size a JSON Pointer lock `/types/<type>/size/<0|1|2>`. A locked property cannot be changed from the panel, and the status line says why. Locks are saved in the object's `locks` list.
+- A yellow `*` marks a number that has an entry in `assumptions` (it is provisional); point at it to read the note and the owner. Editing such a number keeps the entry and updates its `value`.
+
+### Check panel
+
+The checks of the scene run again after every change, and only the checks that involve the changed objects run again (`in_region` and `no_overlap` even measure only the changed objects). Tapping a row highlights its objects in both views; tapping it again, or `Esc`, clears the highlight. Rows show the same status, id and message as `isoblock check`.
+
+### Overlays
+
+Toggles for **Frame regions**, **Strips**, **Lanes**, **Zones**, **Anchors** (off by default) and **Object labels**.
+
+### Touch
+
+One finger drags an object or pans; two fingers zoom and pan. Controls are 44 px high on touch screens, and a finger hits an object when it comes within 24 px of it. While a gesture is going on the view is drawn at pixel ratio 1 and made sharp again when the finger lifts, to keep 200 objects at 60 frames per second.
+
+### Driving the editor from a script
+
+The page has a read-only object `window.isoblock` for tests and tools: `scene()`, `text()` (the text `Save` writes), `state()`, `screenOf(view, id)` (page coordinates that hit an object), `viewport(view)`, `lockIcons(view)`, `pixelRatio(view)`, `fit(view)`, `redraw(view)` and `frames` (`start()`, `stop()`, `snapshot()`). It cannot change the scene. The tests in `tests/editor/` use it with `playwright-core` and an installed Chromium.
 
 ## Reading `describe`
 

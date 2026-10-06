@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { footprint, rectGap, rectsOverlap, sizeBox, worldParts } from "../../src/core/geometry";
+import { footprint, rectGap, rectsOverlap, sizeBox, worldParts, worldPoint } from "../../src/core/geometry";
 import type { Rot } from "../../src/core/types";
 import { makeScene } from "../helpers/scene";
 
@@ -99,5 +99,35 @@ describe("geometry: overlap and gap", () => {
     expect(rectGap(r(0, 0, 1, 1), r(3, 0, 4, 1))).toBe(2);
     expect(rectGap(r(0, 0, 1, 1), r(4, 5, 5, 6))).toBe(5);
     expect(rectGap(r(0, 0, 2, 2), r(1, 1, 3, 3))).toBe(0);
+  });
+});
+
+describe("geometry: worldPoint", () => {
+  it("maps the corners of the type footprint onto the corners of the rotated footprint", () => {
+    for (const rot of [0, 90, 180, 270] as const) {
+      const s = scene(rot);
+      const o = s.objects[0]!;
+      const f = footprint(s, o);
+      const a = worldPoint(s, o, 0, 0);
+      const b = worldPoint(s, o, 4, 2);
+      expect([Math.min(a[0], b[0]), Math.min(a[1], b[1]), Math.max(a[0], b[0]), Math.max(a[1], b[1])]).toEqual([f.u0, f.v0, f.u1, f.v1]);
+    }
+  });
+
+  it("agrees with the rotation of parts", () => {
+    for (const rot of [0, 90, 180, 270] as const) {
+      const s = scene(rot);
+      const o = s.objects[0]!;
+      const q = worldParts(s, o).find((p) => p.id === "q")!.box;
+      const a = worldPoint(s, o, 1, 0.5);
+      const b = worldPoint(s, o, 4, 2);
+      expect([Math.min(a[0], b[0]), Math.min(a[1], b[1])]).toEqual([q.u0, q.v0]);
+      expect([Math.max(a[0], b[0]), Math.max(a[1], b[1])]).toEqual([q.u1, q.v1]);
+    }
+  });
+
+  it("puts an off-centre point at the right place for a quarter turn", () => {
+    const s = scene(90);
+    expect(worldPoint(s, s.objects[0]!, 1, 0)).toEqual([12, 21]);
   });
 });
