@@ -1,0 +1,24 @@
+{
+  "base": "yard",
+  "tolerance": {
+    "value": 0.01,
+    "valuePx": 1.0,
+    "coordinate": 1e-06
+  },
+  "exit": 1,
+  "status": "applied",
+  "error": null,
+  "locks": [],
+  "diff": [
+    {
+      "op": "add",
+      "path": "/objects/crate1/locks",
+      "to": [
+        "pos",
+        "rot"
+      ]
+    }
+  ],
+  "checks": [],
+  "failing": 3
+}

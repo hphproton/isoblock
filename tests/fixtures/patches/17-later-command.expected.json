@@ -1,0 +1,15 @@
+{
+  "base": "yard",
+  "tolerance": {
+    "value": 0.01,
+    "valuePx": 1.0,
+    "coordinate": 1e-06
+  },
+  "exit": 2,
+  "status": "invalid",
+  "error": "E_USAGE",
+  "locks": [],
+  "diff": [],
+  "checks": [],
+  "failing": null
+}

@@ -1,0 +1,39 @@
+{
+  "base": "yard",
+  "tolerance": {
+    "value": 0.01,
+    "valuePx": 1.0,
+    "coordinate": 1e-06
+  },
+  "exit": 1,
+  "status": "applied",
+  "error": null,
+  "locks": [],
+  "diff": [
+    {
+      "op": "replace",
+      "path": "/objects/crate2/pos",
+      "from": [
+        6.8,
+        0.5
+      ],
+      "to": [
+        7.2,
+        0.5
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "id": "c4",
+      "check": "clearance",
+      "from": "fail",
+      "to": "pass",
+      "value": [
+        0.2,
+        0.6
+      ]
+    }
+  ],
+  "failing": 2
+}

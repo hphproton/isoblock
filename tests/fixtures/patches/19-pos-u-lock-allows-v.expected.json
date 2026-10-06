@@ -1,0 +1,28 @@
+{
+  "base": "crowd",
+  "tolerance": {
+    "value": 0.01,
+    "valuePx": 1.0,
+    "coordinate": 1e-06
+  },
+  "exit": 1,
+  "status": "applied",
+  "error": null,
+  "locks": [],
+  "diff": [
+    {
+      "op": "replace",
+      "path": "/objects/o020/pos",
+      "from": [
+        19.0,
+        0.0
+      ],
+      "to": [
+        19.0,
+        0.5
+      ]
+    }
+  ],
+  "checks": [],
+  "failing": 2
+}

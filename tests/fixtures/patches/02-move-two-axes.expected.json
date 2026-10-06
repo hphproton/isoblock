@@ -1,0 +1,39 @@
+{
+  "base": "yard",
+  "tolerance": {
+    "value": 0.01,
+    "valuePx": 1.0,
+    "coordinate": 1e-06
+  },
+  "exit": 1,
+  "status": "applied",
+  "error": null,
+  "locks": [],
+  "diff": [
+    {
+      "op": "replace",
+      "path": "/objects/bench/pos",
+      "from": [
+        3.4,
+        2.6
+      ],
+      "to": [
+        3.2,
+        2.9
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "id": "c5",
+      "check": "clearance",
+      "from": "pass",
+      "to": "pass",
+      "value": [
+        1.2,
+        1.5
+      ]
+    }
+  ],
+  "failing": 3
+}

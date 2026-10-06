@@ -35,6 +35,7 @@ Review by behavior. Read code only when a step below fails.
 7. Content rules (SPEC section 20): no non-English text, no project-specific names, scenes or measurements. Scan for non-ASCII characters and review each hit; the symbols used by `describe` output (`·`, `×`, `≈`) are expected.
 8. `ROADMAP.md` ticks match what the log reports and what you verified. New questions in `QUESTIONS.md` have answers or a decision to defer.
 9. From stage 2, open `dist/editor.html` in Chromium with your own script: save twice (identical bytes, same data as opened); drag a locked object (no move) and a `pos.u` lock (v only); after a few drags, compare the check panel with `check --json` on the saved file; measure the frame interval on the phone profile of SPEC section 17.
+10. From stage 3, with your own script: run `patch --json` on a copy of the base scene for every file in `tests/fixtures/patches/` and compare exit code, status, error code, locks, diff, check changes and `failing` with its expected file; check that a rejected patch leaves the scene unchanged and that the log gains one line; run `compare` on `yard` with the three variants in all three formats and compare with the expected files.
 
 Write the result in `log/<yyyy-mm-dd>-maintainer-<n>.md`: steps run, outcomes, decision.
 
@@ -46,6 +47,10 @@ Write the result in `log/<yyyy-mm-dd>-maintainer-<n>.md`: steps run, outcomes, d
 4. After the merge, check that the new commit on `main` carries the owner's identity, and write the outcome in your next log.
 
 The squash commit on `main` is the release, identified by `version` and commit hash. No tags are required.
+
+## Reference implementation
+
+The maintainer computes expected results with its own implementation, kept on branch `maintainer/reference` and never merged. Recompute with it whenever a check, patch or `compare` definition changes.
 
 ## Start the next builder session
 

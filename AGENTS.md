@@ -4,7 +4,7 @@ You are the builder. You implement exactly one roadmap stage per branch. The mai
 
 ## Start of session
 
-1. Start from the latest `main`. Create your own branch; never work on `main`.
+1. Start from the latest `main`. Create your own branch; never work on `main`. Do not read other branches.
 2. Read, in order: this file, `ROADMAP.md` (the stage marked **open**), `QUESTIONS.md`, then the `SPEC.md` sections that stage needs (always 0–9.1, 11, 16, 17, 20 and the appendices).
 3. Read the newest file in `log/` if one exists.
 

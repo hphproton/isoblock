@@ -1,0 +1,276 @@
+{
+  "scene": "yard",
+  "state": "default",
+  "variants": [
+    {
+      "name": "base",
+      "label": null
+    },
+    {
+      "name": "A",
+      "label": "actor moves 0.6 along -u"
+    },
+    {
+      "name": "B",
+      "label": "crate2 moves 0.4 along u"
+    },
+    {
+      "name": "C",
+      "label": "tree moves 1.0 along u"
+    }
+  ],
+  "failing": [
+    3,
+    2,
+    2,
+    2
+  ],
+  "locksTouched": [
+    [],
+    [],
+    [],
+    [
+      "tree.pos"
+    ]
+  ],
+  "moved": [
+    null,
+    {
+      "count": 1,
+      "distance": 0.6
+    },
+    {
+      "count": 1,
+      "distance": 0.4
+    },
+    {
+      "count": 1,
+      "distance": 1.0
+    }
+  ],
+  "checks": [
+    {
+      "id": "c1",
+      "check": "in_region",
+      "label": "in_region view (objects outside)",
+      "threshold": 0,
+      "values": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "status": [
+        "pass",
+        "pass",
+        "pass",
+        "pass"
+      ],
+      "delta": [
+        null,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "c2",
+      "check": "in_region",
+      "label": "in_region view/floor (objects outside)",
+      "threshold": 0,
+      "values": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "status": [
+        "pass",
+        "pass",
+        "pass",
+        "pass"
+      ],
+      "delta": [
+        null,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "c3",
+      "check": "no_overlap",
+      "label": "no_overlap (pairs)",
+      "threshold": 0,
+      "values": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "status": [
+        "pass",
+        "pass",
+        "pass",
+        "pass"
+      ],
+      "delta": [
+        null,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "c4",
+      "check": "clearance",
+      "label": "clearance crate1×crate2 (u)",
+      "threshold": 0.5,
+      "values": [
+        0.2,
+        0.2,
+        0.6,
+        0.2
+      ],
+      "status": [
+        "fail",
+        "fail",
+        "pass",
+        "fail"
+      ],
+      "delta": [
+        null,
+        0.0,
+        0.4,
+        0.0
+      ]
+    },
+    {
+      "id": "c5",
+      "check": "clearance",
+      "label": "clearance tree×bench (u)",
+      "threshold": 1.0,
+      "values": [
+        1.2,
+        1.2,
+        1.2,
+        1.2
+      ],
+      "status": [
+        "pass",
+        "pass",
+        "pass",
+        "pass"
+      ],
+      "delta": [
+        null,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "id": "c6",
+      "check": "lane_clear",
+      "label": "lane_clear path (blocking objects)",
+      "threshold": 0,
+      "values": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "status": [
+        "pass",
+        "pass",
+        "pass",
+        "pass"
+      ],
+      "delta": [
+        null,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "c7",
+      "check": "lane_reaches",
+      "label": "lane_reaches haul (y px)",
+      "threshold": [
+        150,
+        1000
+      ],
+      "values": [
+        1104.145188,
+        1104.145188,
+        1104.145188,
+        1104.145188
+      ],
+      "status": [
+        "fail",
+        "fail",
+        "fail",
+        "fail"
+      ],
+      "delta": [
+        null,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "id": "c8",
+      "check": "visible",
+      "label": "visible actor (% occluded)",
+      "threshold": 0.05,
+      "values": [
+        0.401042,
+        0.0,
+        0.401042,
+        0.0
+      ],
+      "status": [
+        "fail",
+        "pass",
+        "fail",
+        "pass"
+      ],
+      "delta": [
+        null,
+        -0.401042,
+        0.0,
+        -0.401042
+      ]
+    },
+    {
+      "id": "c9",
+      "check": "visible",
+      "label": "visible bench (% occluded)",
+      "threshold": 0.05,
+      "values": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "status": [
+        "pass",
+        "pass",
+        "pass",
+        "pass"
+      ],
+      "delta": [
+        null,
+        0.0,
+        0.0,
+        0.0
+      ]
+    }
+  ],
+  "tolerance": {
+    "value": 0.01,
+    "valuePx": 1.0
+  }
+}

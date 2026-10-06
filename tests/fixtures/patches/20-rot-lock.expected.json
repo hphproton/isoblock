@@ -1,0 +1,17 @@
+{
+  "base": "crowd",
+  "tolerance": {
+    "value": 0.01,
+    "valuePx": 1.0,
+    "coordinate": 1e-06
+  },
+  "exit": 3,
+  "status": "rejected",
+  "error": "E_LOCK",
+  "locks": [
+    "o040.rot"
+  ],
+  "diff": [],
+  "checks": [],
+  "failing": null
+}

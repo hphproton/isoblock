@@ -1,0 +1,3 @@
+# the second command touches a lock, so nothing applies
+move crate2 u+0.4
+move tree v+0.5

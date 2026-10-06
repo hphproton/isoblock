@@ -1,0 +1,17 @@
+{
+  "base": "yard",
+  "tolerance": {
+    "value": 0.01,
+    "valuePx": 1.0,
+    "coordinate": 1e-06
+  },
+  "exit": 3,
+  "status": "rejected",
+  "error": "E_LOCK",
+  "locks": [
+    "tree.pos"
+  ],
+  "diff": [],
+  "checks": [],
+  "failing": null
+}

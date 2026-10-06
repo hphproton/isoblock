@@ -1,0 +1,40 @@
+{
+  "base": "yard",
+  "tolerance": {
+    "value": 0.01,
+    "valuePx": 1.0,
+    "coordinate": 1e-06
+  },
+  "exit": 1,
+  "status": "applied",
+  "error": null,
+  "locks": [],
+  "diff": [
+    {
+      "op": "add",
+      "path": "/objects/crate3",
+      "to": {
+        "id": "crate3",
+        "type": "crate",
+        "pos": [
+          6.2,
+          0.9
+        ],
+        "rot": 0
+      }
+    }
+  ],
+  "checks": [
+    {
+      "id": "c3",
+      "check": "no_overlap",
+      "from": "pass",
+      "to": "fail",
+      "value": [
+        0,
+        1
+      ]
+    }
+  ],
+  "failing": 4
+}

@@ -1,0 +1,32 @@
+{
+  "base": "yard",
+  "tolerance": {
+    "value": 0.01,
+    "valuePx": 1.0,
+    "coordinate": 1e-06
+  },
+  "exit": 1,
+  "status": "applied",
+  "error": null,
+  "locks": [],
+  "diff": [
+    {
+      "op": "add",
+      "path": "/relations/r3",
+      "to": {
+        "id": "r3",
+        "a": "bench",
+        "rel": "in_front_of",
+        "b": "tree",
+        "gap": [
+          1,
+          1.5
+        ],
+        "hard": true,
+        "source": "bench in front of the tree"
+      }
+    }
+  ],
+  "checks": [],
+  "failing": 3
+}

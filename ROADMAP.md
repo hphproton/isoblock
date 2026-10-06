@@ -46,8 +46,24 @@ Not in stage 2: state switch (stage 6), exports (stage 5), saved versions and co
 
 **Done when:** all tests pass, the stage 1 fixtures still match, and the stage 2 criteria in SPEC section 17 hold.
 
-## Stage 3 · not open
-Patches, log, `diff`, `compare` (SPEC sections 11.1, 12, 17). Before it opens, the maintainer specifies the patch syntax and the report and adds the sample patches and the `compare` fixture.
+## Stage 3 · open
+
+Patches, log, `diff`, `compare` (SPEC sections 11, 11.1, 11.2, 12, 17). Fixtures: `tests/fixtures/patches/` (20 patches with expected results) and `tests/fixtures/compare/` (3 variants of `yard` with the expected JSON, text and Markdown output).
+
+- [ ] Patch files: JSON Patch (RFC 6902) and the short commands `move`, `rot`, `set`, `lock`, `relate`; comments and the description line; `solve` is a usage error naming stage 4
+- [ ] Application: atomic, coordinates of `move` and `rot` rounded to 6 decimals, assumption values follow their paths
+- [ ] Locks: touched-lock detection and labels; the order of outcomes; exit codes 0, 1, 2 and 3; `E_PATCH` and `E_LOCK`
+- [ ] `isoblock patch` with `-o`, `--dry-run` and `--json`; text and JSON report; a rejected or invalid patch writes nothing
+- [ ] Patch log `<output file without .json>.log.jsonl`
+- [ ] `isoblock diff` with text and `--json` output (SPEC 11.2)
+- [ ] `isoblock compare` with patch and scene variants and the `text`, `md` and `json` formats (SPEC 11.1, Appendix D); `--state` names stage 6, `--render` is not scheduled
+- [ ] Tests load every file in `tests/fixtures/patches/` and `tests/fixtures/compare/` and compare with the expected files
+- [ ] `docs/AGENT_GUIDE.md` covers the patch syntax, `patch`, `diff` and `compare`
+- [ ] Session log says `branch ready for review`
+
+Not in stage 3: the solver and relation evaluation (stage 4), states (stage 6), layout indicators and `compare --render` (not scheduled), patches and variant switching in the editor.
+
+**Done when:** all tests pass, earlier fixtures still match, and the stage 3 criteria in SPEC section 17 hold.
 
 ## Stage 4 · not open
 Solver and minimal conflict set (SPEC sections 8, 17).

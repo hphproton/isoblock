@@ -1,0 +1,42 @@
+{
+  "base": "yard",
+  "tolerance": {
+    "value": 0.01,
+    "valuePx": 1.0,
+    "coordinate": 1e-06
+  },
+  "exit": 1,
+  "status": "applied",
+  "error": null,
+  "locks": [],
+  "diff": [
+    {
+      "op": "replace",
+      "path": "/assumptions/~1types~1tree~1size~12/note",
+      "from": "height not given in the brief",
+      "to": "measured from approved art"
+    },
+    {
+      "op": "replace",
+      "path": "/assumptions/~1types~1tree~1size~12/value",
+      "from": 2.4,
+      "to": 2.2
+    },
+    {
+      "op": "replace",
+      "path": "/types/tree/size",
+      "from": [
+        1.2,
+        1.2,
+        2.4
+      ],
+      "to": [
+        1.2,
+        1.2,
+        2.2
+      ]
+    }
+  ],
+  "checks": [],
+  "failing": 3
+}

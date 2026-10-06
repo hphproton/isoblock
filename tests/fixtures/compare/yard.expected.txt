@@ -1,0 +1,9 @@
+compare yard · state default · base vs A, B, C
+A = actor moves 0.6 along -u · B = crate2 moves 0.4 along u · C = tree moves 1.0 along u
+metric                       base    A         B         C
+failing checks               3       2         2         2
+locks touched                0       0         0         1 ✗ (tree.pos)
+clearance crate1×crate2 (u)  0.20 ✗  0.20 ✗    0.60      0.20 ✗
+lane_reaches haul (y px)     1104 ✗  1104 ✗    1104 ✗    1104 ✗
+visible actor (% occluded)   40 ✗    0         40 ✗      0
+objects moved / total (u)    -       1 / 0.60  1 / 0.40  1 / 1.00
