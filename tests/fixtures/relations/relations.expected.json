@@ -1,0 +1,242 @@
+{
+  "scene": "relations",
+  "tolerance": {
+    "value": 0.01
+  },
+  "results": [
+    {
+      "id": "r01",
+      "rel": "left_of",
+      "hard": true,
+      "status": "satisfied",
+      "violation": 0.0,
+      "ids": [
+        "p1",
+        "p2"
+      ]
+    },
+    {
+      "id": "r02",
+      "rel": "right_of",
+      "hard": false,
+      "status": "violated",
+      "violation": 3.964102,
+      "ids": [
+        "p1",
+        "p2"
+      ]
+    },
+    {
+      "id": "r03",
+      "rel": "in_front_of",
+      "hard": false,
+      "status": "violated",
+      "violation": 0.146447,
+      "ids": [
+        "p1",
+        "p3"
+      ]
+    },
+    {
+      "id": "r04",
+      "rel": "behind",
+      "hard": false,
+      "status": "satisfied",
+      "violation": 0.0,
+      "ids": [
+        "p1",
+        "p3"
+      ]
+    },
+    {
+      "id": "r05",
+      "rel": "against",
+      "hard": false,
+      "status": "violated",
+      "violation": 1.0,
+      "ids": [
+        "p1"
+      ]
+    },
+    {
+      "id": "r06",
+      "rel": "against",
+      "hard": false,
+      "status": "violated",
+      "violation": 0.5,
+      "ids": [
+        "p2",
+        "p4"
+      ]
+    },
+    {
+      "id": "r07",
+      "rel": "gap",
+      "hard": false,
+      "status": "satisfied",
+      "violation": 0.0,
+      "ids": [
+        "p1",
+        "p2"
+      ]
+    },
+    {
+      "id": "r08",
+      "rel": "inside",
+      "hard": true,
+      "status": "satisfied",
+      "violation": 0.0,
+      "ids": [
+        "p1"
+      ]
+    },
+    {
+      "id": "r09",
+      "rel": "inside",
+      "hard": false,
+      "status": "satisfied",
+      "violation": 0.0,
+      "ids": [
+        "p6"
+      ]
+    },
+    {
+      "id": "r10",
+      "rel": "aligned",
+      "hard": false,
+      "status": "satisfied",
+      "violation": 0.0,
+      "ids": [
+        "p1",
+        "p3"
+      ]
+    },
+    {
+      "id": "r11",
+      "rel": "aligned",
+      "hard": false,
+      "status": "violated",
+      "violation": 2.0,
+      "ids": [
+        "p1",
+        "p2"
+      ]
+    },
+    {
+      "id": "r12",
+      "rel": "facing",
+      "hard": false,
+      "status": "skip",
+      "violation": null,
+      "ids": [
+        "p1",
+        "p2"
+      ]
+    },
+    {
+      "id": "r13",
+      "rel": "on_lane",
+      "hard": false,
+      "status": "violated",
+      "violation": 0.75,
+      "ids": [
+        "p5"
+      ]
+    },
+    {
+      "id": "r14",
+      "rel": "on_lane",
+      "hard": false,
+      "status": "violated",
+      "violation": 3.6,
+      "ids": [
+        "p7"
+      ]
+    },
+    {
+      "id": "r15",
+      "rel": "clear_of",
+      "hard": true,
+      "status": "satisfied",
+      "violation": 0.0,
+      "ids": [
+        "p2",
+        "p4"
+      ]
+    },
+    {
+      "id": "r16",
+      "rel": "clear_of",
+      "hard": false,
+      "status": "satisfied",
+      "violation": 0.0,
+      "ids": [
+        "p6"
+      ]
+    },
+    {
+      "id": "r17",
+      "rel": "clear_of",
+      "hard": false,
+      "status": "skip",
+      "violation": null,
+      "ids": [
+        "p3"
+      ]
+    },
+    {
+      "id": "r18",
+      "rel": "order_along",
+      "hard": false,
+      "status": "satisfied",
+      "violation": 0.0,
+      "ids": [
+        "p1",
+        "p2",
+        "p4"
+      ]
+    },
+    {
+      "id": "r19",
+      "rel": "order_along",
+      "hard": false,
+      "status": "violated",
+      "violation": 4.0,
+      "ids": [
+        "p2",
+        "p6"
+      ]
+    },
+    {
+      "id": "r20",
+      "rel": "left_of",
+      "hard": false,
+      "status": "skip",
+      "violation": null,
+      "ids": [
+        "p1"
+      ]
+    },
+    {
+      "id": "r21",
+      "rel": "against",
+      "hard": true,
+      "status": "violated",
+      "violation": 7.0,
+      "ids": [
+        "p6"
+      ]
+    },
+    {
+      "id": "r22",
+      "rel": "in_front_of",
+      "hard": false,
+      "status": "satisfied",
+      "violation": 0.0,
+      "ids": [
+        "p1",
+        "p2"
+      ]
+    }
+  ]
+}

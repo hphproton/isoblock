@@ -1,0 +1,15 @@
+{
+  "scene": "feasible",
+  "only": null,
+  "status": "solved",
+  "conflict": [],
+  "hardViolated": [],
+  "maxSoftPenalty": 0.5,
+  "maxDistance": 33.75154,
+  "unchanged": [
+    "wall",
+    "post"
+  ],
+  "referenceSoftPenalty": 0.0,
+  "referenceDistance": 16.87577
+}

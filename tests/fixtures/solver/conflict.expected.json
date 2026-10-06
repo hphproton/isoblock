@@ -1,0 +1,16 @@
+{
+  "scene": "conflict",
+  "only": null,
+  "status": "conflict",
+  "conflict": [
+    "k1",
+    "k2",
+    "k4"
+  ],
+  "hardViolated": null,
+  "maxSoftPenalty": null,
+  "maxDistance": null,
+  "unchanged": [],
+  "referenceSoftPenalty": 0.0,
+  "referenceDistance": 0
+}

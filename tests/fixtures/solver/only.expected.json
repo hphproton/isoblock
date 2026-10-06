@@ -1,0 +1,22 @@
+{
+  "scene": "only",
+  "only": [
+    "d",
+    "e"
+  ],
+  "status": "solved",
+  "conflict": [],
+  "hardViolated": [],
+  "maxSoftPenalty": 3.2,
+  "maxDistance": 6.0,
+  "unchanged": [
+    "wall",
+    "post",
+    "a",
+    "b",
+    "c",
+    "f"
+  ],
+  "referenceSoftPenalty": 2.7,
+  "referenceDistance": 3.0
+}

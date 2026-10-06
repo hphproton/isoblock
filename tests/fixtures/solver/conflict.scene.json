@@ -1,0 +1,178 @@
+{
+  "schema": "isoblock/1",
+  "id": "conflict",
+  "units": {
+    "name": "u",
+    "note": "abstract unit"
+  },
+  "camera": {
+    "angleU": 30,
+    "angleV": 150,
+    "pxPerUnit": 50,
+    "verticalScale": 1,
+    "origin": [
+      500,
+      200
+    ]
+  },
+  "frame": {
+    "w": 1000,
+    "h": 1000,
+    "regions": [
+      {
+        "id": "hud",
+        "rect": [
+          0,
+          0,
+          1000,
+          150
+        ],
+        "blocksScene": true
+      },
+      {
+        "id": "view",
+        "rect": [
+          0,
+          150,
+          1000,
+          1000
+        ]
+      }
+    ]
+  },
+  "types": {
+    "box": {
+      "size": [
+        1,
+        1,
+        1
+      ]
+    },
+    "wall": {
+      "size": [
+        4,
+        0.4,
+        2
+      ]
+    },
+    "post": {
+      "size": [
+        0.4,
+        0.4,
+        1.5
+      ]
+    },
+    "bench": {
+      "size": [
+        1.5,
+        0.5,
+        0.5
+      ]
+    },
+    "plant": {
+      "size": [
+        0.6,
+        0.6,
+        1
+      ]
+    },
+    "crate": {
+      "size": [
+        0.8,
+        0.8,
+        0.8
+      ]
+    }
+  },
+  "objects": [
+    {
+      "id": "x",
+      "type": "box",
+      "pos": [
+        3,
+        3
+      ],
+      "rot": 0
+    },
+    {
+      "id": "y",
+      "type": "box",
+      "pos": [
+        5,
+        3
+      ],
+      "rot": 0
+    },
+    {
+      "id": "z",
+      "type": "box",
+      "pos": [
+        7,
+        3
+      ],
+      "rot": 0
+    },
+    {
+      "id": "w",
+      "type": "crate",
+      "pos": [
+        4,
+        6
+      ],
+      "rot": 0
+    }
+  ],
+  "relations": [
+    {
+      "id": "k1",
+      "a": "x",
+      "rel": "left_of",
+      "b": "y",
+      "hard": true
+    },
+    {
+      "id": "k2",
+      "a": "y",
+      "rel": "left_of",
+      "b": "z",
+      "hard": true
+    },
+    {
+      "id": "k3",
+      "a": "x",
+      "rel": "gap",
+      "b": "w",
+      "gap": [
+        1,
+        2
+      ],
+      "hard": true
+    },
+    {
+      "id": "k4",
+      "a": "z",
+      "rel": "left_of",
+      "b": "x",
+      "hard": true
+    },
+    {
+      "id": "k5",
+      "a": "w",
+      "rel": "in_front_of",
+      "b": "y",
+      "gap": [
+        0,
+        3
+      ],
+      "hard": true
+    },
+    {
+      "id": "s1",
+      "a": "x",
+      "rel": "aligned",
+      "b": "y",
+      "axis": "v",
+      "hard": false
+    }
+  ]
+}

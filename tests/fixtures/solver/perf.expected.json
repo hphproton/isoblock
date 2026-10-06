@@ -1,0 +1,18 @@
+{
+  "scene": "perf",
+  "only": null,
+  "status": "solved",
+  "conflict": [],
+  "hardViolated": [],
+  "maxSoftPenalty": 0.5,
+  "maxDistance": 21.512526,
+  "unchanged": [
+    "n00",
+    "n10",
+    "n20",
+    "n30",
+    "n40"
+  ],
+  "referenceSoftPenalty": 0.0,
+  "referenceDistance": 10.756263
+}

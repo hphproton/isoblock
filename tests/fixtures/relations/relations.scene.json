@@ -1,0 +1,435 @@
+{
+  "schema": "isoblock/1",
+  "id": "relations",
+  "units": {
+    "name": "u",
+    "note": "abstract unit"
+  },
+  "camera": {
+    "angleU": 30,
+    "angleV": 150,
+    "pxPerUnit": 60,
+    "verticalScale": 1,
+    "origin": [
+      400,
+      250
+    ]
+  },
+  "frame": {
+    "w": 1000,
+    "h": 1000,
+    "regions": [
+      {
+        "id": "hud",
+        "rect": [
+          0,
+          0,
+          1000,
+          150
+        ],
+        "blocksScene": true
+      },
+      {
+        "id": "view",
+        "rect": [
+          0,
+          150,
+          1000,
+          1000
+        ]
+      }
+    ]
+  },
+  "strips": [
+    {
+      "id": "back",
+      "v": [
+        -1,
+        1
+      ],
+      "kind": "decor"
+    },
+    {
+      "id": "floor",
+      "v": [
+        1,
+        8
+      ],
+      "kind": "walkable"
+    }
+  ],
+  "types": {
+    "box": {
+      "size": [
+        1,
+        1,
+        1
+      ]
+    },
+    "slim": {
+      "size": [
+        0.5,
+        0.5,
+        1.5
+      ]
+    },
+    "long": {
+      "size": [
+        2,
+        0.5,
+        0.5
+      ]
+    }
+  },
+  "objects": [
+    {
+      "id": "p1",
+      "type": "box",
+      "pos": [
+        2,
+        2
+      ],
+      "rot": 0
+    },
+    {
+      "id": "p2",
+      "type": "box",
+      "pos": [
+        4,
+        2
+      ],
+      "rot": 0
+    },
+    {
+      "id": "p3",
+      "type": "box",
+      "pos": [
+        2,
+        4.5
+      ],
+      "rot": 0
+    },
+    {
+      "id": "p4",
+      "type": "slim",
+      "pos": [
+        6,
+        2.25
+      ],
+      "rot": 0
+    },
+    {
+      "id": "p5",
+      "type": "long",
+      "pos": [
+        3,
+        6.5
+      ],
+      "rot": 0
+    },
+    {
+      "id": "p6",
+      "type": "box",
+      "pos": [
+        8,
+        6
+      ],
+      "rot": 0
+    },
+    {
+      "id": "p7",
+      "type": "slim",
+      "pos": [
+        5.2,
+        6.6
+      ],
+      "rot": 0
+    }
+  ],
+  "zones": [
+    {
+      "id": "z1",
+      "kind": "walkable",
+      "points": [
+        [
+          1,
+          1
+        ],
+        [
+          5,
+          1
+        ],
+        [
+          5,
+          5
+        ],
+        [
+          1,
+          5
+        ]
+      ]
+    },
+    {
+      "id": "z2",
+      "kind": "interaction",
+      "points": [
+        [
+          6,
+          5
+        ],
+        [
+          9,
+          5
+        ],
+        [
+          9,
+          8
+        ]
+      ]
+    }
+  ],
+  "lanes": [
+    {
+      "id": "L1",
+      "kind": "walk",
+      "width": 1,
+      "points": [
+        [
+          0,
+          8
+        ],
+        [
+          10,
+          8
+        ]
+      ]
+    },
+    {
+      "id": "L2",
+      "kind": "walk",
+      "width": 0.8,
+      "points": [
+        [
+          7,
+          0
+        ],
+        [
+          7,
+          10
+        ]
+      ]
+    },
+    {
+      "id": "L3",
+      "kind": "walk",
+      "width": 0.5,
+      "points": [
+        [
+          0,
+          0
+        ],
+        [
+          3,
+          3
+        ],
+        [
+          6,
+          3
+        ]
+      ]
+    }
+  ],
+  "relations": [
+    {
+      "id": "r01",
+      "a": "p1",
+      "rel": "left_of",
+      "b": "p2",
+      "hard": true
+    },
+    {
+      "id": "r02",
+      "a": "p1",
+      "rel": "right_of",
+      "b": "p2",
+      "gap": [
+        0.5,
+        3
+      ],
+      "hard": false
+    },
+    {
+      "id": "r03",
+      "a": "p3",
+      "rel": "in_front_of",
+      "b": "p1",
+      "gap": [
+        0.5,
+        2
+      ],
+      "hard": false
+    },
+    {
+      "id": "r04",
+      "a": "p1",
+      "rel": "behind",
+      "b": "p3",
+      "hard": false
+    },
+    {
+      "id": "r05",
+      "a": "p1",
+      "rel": "against",
+      "b": "strip:floor.v0",
+      "hard": false
+    },
+    {
+      "id": "r06",
+      "a": "p4",
+      "rel": "against",
+      "b": "p2",
+      "gap": [
+        0,
+        0.5
+      ],
+      "hard": false
+    },
+    {
+      "id": "r07",
+      "a": "p1",
+      "rel": "gap",
+      "b": "p2",
+      "gap": [
+        1,
+        1.5
+      ],
+      "hard": false
+    },
+    {
+      "id": "r08",
+      "a": "p1",
+      "rel": "inside",
+      "b": "zone:z1",
+      "hard": true
+    },
+    {
+      "id": "r09",
+      "a": "p6",
+      "rel": "inside",
+      "b": "zone:z2",
+      "hard": false
+    },
+    {
+      "id": "r10",
+      "a": "p1",
+      "rel": "aligned",
+      "b": "p3",
+      "axis": "u",
+      "hard": false
+    },
+    {
+      "id": "r11",
+      "a": "p1",
+      "rel": "aligned",
+      "b": "p2",
+      "axis": "u",
+      "weight": 2,
+      "hard": false
+    },
+    {
+      "id": "r12",
+      "a": "p1",
+      "rel": "facing",
+      "b": "p2",
+      "hard": false
+    },
+    {
+      "id": "r13",
+      "a": "p5",
+      "rel": "on_lane",
+      "b": "lane:L1",
+      "t": [
+        0.2,
+        0.6
+      ],
+      "hard": false
+    },
+    {
+      "id": "r14",
+      "a": "p7",
+      "rel": "on_lane",
+      "b": "lane:L3",
+      "hard": false
+    },
+    {
+      "id": "r15",
+      "a": "p2",
+      "rel": "clear_of",
+      "b": "p4",
+      "min": 0.5,
+      "hard": true
+    },
+    {
+      "id": "r16",
+      "a": "p6",
+      "rel": "clear_of",
+      "b": "lane:L2",
+      "min": 0.3,
+      "hard": false
+    },
+    {
+      "id": "r17",
+      "a": "p3",
+      "rel": "clear_of",
+      "b": "lane:L3",
+      "min": 0.3,
+      "hard": false
+    },
+    {
+      "id": "r18",
+      "rel": "order_along",
+      "ids": [
+        "p1",
+        "p2",
+        "p4"
+      ],
+      "axis": "u",
+      "hard": false
+    },
+    {
+      "id": "r19",
+      "rel": "order_along",
+      "ids": [
+        "p6",
+        "p2"
+      ],
+      "axis": "u",
+      "hard": false
+    },
+    {
+      "id": "r20",
+      "a": "p1",
+      "rel": "left_of",
+      "b": "zone:z1",
+      "hard": false
+    },
+    {
+      "id": "r21",
+      "a": "p6",
+      "rel": "against",
+      "b": "strip:back.v0",
+      "hard": true
+    },
+    {
+      "id": "r22",
+      "a": "p2",
+      "rel": "in_front_of",
+      "b": "p1",
+      "gap": [
+        0,
+        1
+      ],
+      "hard": false
+    }
+  ]
+}

@@ -180,34 +180,57 @@ Reference rules (`E_REF`):
 - `states.<name>.hide` names existing objects.
 - Every `assumptions[].path` is a JSON Pointer that resolves in the file.
 
-## 7. Relation vocabulary
+## 7. Relations
 
-| `rel` | Meaning | Parameters |
-|---|---|---|
-| `left_of`, `right_of` | On the viewer's screen | `gap [min, max]` |
-| `in_front_of`, `behind` | By depth toward the camera | `gap` |
-| `against` | Flush with an edge or line | `gap` |
-| `gap` | Edge-to-edge distance | `[min, max]` |
-| `inside` | Within a zone or strip | — |
-| `aligned` | Same row along u or v | `axis` |
-| `facing` | Anchor faces an object or point | — |
-| `on_lane` | Anchor or object lies on a lane | `t [min, max]` |
-| `clear_of` | No overlap, minimum gap | `min` |
-| `order_along` | Order along an axis | `ids[]` |
+Each relation has `id`, `rel`, `hard` (bool, default `false`), `weight` (soft relations, default 1) and `source` (the original sentence, for traceability; optional). A relation is measured on the ground (h = 0) and gives a **violation** ≥ 0.
 
-Each relation has `id`, `rel`, `hard` (bool, default `false`), `weight` (soft relations, default 1) and `source` (the original sentence, for traceability; optional).
+| `rel` | `a` | `b` | Parameters (default) | Measured value q |
+|---|---|---|---|---|
+| `left_of`, `right_of` | object | object | `gap [min, max]` ([0, ∞)) | Screen-x separation of the two footprints |
+| `in_front_of`, `behind` | object | object | `gap` ([0, ∞)) | Ground-depth separation of the two footprints |
+| `gap` | object | object | `gap` ([0, ∞)) | Edge-to-edge distance, as `clearance` in 9.1 |
+| `against` | object | object, `lane:<id>` or `strip:<id>.v0\|v1` | `gap` ([0, 0]) | Distance to the target |
+| `inside` | object | `zone:<id>` | — | Largest distance from a footprint corner to the zone |
+| `aligned` | object | object | `axis` `u` or `v` (required) | Difference of the footprint centers along the axis |
+| `facing` | anchor | object or point | — | Not measured yet (`skip`) |
+| `on_lane` | object | `lane:<id>` | `t [min, max]` ([0, 1]) | Offset from the lane and position along it |
+| `clear_of` | object | object or `lane:<id>` | `min` (0) | Distance to the target |
+| `order_along` | — | — | `ids` (2 or more objects), `axis` (`u`) | Order of the footprint centers |
+
+Definitions (footprints, corners and centers as in 9.1; `EPS` and the lane shape rule from 9.1):
+
+- **Screen x on the ground:** `s(u, v) = (u·axisU.x + v·axisV.x) / pxPerUnit`. **Ground depth:** `d(u, v) = (cu·u + cv·v) / hypot(cu, cv)` with `c` from section 5. A footprint's range of s or d is taken over its 4 corners.
+- **Separation:** `left_of`: min s(b) − max s(a); `right_of`: min s(a) − max s(b); `in_front_of`: min d(a) − max d(b); `behind`: min d(b) − max d(a).
+- **Band violation** of a value q with `[min, max]`: `max(0, min − q) + max(0, q − max)`. It is the violation of `left_of`, `right_of`, `in_front_of`, `behind`, `gap` and `against`.
+- **Distance to a target:** to an object, the `clearance` distance; to a lane, the `clearance` distance to the lane rectangle (other lane shapes: `skip`); to a strip edge `strip:<id>.v0` or `.v1`, the line v = that bound: `max(0, v0 − c, c − v1)` for a footprint from v0 to v1 (`skip` when the bound is `null`).
+- **`inside`:** the zone needs 3 or more points (else `skip`); the distance of a corner is 0 inside or on the boundary, else its distance to the nearest edge.
+- **`on_lane`:** p = center of a; q = the point of the lane polyline nearest to p (the first one along the lane when several are equally near); e = |p − q|; t = length along the lane up to q divided by the lane length. Violation `max(0, e − width/2) + length × (band violation of t with the `t` range)`. A lane of length 0 is `skip`.
+- **`clear_of`:** violation `max(0, min − distance) + overlap`, where overlap = min(overlap along u, overlap along v) when the footprints overlap (both > EPS), else 0.
+- **`aligned`:** violation = the center difference. **`order_along`:** sum over consecutive ids of `max(0, center_i − center_(i+1))` along the axis.
+- **Status:** `skip` when the relation, its targets or a lane shape is not supported (`violation: null`, the message says why); `satisfied` when the violation is at most 1e-6; else `violated`.
+- **Soft penalty:** the sum of `weight × violation` over soft relations that are not skipped.
+- **Result shape:** `{ id, rel, hard, status, violation, ids, message }`; `ids` = the objects involved, in object order.
+
+`isoblock relations scene.json [--json]` prints the results: `--json` gives `{ "scene", "results" }`; the text format gives a summary line, then `OK|BAD|SKIP <id> <rel>: <message>` per relation. It exits 0 when every hard relation is satisfied, else 1 (a skipped hard relation is not satisfied).
 
 ## 8. Solver
 
-- **Input:** objects (some locked) and relations. **Output:** new positions and a report.
-- **Algorithm** (simple, deterministic):
+`isoblock solve scene.json [--only a,b] [-o proposal.json] [--patch moves.patch] [--json]`
+
+- **Movable:** the objects (only those in `--only`, when given) without a `pos` lock. A `pos.u` or `pos.v` lock fixes that coordinate. The solver never changes rotation, type or sizes, never edits relations and never writes the input file. It proposes; a person or agent accepts.
+- **Constraints** on a proposal besides the hard relations: the 4 corners of every moved footprint project inside the view region (the first frame region without `blocksScene`, edges inclusive); a moved footprint does not overlap another footprint (as in `no_overlap`) unless the two overlapped before solving.
+- **Grid:** a coordinate the solver changes is a multiple of 0.05, rounded to 6 decimals. Everything else keeps its exact value.
+- **Objective,** in this order: no violated hard relation and no broken constraint; the smallest soft penalty; the smallest total ground distance moved.
+- **Deterministic:** the same input gives the same proposal, byte for byte.
+- **Outcome:** `solved` when every hard relation that is not skipped is satisfied and the constraints hold. Else `conflict`, with a **minimal conflict set** found by deletion filtering: start from all hard relations that are not skipped; in file order, drop a relation when the solver still finds no solution without it; the relations left are the set (empty when the constraints alone cannot be met).
+- **Algorithm** (a guide; the contract is the list above):
   1. Order: locked objects stay; then the most constrained objects; then the rest.
-  2. For each movable object, try grid positions (snap step, for example 0.05) inside its allowed area. Score by: hard violations (must be 0), then total soft penalty, then distance from the old position.
-  3. Repeat local search until no improvement or N rounds.
-  4. If no solution has zero hard violations, return the best one with a **minimal conflict set**: the smallest set of hard relations that cannot hold together (found by deletion filtering).
-- **The solver never** changes locked properties, edits or deletes relations, or saves. It proposes; a person or agent accepts.
-- It can run on part of a scene (`only: [ids]`).
-- **Performance:** 50 objects in under 200 ms in a browser.
+  2. For each movable object, try grid positions inside the view region, coarse to fine. Score by the objective.
+  3. Repeat until no improvement or N rounds.
+- **Report:** `--json` prints `{ "scene", "status", "hardViolated", "softPenalty", "distance", "moved": [{ "id", "from", "to" }], "conflict", "relations" }`: `hardViolated` = ids of hard relations violated in the proposal; `relations` = the results of section 7 for the proposal. The text format starts with `solve <scene id>: solved|conflict`, then one line per moved object and the conflict set.
+- **Outputs:** `-o` writes the proposal (the scene with the new positions) in the saved format of section 10. `--patch` writes a short-command patch: the line `# solve proposal`, then one `move` per moved object in object order with its offsets (an axis with no offset is left out), so that `patch` applies the proposal with lock checks and the log.
+- **Exit:** 0 when `solved` and every check of the proposal is `pass` or `warn`; else 1.
+- **Performance:** 50 objects in under 200 ms in a browser. Measured as the core solve of `tests/fixtures/solver/perf.scene.json` in Node, median of 5 runs.
 
 ## 9. Check catalog
 
@@ -282,7 +305,8 @@ Messages: builders choose message wording, except the `lane_reaches` message abo
 ```
 isoblock validate scene.json            # schema and reference checks
 isoblock check    scene.json [--json] [--state NAME]
-isoblock solve    scene.json [--only a,b] [-o out.json]
+isoblock relations scene.json [--json]  # relation results (section 7)
+isoblock solve    scene.json [--only a,b] [-o proposal.json] [--patch moves.patch] [--json]
 isoblock render   scene.json [--state NAME] -o out.svg|out.png
 isoblock describe scene.json            # compact summary for agents (section 12)
 isoblock patch    scene.json patch.txt [-o out.json] [--dry-run] [--json]
@@ -303,8 +327,8 @@ Exit codes:
 
 | Code | Meaning |
 |---|---|
-| 0 | Success. For `check`, `patch` and `solve`: every check of the resulting scene is `pass` or `warn` |
-| 1 | `check`, `patch`, `solve`: at least one check of the resulting scene is `fail` or `skip`. A check the tool could not evaluate is not a pass |
+| 0 | Success. For `check`, `patch` and `solve`: every check of the resulting scene is `pass` or `warn` (for `solve` also: `solved`). For `relations`: every hard relation is satisfied |
+| 1 | `check`, `patch`, `solve`: at least one check of the resulting scene is `fail` or `skip` (for `solve` also: `conflict`). `relations`: a hard relation is violated or skipped. A check the tool could not evaluate is not a pass |
 | 2 | Invalid input or usage: unreadable file, malformed JSON, schema or reference error, malformed or failing patch, unknown or unavailable command or flag. Error codes: `E_IO`, `E_JSON_PARSE`, `E_SCHEMA`, `E_REF`, `E_PATCH`, `E_USAGE` |
 | 3 | `patch`: the patch touches a lock (`E_LOCK`) |
 | 70 | Internal error (`E_INTERNAL`) |
@@ -316,7 +340,7 @@ Exit codes:
 - **Input:** a base scene and 1–4 variants, `--variant NAME=FILE`, in the order given. A variant file is a patch (section 12) or another scene file (a JSON object with `schema`). Optionally at one state (from stage 6).
 - **Method:** apply each variant to a copy of the base, ignoring locks but recording the locks it touches, and run the base scene's checks on every column. A variant file whose first non-blank character is `{` is a scene; any other file is a patch. Names are unique, not empty and not `base`. A variant that is malformed or produces an invalid scene stops `compare` with exit 2.
 - **Measures** (the JSON output has all of them):
-  - `failing`: number of checks with status `fail` or `skip`; from stage 4 also violated hard relations and total soft penalty;
+  - `failing`: number of checks with status `fail` or `skip` (violated hard relations and the soft penalty are not scheduled for `compare`; use `relations`);
   - `locksTouched`: labels `<object id>.<lock>` of the base locks the variant touches (section 12); any entry marks the variant invalid;
   - `checks`: every check with its label, threshold, `values` (one per column), `status` (one per column) and `delta` (value minus the base value, rounded to 6 decimals; `null` for the base and for values that are `null` or not numbers);
   - `moved`: objects present in both scenes whose `pos` moved more than 1e-9, as `count` and total `distance` (sum of ground distances, rounded to 6 decimals); `null` for the base.
@@ -363,7 +387,7 @@ relate bench in_front_of tree gap 1..1.5 hard
 | `set <pointer> <value> [note="<text>"]` | Replaces the value at an existing JSON Pointer below the root. The value is read as JSON, else as a string. `note=` replaces the `note` of the assumption with that `path`; it is an error when there is none |
 | `lock <id> <lock>...` | Appends locks the object does not have yet (`pos`, `pos.u`, `pos.v`, `rot`, `type` or a JSON Pointer) |
 | `relate <a> <rel> <b> [gap <min>..<max>] [axis <u\|v>] [t <min>..<max>] [min <n>] [hard] [weight <n>] [id=<id>] [source="<text>"]` | Appends a relation `{ id, a, rel, b, <parameters>, hard, weight?, source? }`; `hard` is always written (default `false`); without `id=` the id is the first free `r1`, `r2`, ... |
-| `solve ...` | Stage 4 (usage error until then) |
+| `solve ...` | Not a patch command (usage error): run `isoblock solve --patch` and apply its patch |
 
   There is no `unlock`: people remove locks in the editor or in the file. A command naming an unknown object or command, a bad offset or a pointer that does not resolve is `E_PATCH`.
 - **Application:** commands or operations apply in order to a copy of the scene; the patch is atomic (any error leaves the scene unchanged). Coordinates computed by `move` and `rot` are rounded to 6 decimals. Afterwards every `assumptions[].value` is set to the value its `path` points to.
@@ -479,13 +503,17 @@ dist/        build output, not committed
 | 1 | Schema, projection, geometry, display list, SVG; checks `in_region`, `no_overlap`, `clearance`, `lane_clear`, `lane_reaches`, `visible`; `skip` for unsupported checks and lane shapes; CLI `validate`, `check`, `render` (SVG), `describe`; exit codes of section 11 | All tests pass; `tests/golden/projection.json` matches; all `tests/fixtures/*.scene.json` match their `*.expected.json` within tolerance; `render` of `yard` produces an SVG that opens and shows the expected layout |
 | 2 | Editor: drag on both views, locks, undo, save, live check panel | 200 objects at 60 fps on a mid-range phone, measured on `tests/fixtures/crowd.scene.json` in headless Chromium with 4x CPU slowdown, phone profile (390x844 CSS px at pixel ratio 2, touch, one view), one pointer move per animation frame: the 95th-percentile interval between animation frames is at most 18.4 ms (1.1 display intervals); dragging a locked object is blocked; a saved file parses to the same data as the file opened, and saving twice gives byte-identical files |
 | 3 | Patches: short commands and JSON Patch, lock rejection, log; `diff`; `compare` | The 20 patches in `tests/fixtures/patches/` give their expected results; `compare` on `yard` with the 3 variants in `tests/fixtures/compare/` gives `yard.expected.json`, and its `text` and `md` output equal `yard.expected.txt` and `yard.expected.md` byte for byte |
-| 4 | Solver and minimal conflict set | A synthetic scene with conflicting hard relations returns the expected minimal conflict set |
+| 4 | Relations (section 7), `relations`, solver and minimal conflict set (section 8) | `relations` on `tests/fixtures/relations/relations.scene.json` gives its expected results; every scene in `tests/fixtures/solver/` meets its expected file; the solve of `perf` meets the performance rule of section 8 |
 | 5 | `export` targets `runtime`, `godot`, `gen-bbox`; Godot adapter; cross golden tests; PNG render | The sample scene loaded in Godot differs by at most 1 px |
 | 6 | States, `sort_consistency` and slicing, `reachable`, `capacity` | The bundled tests pass |
 
 Export targets `phaser` and `tiled` are not scheduled.
 
 Patch fixtures: `tests/fixtures/patches/<name>.patch` with `<name>.expected.json` = `{ base, tolerance, exit, status, error, locks, diff, checks, failing }`. `base` names `tests/fixtures/<base>.scene.json`; `exit` is the exit code of `isoblock patch` on a copy of that scene; `error` is the error code or `null`; `locks`, `diff`, `checks` and `failing` are the fields of the `--json` report (`failing` is `null` unless the patch is applied). Check values compare within `tolerance.value` (pixels `tolerance.valuePx`), diff numbers within `tolerance.coordinate`; messages are not compared.
+
+Relation fixture: `tests/fixtures/relations/relations.expected.json` = `{ scene, tolerance, results }`, with `id`, `rel`, `hard`, `status`, `violation` (within `tolerance.value`) and `ids` per relation; messages are not compared.
+
+Solver fixtures: `tests/fixtures/solver/<name>.scene.json` with `<name>.expected.json` = `{ scene, only, status, conflict, hardViolated, maxSoftPenalty, maxDistance, unchanged, referenceSoftPenalty, referenceDistance }`. `isoblock solve` (with `--only` when `only` is not `null`) must give `status` and exactly `conflict`; for `solved`: no violated hard relation (`hardViolated` is `[]`), the constraints of section 8 hold, `softPenalty` ≤ `maxSoftPenalty`, `distance` ≤ `maxDistance`, the objects in `unchanged` keep their positions, every changed coordinate is on the 0.05 grid, and two runs give byte-identical output. `maxSoftPenalty` is the maintainer's reference result plus 0.5; `maxDistance` is twice the reference distance, at least the reference distance plus 2. The `reference*` fields are information.
 
 One stage per branch. A stage starts only after the previous one is squash-merged into `main`. Before opening a stage, the maintainer adds the fixtures and expected results its acceptance criteria need. The maintainer reviews by behavior (`describe`, render, check results on fixtures), not by reading code.
 
@@ -495,7 +523,7 @@ Versions: the maintainer sets `version` in `package.json` in the release commit 
 
 - **Boxes are not final shapes.** Re-check visibility and collisions once real art exists. Parts that follow the art closely reduce the error.
 - **Orthographic projection does not shrink distant objects.** A backdrop stays as wide as the foreground, so it is often drawn at its own scale (a `decor` strip). Physical scale is not checked there.
-- **A simple solver can get stuck in a weak solution.** People can always drag and lock.
+- **A simple solver can get stuck in a weak solution.** People can always drag and lock. A weak solver also widens the conflict set, because deletion filtering trusts it to find solutions.
 - **Each engine sorts draw order its own way.** Golden tests and `sort_consistency` are mandatory.
 
 ## 19. Open questions

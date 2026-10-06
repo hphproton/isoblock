@@ -1,0 +1,329 @@
+{
+  "schema": "isoblock/1",
+  "id": "feasible",
+  "units": {
+    "name": "u",
+    "note": "abstract unit"
+  },
+  "camera": {
+    "angleU": 30,
+    "angleV": 150,
+    "pxPerUnit": 50,
+    "verticalScale": 1,
+    "origin": [
+      500,
+      200
+    ]
+  },
+  "frame": {
+    "w": 1000,
+    "h": 1000,
+    "regions": [
+      {
+        "id": "hud",
+        "rect": [
+          0,
+          0,
+          1000,
+          150
+        ],
+        "blocksScene": true
+      },
+      {
+        "id": "view",
+        "rect": [
+          0,
+          150,
+          1000,
+          1000
+        ]
+      }
+    ]
+  },
+  "types": {
+    "box": {
+      "size": [
+        1,
+        1,
+        1
+      ]
+    },
+    "wall": {
+      "size": [
+        4,
+        0.4,
+        2
+      ]
+    },
+    "post": {
+      "size": [
+        0.4,
+        0.4,
+        1.5
+      ]
+    },
+    "bench": {
+      "size": [
+        1.5,
+        0.5,
+        0.5
+      ]
+    },
+    "plant": {
+      "size": [
+        0.6,
+        0.6,
+        1
+      ]
+    },
+    "crate": {
+      "size": [
+        0.8,
+        0.8,
+        0.8
+      ]
+    }
+  },
+  "objects": [
+    {
+      "id": "wall",
+      "type": "wall",
+      "pos": [
+        1,
+        1
+      ],
+      "rot": 0,
+      "locks": [
+        "pos"
+      ]
+    },
+    {
+      "id": "post",
+      "type": "post",
+      "pos": [
+        8,
+        1
+      ],
+      "rot": 0,
+      "locks": [
+        "pos"
+      ]
+    },
+    {
+      "id": "a",
+      "type": "box",
+      "pos": [
+        6,
+        7
+      ],
+      "rot": 0
+    },
+    {
+      "id": "b",
+      "type": "box",
+      "pos": [
+        1.5,
+        6
+      ],
+      "rot": 0
+    },
+    {
+      "id": "c",
+      "type": "box",
+      "pos": [
+        3,
+        8
+      ],
+      "rot": 0
+    },
+    {
+      "id": "d",
+      "type": "bench",
+      "pos": [
+        7,
+        2
+      ],
+      "rot": 0
+    },
+    {
+      "id": "e",
+      "type": "plant",
+      "pos": [
+        5,
+        4.5
+      ],
+      "rot": 0
+    },
+    {
+      "id": "f",
+      "type": "crate",
+      "pos": [
+        2,
+        3
+      ],
+      "rot": 0
+    }
+  ],
+  "zones": [
+    {
+      "id": "yard",
+      "kind": "walkable",
+      "points": [
+        [
+          0,
+          0
+        ],
+        [
+          10,
+          0
+        ],
+        [
+          10,
+          10
+        ],
+        [
+          0,
+          10
+        ]
+      ]
+    }
+  ],
+  "lanes": [
+    {
+      "id": "path",
+      "kind": "walk",
+      "width": 1,
+      "points": [
+        [
+          0,
+          7
+        ],
+        [
+          12,
+          7
+        ]
+      ]
+    }
+  ],
+  "relations": [
+    {
+      "id": "h1",
+      "a": "a",
+      "rel": "left_of",
+      "b": "b",
+      "gap": [
+        0.5,
+        2
+      ],
+      "hard": true
+    },
+    {
+      "id": "h2",
+      "a": "b",
+      "rel": "left_of",
+      "b": "c",
+      "gap": [
+        0.5,
+        2
+      ],
+      "hard": true
+    },
+    {
+      "id": "h3",
+      "a": "d",
+      "rel": "in_front_of",
+      "b": "a",
+      "gap": [
+        0.5,
+        3
+      ],
+      "hard": true
+    },
+    {
+      "id": "h4",
+      "a": "e",
+      "rel": "against",
+      "b": "wall",
+      "gap": [
+        0,
+        0.1
+      ],
+      "hard": true
+    },
+    {
+      "id": "h5",
+      "a": "f",
+      "rel": "clear_of",
+      "b": "post",
+      "min": 0.5,
+      "hard": true
+    },
+    {
+      "id": "h6",
+      "a": "c",
+      "rel": "inside",
+      "b": "zone:yard",
+      "hard": true
+    },
+    {
+      "id": "s1",
+      "a": "a",
+      "rel": "aligned",
+      "b": "b",
+      "axis": "v",
+      "hard": false
+    },
+    {
+      "id": "s2",
+      "a": "b",
+      "rel": "aligned",
+      "b": "c",
+      "axis": "v",
+      "hard": false
+    },
+    {
+      "id": "s3",
+      "rel": "order_along",
+      "ids": [
+        "a",
+        "b",
+        "c"
+      ],
+      "axis": "u",
+      "hard": false
+    },
+    {
+      "id": "s4",
+      "a": "d",
+      "rel": "gap",
+      "b": "e",
+      "gap": [
+        1,
+        4
+      ],
+      "hard": false
+    },
+    {
+      "id": "s5",
+      "a": "f",
+      "rel": "on_lane",
+      "b": "lane:path",
+      "t": [
+        0.3,
+        0.7
+      ],
+      "hard": false
+    }
+  ],
+  "checks": [
+    {
+      "id": "c1",
+      "check": "in_region",
+      "region": "view"
+    },
+    {
+      "id": "c2",
+      "check": "no_overlap"
+    }
+  ]
+}
