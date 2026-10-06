@@ -2,6 +2,28 @@
 
 ## Unreleased
 
+## 0.3.0
+
+Stage 3: patches, patch log, `diff`, `compare`.
+
+### Added
+
+- `isoblock patch <scene> <patch> [-o out.json] [--dry-run] [--json]`: applies a patch file to a scene. A patch is JSON Patch (RFC 6902) or short commands (`move`, `rot`, `set`, `lock`, `relate`) with `#` comments; the first comment line is the description. `solve` in a patch is a usage error that names stage 4.
+- Patches apply to a copy and are atomic. `move` and `rot` round the coordinates they compute to 6 decimals, `rot` keeps the footprint center, and every `assumptions[].value` follows the value at its path.
+- Lock detection: a patch that changes a locked value, removes a lock entry or removes a locked object is rejected with `E_LOCK` and exit code 3, with labels `<object id>.<lock>`. New error codes `E_PATCH` and `E_LOCK`; exit code 3.
+- The fixed order of outcomes (malformed or failing patch, then locks, then schema and references of the result, then applied), a text report and a `--json` report (`status`, `error`, `locks`, `diff`, `checks`, `failing`). A rejected or invalid patch writes no scene file.
+- Patch log `<output without .json>.log.jsonl`: one line for every applied or lock-rejected patch that is not a dry run.
+- `isoblock diff <a> <b> [--json]`: changes between two scenes, matched by identity (`id`, `path` for assumptions) and sorted by JSON Pointer.
+- `isoblock compare <scene> --variant NAME=FILE... [--format text|md|json]`: a base scene and 1 to 4 variants (patch files or scene files) side by side: failing checks, locks touched, the checks that fail or differ, objects moved. `--state` names stage 6 and `--render` is not scheduled.
+- Core: `diffScenes`, `runPatch`, `parsePatch`, `applyPatch`, `touchedLocks`, `compareVariants` and their formatters, `jsonEdit` and `jsonEqual`.
+- Tests that load every file in `tests/fixtures/patches/` and `tests/fixtures/compare/`, in the core, through the CLI with in-memory files, and through `dist/isoblock.mjs`.
+- `docs/AGENT_GUIDE.md` covers the patch syntax, `patch`, `diff` and `compare`.
+
+### Changed
+
+- The CLI file access (`Io`) has two more functions, `appendText` and `exists`, for the log. `Io` lives in `src/cli/io.ts` and is still exported from `src/cli/run.ts`.
+- `patch`, `diff` and `compare` are no longer usage errors. The usage text lists them.
+
 ## 0.2.0
 
 Stage 2: editor.

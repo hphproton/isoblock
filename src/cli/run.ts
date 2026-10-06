@@ -5,15 +5,11 @@ import { IsoblockError, exitCodeFor } from "../core/errors";
 import { checkExitCode, checkReportJson, formatCheckReport } from "../core/report";
 import { parseScene } from "../core/validate";
 import { USAGE, parseArgs, type Parsed } from "./args";
+import { runCompareCommand, runDiffCommand, runPatchCommand } from "./commands";
+import type { Io } from "./io";
 import { toSvg } from "./svg";
 
-/** File and terminal access. The only thing the CLI needs from the outside world. */
-export interface Io {
-  readText(path: string): string;
-  writeText(path: string, text: string): void;
-  out(text: string): void;
-  err(text: string): void;
-}
+export type { Io } from "./io";
 
 type RunArgs = Extract<Parsed, { kind: "run" }>;
 
@@ -53,7 +49,16 @@ export function run(argv: readonly string[], io: Io): number {
       io.out(`${USAGE}\n`);
       return 0;
     }
-    return execute(args, io);
+    switch (args.kind) {
+      case "patch":
+        return runPatchCommand(args, io);
+      case "diff":
+        return runDiffCommand(args, io);
+      case "compare":
+        return runCompareCommand(args, io);
+      default:
+        return execute(args, io);
+    }
   } catch (e) {
     if (e instanceof IsoblockError) return report(e, io);
     return report(new IsoblockError("E_INTERNAL", e instanceof Error ? e.message : String(e)), io);

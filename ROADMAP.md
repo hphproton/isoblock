@@ -46,27 +46,27 @@ Not in stage 2: state switch (stage 6), exports (stage 5), saved versions and co
 
 **Done when:** all tests pass, the stage 1 fixtures still match, and the stage 2 criteria in SPEC section 17 hold.
 
-## Stage 3 · open
+## Stage 3 · done (0.3.0)
 
 Patches, log, `diff`, `compare` (SPEC sections 11, 11.1, 11.2, 12, 17). Fixtures: `tests/fixtures/patches/` (20 patches with expected results) and `tests/fixtures/compare/` (3 variants of `yard` with the expected JSON, text and Markdown output).
 
-- [ ] Patch files: JSON Patch (RFC 6902) and the short commands `move`, `rot`, `set`, `lock`, `relate`; comments and the description line; `solve` is a usage error naming stage 4
-- [ ] Application: atomic, coordinates of `move` and `rot` rounded to 6 decimals, assumption values follow their paths
-- [ ] Locks: touched-lock detection and labels; the order of outcomes; exit codes 0, 1, 2 and 3; `E_PATCH` and `E_LOCK`
-- [ ] `isoblock patch` with `-o`, `--dry-run` and `--json`; text and JSON report; a rejected or invalid patch writes nothing
-- [ ] Patch log `<output file without .json>.log.jsonl`
-- [ ] `isoblock diff` with text and `--json` output (SPEC 11.2)
-- [ ] `isoblock compare` with patch and scene variants and the `text`, `md` and `json` formats (SPEC 11.1, Appendix D); `--state` names stage 6, `--render` is not scheduled
-- [ ] Tests load every file in `tests/fixtures/patches/` and `tests/fixtures/compare/` and compare with the expected files
-- [ ] `docs/AGENT_GUIDE.md` covers the patch syntax, `patch`, `diff` and `compare`
-- [ ] Session log says `branch ready for review`
+- [x] Patch files: JSON Patch (RFC 6902) and the short commands `move`, `rot`, `set`, `lock`, `relate`; comments and the description line; `solve` is a usage error naming stage 4
+- [x] Application: atomic, coordinates of `move` and `rot` rounded to 6 decimals, assumption values follow their paths
+- [x] Locks: touched-lock detection and labels; the order of outcomes; exit codes 0, 1, 2 and 3; `E_PATCH` and `E_LOCK`
+- [x] `isoblock patch` with `-o`, `--dry-run` and `--json`; text and JSON report; a rejected or invalid patch writes nothing
+- [x] Patch log `<output file without .json>.log.jsonl`
+- [x] `isoblock diff` with text and `--json` output (SPEC 11.2)
+- [x] `isoblock compare` with patch and scene variants and the `text`, `md` and `json` formats (SPEC 11.1, Appendix D); `--state` names stage 6, `--render` is not scheduled
+- [x] Tests load every file in `tests/fixtures/patches/` and `tests/fixtures/compare/` and compare with the expected files
+- [x] `docs/AGENT_GUIDE.md` covers the patch syntax, `patch`, `diff` and `compare`
+- [x] Session log says `branch ready for review`
 
 Not in stage 3: the solver and relation evaluation (stage 4), states (stage 6), layout indicators and `compare --render` (not scheduled), patches and variant switching in the editor.
 
 **Done when:** all tests pass, earlier fixtures still match, and the stage 3 criteria in SPEC section 17 hold.
 
 ## Stage 4 · not open
-Solver and minimal conflict set (SPEC sections 8, 17).
+Solver and minimal conflict set (SPEC sections 8, 17). Before it opens, the maintainer defines how each relation is measured (violation and soft penalty) and adds the solver fixtures.
 
 ## Stage 5 · not open
 Export targets `runtime`, `godot`, `gen-bbox`; Godot adapter; PNG render (SPEC sections 13, 14, 17).

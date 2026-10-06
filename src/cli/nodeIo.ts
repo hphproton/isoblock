@@ -1,6 +1,6 @@
-import { readFileSync, writeFileSync } from "node:fs";
+import { appendFileSync, existsSync, readFileSync, writeFileSync } from "node:fs";
 import { IsoblockError } from "../core/errors";
-import type { Io } from "./run";
+import type { Io } from "./io";
 
 function reason(e: unknown): string {
   return e instanceof Error ? e.message : String(e);
@@ -21,6 +21,16 @@ export const nodeIo: Io = {
     } catch (e) {
       throw new IsoblockError("E_IO", `cannot write ${path}: ${reason(e)}`);
     }
+  },
+  appendText(path, text) {
+    try {
+      appendFileSync(path, text);
+    } catch (e) {
+      throw new IsoblockError("E_IO", `cannot write ${path}: ${reason(e)}`);
+    }
+  },
+  exists(path) {
+    return existsSync(path);
   },
   out(text) {
     process.stdout.write(text);

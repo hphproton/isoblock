@@ -314,15 +314,15 @@ Exit codes:
 ### 11.1 `compare`: variants by measured values
 
 - **Input:** a base scene and 1–4 variants, `--variant NAME=FILE`, in the order given. A variant file is a patch (section 12) or another scene file (a JSON object with `schema`). Optionally at one state (from stage 6).
-- **Method:** apply each variant to a copy of the base, ignoring locks but recording the locks it touches, and run the same checks. A variant that is malformed or produces an invalid scene stops `compare` with exit 2.
+- **Method:** apply each variant to a copy of the base, ignoring locks but recording the locks it touches, and run the base scene's checks on every column. A variant file whose first non-blank character is `{` is a scene; any other file is a patch. Names are unique, not empty and not `base`. A variant that is malformed or produces an invalid scene stops `compare` with exit 2.
 - **Measures** (the JSON output has all of them):
   - `failing`: number of checks with status `fail` or `skip`; from stage 4 also violated hard relations and total soft penalty;
   - `locksTouched`: labels `<object id>.<lock>` of the base locks the variant touches (section 12); any entry marks the variant invalid;
   - `checks`: every check with its label, threshold, `values` (one per column), `status` (one per column) and `delta` (value minus the base value, rounded to 6 decimals; `null` for the base and for values that are `null` or not numbers);
-  - `moved`: objects present in both scenes whose `pos` differs, as `count` and total `distance` (sum of ground distances, rounded to 6 decimals); `null` for the base.
+  - `moved`: objects present in both scenes whose `pos` moved more than 1e-9, as `count` and total `distance` (sum of ground distances, rounded to 6 decimals); `null` for the base.
 - **Check labels:** `in_region <region>[/<strip>] (objects outside)`, `no_overlap (pairs)`, `clearance <a>×<b> (<unit>)` with the ids in the order of the result's `ids`, `lane_clear <lane> (blocking objects)`, `lane_reaches <lane> (y px)`, `visible <target> (% occluded)`.
 - **Variant labels:** the first comment line of the patch (section 12), else the variant name.
-- **`text` format** (Appendix D is the contract): line 1 `compare <scene id> · state <state> · base vs <names>`; line 2 `<name> = <label>` for each variant, joined with ` · `; then a table. Rows: `failing checks`; `locks touched` (count, then ` ✗ (<labels>)` when not zero); one row per check that is `fail` or `skip` in some column or whose value differs from the base in some column, in `checks` order; `objects moved / total (<unit>)` (`-` for the base, else `<count> / <distance>`). Cells: counts as integers; clearance values and distances with 2 decimals; `lane_reaches` whole pixels (`none` when `null`); `visible` whole percent; `skip` for skipped checks; ` ✗` after a value whose status is `fail` or `skip`. Columns are left-aligned; each column is as wide as its widest cell (header included, counted in Unicode code points) plus 2 spaces; trailing spaces are removed.
+- **`text` format** (Appendix D is the contract): line 1 `compare <scene id> · state <state> · base vs <names>`; line 2 `<name> = <label>` for each variant, joined with ` · `; then a table. Rows: `failing checks`; `locks touched` (count, then ` ✗ (<labels>)` when not zero); one row per check that is `fail` or `skip` in some column, or whose value differs from the base in some column (a non-zero delta, or `null` against a number), in `checks` order; `objects moved / total (<unit>)` (`-` for the base, else `<count> / <distance>`). Cells: counts as integers; clearance values and distances with 2 decimals; `lane_reaches` whole pixels (`none` when `null`); `visible` whole percent; `skip` for skipped checks; ` ✗` after a value whose status is `fail` or `skip`. Columns are left-aligned; each column is as wide as its widest cell (header included, counted in Unicode code points) plus 2 spaces; trailing spaces are removed.
 - **`md` format:** the same rows as a Markdown table with the header `| metric | base | <names> |`.
 - **`json` format:** `{ "scene", "state", "variants": [{ "name", "label" }], "failing", "locksTouched", "moved", "checks": [{ "id", "check", "label", "threshold", "values", "status", "delta" }] }`; every list has one entry per column, base first (`label` is `null` for the base).
 - **Not scheduled:** layout indicators (occupied share of the view per third of the frame, largest empty area, on-screen size of key objects) and `--render`.
@@ -333,7 +333,7 @@ Exit codes:
 
 `diff a.json b.json` lists the changes from scene a to scene b, matching items by identity, not by position:
 
-- Objects are compared key by key. An array whose items, in both scenes, are all objects with a string `id` is matched by `id`; `assumptions` is matched by `path`. Every other array (`pos`, `size`, `locks`, `points`, ...) is one value. Item order is ignored.
+- Objects are compared key by key. An array whose items, in both scenes, are all objects with a string `id` that is unique in its list is matched by `id` (an empty list qualifies); `assumptions` is matched by `path` in the same way. Every other array (`pos`, `size`, `locks`, `points`, ...) is one value. Item order is ignored.
 - Each entry is `{ "op": "add"|"remove"|"replace", "path", "from"?, "to"? }`: `add` has `to`, `remove` has `from`, `replace` has both. `path` is a JSON Pointer built from keys and matched ids (`/objects/crate2/pos`, `/relations/r3`), escaped as in RFC 6901. Entries are sorted by `path` (code point order).
 - `--json` prints `{ "a", "b", "changes" }` with the two scene ids. The text format prints `diff <a id> -> <b id>: <n> changes`, then one line per entry: `+ <path> <to>`, `- <path> <from>`, `~ <path> <from> -> <to>`, values as compact JSON.
 
@@ -353,13 +353,13 @@ lock tree pos
 relate bench in_front_of tree gap 1..1.5 hard
 ```
 
-- **Patch file:** a file whose first non-blank character is `[` is a JSON Patch (an array of operations). Any other file is short commands: one command per line; blank lines are ignored; a line starting with `#` is a comment, and the first comment line is the patch's description. Tokens are separated by spaces; double quotes group a token that contains spaces (`note="two words"`).
+- **Patch file:** a file whose first non-blank character is `[` is a JSON Patch (an array of operations). Any other file is short commands: one command per line; blank lines are ignored; a line starting with `#` is a comment, and the first comment line is the patch's description. Tokens are separated by spaces; double quotes group a token that contains spaces (`note="two words"`); inside quotes `\"` is a quote and `\\` a backslash. The whole file is parsed before any command runs; an error names its line. A patch without commands applies and changes nothing.
 - **Short commands** (stage 3):
 
 | Command | Effect |
 |---|---|
 | `move <id> <u±n> [<v±n>]` | Adds to `pos`; each axis at most once (`move bench u-0.5 v+0.2`) |
-| `rot <id> <0\|90\|180\|270>` | Sets `rot`, keeping the footprint center: `pos` is recomputed |
+| `rot <id> <0\|90\|180\|270>` | Sets `rot`, keeping the footprint center: `pos` is recomputed when the footprint changes shape, else left as it is |
 | `set <pointer> <value> [note="<text>"]` | Replaces the value at an existing JSON Pointer below the root. The value is read as JSON, else as a string. `note=` replaces the `note` of the assumption with that `path`; it is an error when there is none |
 | `lock <id> <lock>...` | Appends locks the object does not have yet (`pos`, `pos.u`, `pos.v`, `rot`, `type` or a JSON Pointer) |
 | `relate <a> <rel> <b> [gap <min>..<max>] [axis <u\|v>] [t <min>..<max>] [min <n>] [hard] [weight <n>] [id=<id>] [source="<text>"]` | Appends a relation `{ id, a, rel, b, <parameters>, hard, weight?, source? }`; `hard` is always written (default `false`); without `id=` the id is the first free `r1`, `r2`, ... |
@@ -369,9 +369,9 @@ relate bench in_front_of tree gap 1..1.5 hard
 - **Application:** commands or operations apply in order to a copy of the scene; the patch is atomic (any error leaves the scene unchanged). Coordinates computed by `move` and `rot` are rounded to 6 decimals. Afterwards every `assumptions[].value` is set to the value its `path` points to.
 - **Locks:** a patch touches a lock when, compared with the original scene, a locked value changes (`pos`, `pos.u` = `pos[0]`, `pos.v` = `pos[1]`, `rot`, `type`, or the value at a pointer, including its appearance or removal), a lock entry disappears, or a locked object disappears. Only locks of the original scene count. Labels are `<object id>.<lock>`, in object order, then lock order.
 - **Order of outcomes:** malformed patch or failing command (`E_PATCH`, or `E_USAGE` for a later-stage command, exit 2); then locks (`E_LOCK`, exit 3, `patch` writes nothing); then schema and references of the result (`E_SCHEMA`, `E_REF`, exit 2); else the patch is applied (exit 0 or 1 by the checks of the result).
-- **Output:** the result is written to `-o out.json`, else back to the input file, in the saved format of section 10. `--dry-run` writes nothing.
+- **Output:** the result is written to `-o out.json`, else back to the input file, in the saved format of section 10. `--dry-run` writes nothing. The report goes to stdout; an error that stops `patch` before there is an outcome (unreadable or invalid scene, unreadable patch file, bad flags) goes to stderr without a report.
 - **Report:** `--json` prints `{ "scene", "status": "applied"|"rejected"|"invalid", "error": null | { "code", "message" }, "locks", "diff", "checks", "failing" }`: `locks` = touched lock labels; `diff` = the `diff` entries from the original to the result (section 11.2); `checks` = `[{ "id", "check", "from", "to", "value": [before, after] }]` for each check whose status changed or whose value changed by more than 1e-9; `failing` = number of `fail` or `skip` results after the patch. A rejected or invalid patch reports empty `diff` and `checks` and `failing: null`; only a rejected one lists `locks`. The text format starts with `patch <scene id>: applied|rejected|invalid`, then one line per diff entry and per changed check; wording beyond that is free.
-- **Log:** every applied or lock-rejected patch that is not a dry run appends one line to `<output file without .json>.log.jsonl`: `{ "seq", "patch", "description", "status", "error", "locks", "diff", "checks" }`, where `seq` counts from 1 and `patch` is the patch file name. No timestamps: the version history of the files records when.
+- **Log:** every applied or lock-rejected patch that is not a dry run appends one line to `<output file without .json>.log.jsonl`: `{ "seq", "patch", "description", "status", "error", "locks", "diff", "checks" }`, where `seq` is the number of non-blank lines already in the log plus one and `patch` is the patch file name without its directory. For an output name that does not end in `.json`, `.log.jsonl` is appended to the whole name. No timestamps: the version history of the files records when.
 - **Any form of description works:** words, a sketch, a screenshot of another product with "like this, without that". The model turns it into relations and rough positions; the solver refines them. The model never writes final coordinates.
 - Images go to the agent only when a person asks.
 
@@ -469,7 +469,7 @@ dist/        build output, not committed
   - fixed seeds;
   - coded errors;
   - TypeScript strict mode.
-- **Size budget (guide):** core 1,500–2,500 lines; editor 800–1,200; each adapter 150–300.
+- **Size budget (guide):** core about 5,500 lines after stage 6 (3,578 after stage 3); editor 1,500–2,000; each adapter 150–300.
 - Engine adapters live outside this package until stage 5 decides their layout.
 
 ## 17. Roadmap and acceptance criteria

@@ -25,6 +25,12 @@ export function memoryIo(initial: Record<string, string> = {}): Captured {
     writeText(path, text) {
       files.set(path, text);
     },
+    appendText(path, text) {
+      files.set(path, (files.get(path) ?? "") + text);
+    },
+    exists(path) {
+      return files.has(path);
+    },
     out(text) {
       out += text;
     },

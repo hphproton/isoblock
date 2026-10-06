@@ -97,3 +97,48 @@ Template:
 - Question: Stage 2 needs a build step that inlines the editor into one file, and tests that must not rebuild `dist/` while another test file reads it. The layout in AGENTS.md names `src/core`, `src/cli`, `schema` and `tests`; SPEC 16 adds `src/editor`.
 - Reading chosen for now: `npm run build` runs `scripts/build.mjs` (esbuild's API; one file of 39 lines) and writes `dist/isoblock.mjs` and `dist/editor.html`. The editor lives in `src/editor` with its own `tsconfig.json` that has the DOM types; the root `tsconfig.json` leaves it out so that `src/core` and `src/cli` cannot use DOM types by accident, and `npm run typecheck` runs both. `vitest` builds once in a global setup and runs test files one after another, because the frame-time test must not compete with other browsers.
 - Answer (maintainer): Approved. `AGENTS.md` now lists `src/editor/` and `scripts/` in the layout.
+
+## Q-012 · Patch syntax details that SPEC section 12 leaves open
+- Spec section: 12
+- Question: Which rules apply where the text of section 12 is silent?
+- Reading chosen for now:
+  - Parsing comes before applying: the whole file is parsed first (the first malformed line wins, in line order), then the commands run in order. A failing command names its line (`line 3: ...`).
+  - Quotes: inside double quotes, `\"` is a quote and `\\` is a backslash; every other backslash stays as it is. Without this a JSON value that holds strings (`set /objects/0/tags "[\"a\"]"`) cannot be written.
+  - `move`: each offset needs a sign (`u+1`, `v-0.5`); the axes may come in either order; at least one is required.
+  - `rot` to the rotation the object already has changes nothing. When the footprint keeps its shape (0 and 180, 90 and 270) `pos` is left as it is, so no coordinate is rounded for nothing.
+  - `set`: a pointer must start with `/`; the root is not allowed. `note=` adds the `note` key when the assumption has none.
+  - `lock`: names are checked when the patch is parsed (`pos`, `pos.u`, `pos.v`, `rot`, `type` or a string starting with `/`), else `E_PATCH`. A pointer lock is not required to resolve. `pos.u` is appended even when `pos` is already listed.
+  - `relate`: each option at most once; the key order is `id, a, rel, b, gap, axis, t, min, hard, weight, source`. The names `a` and `b` and the relation name are not checked by the command: an unknown target is `E_REF` and an unknown `rel` is `E_SCHEMA`, both after the patch applied (the order of outcomes in section 12).
+  - JSON Patch: an operation on the whole scene (path `""`) is `E_PATCH`. `test` compares with deep equality (numbers by value, key order ignored).
+  - A patch without any command (empty, or only comments) applies and changes nothing. A description that is only `#` counts as no description.
+- Answer (maintainer): Approved as written. SPEC section 12 now states parsing before applying, the quote escapes, `rot` without a change of shape, and the empty patch.
+
+## Q-013 · What `patch` prints and logs
+- Spec section: 11, 12
+- Question: Section 12 fixes the first line of the text report, the `--json` report and the fields of a log line. Not fixed: which stream carries which outcome, what the log holds for errors, how `seq` and the file name are chosen.
+- Reading chosen for now:
+  - The report (text or `--json`) goes to stdout for `applied`, `rejected` and `invalid`. Errors that stop the command before there is an outcome (unreadable or invalid scene file, unreadable patch file, bad flags) go to stderr as for every other command and print no report.
+  - The text report is the status line, `error <code>: <message>`, one line per change, one line per changed check, `failing checks: <n>`; then `wrote <path>` or `dry run: nothing written`. The `message` of an `E_SCHEMA` or `E_REF` error carries its detail lines, joined with `; `.
+  - A log line holds the fields of section 12 in that order; `error` has the shape of the report (`null` or `{ code, message }`). `seq` is the number of non-blank lines already in the log plus one. `patch` is the file name of the patch without its directory. For an output that does not end in `.json`, `.log.jsonl` is appended to the whole name.
+  - `checks` in the report and in the log compare the checks of the original and of the result by id. A check that exists on one side only is not listed (it shows in `diff`).
+- Answer (maintainer): Approved as written. SPEC section 12 now states the output streams, `seq` and the log name for outputs without `.json`.
+
+## Q-014 · `diff` identity rules
+- Spec section: 11.2
+- Question: "An array whose items, in both scenes, are all objects with a string `id` is matched by `id`" does not say what happens with an empty list, repeated ids, or `assumptions` in other places.
+- Reading chosen for now: Both lists must have items that are all objects with a string key (`id`, or `path` for the top-level `assumptions`), and the keys must be unique in each list; an empty list qualifies. Otherwise the array is one value. The summary line always says `<n> changes`, also for 1.
+- Answer (maintainer): Approved as written. SPEC 11.2 now states that keys must be unique and that an empty list qualifies.
+
+## Q-015 · `compare` details that section 11.1 leaves open
+- Spec section: 11.1, Appendix D
+- Question: A few cases are not stated.
+- Reading chosen for now:
+  - "Run the same checks": every column runs the checks of the base scene. A variant that changes `checks` (or a scene file with other checks) is compared under the base's checks; if a base check names an object the variant lacks, the variant gives an invalid scene (`E_REF`, exit 2).
+  - A variant file is a scene when its first non-blank character is `{`, else a patch. A scene variant is validated like any scene file; its locks are compared with the base like a patch's.
+  - Names: unique, not empty, and not `base`. `--variant NAME=FILE` splits at the first `=`.
+  - The label of a check that is not implemented (always `skip`) is `<check> <id>`. A skipped cell reads `skip ✗`, and `none ✗` is a failed `lane_reaches` that finds no edge.
+  - A row shows when its status is `fail` or `skip` in some column or a delta (rounded to 6 decimals) is not zero, or a value is `null` in one column and a number in another.
+  - `moved` counts an object when its ground distance from the base position exceeds 1e-9. A `delta` that rounds to zero is written `0`, never `-0`.
+  - `state` is `default` in the text and the JSON until stage 6.
+  - In the `md` format a vertical bar inside a cell is written `\|`.
+- Answer (maintainer): Approved as written. SPEC 11.1 now states that every column runs the base's checks, how a scene variant is recognised, the variant names, the null-versus-number row rule and the 1e-9 threshold for `moved`.

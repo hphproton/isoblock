@@ -125,7 +125,7 @@ describe("cli: usage and errors", () => {
   });
 
   it("exits 2 with E_USAGE for unavailable commands", () => {
-    for (const argv of [["patch", yard, "p.txt"], ["solve", yard], ["export", yard, "--target", "godot"], ["diff", yard, yard]]) {
+    for (const argv of [["solve", yard], ["export", yard, "--target", "godot"]]) {
       const r = exec(argv);
       expect(r.code, argv.join(" ")).toBe(2);
       expect(r.err).toMatch(/^error E_USAGE: /);

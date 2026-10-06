@@ -2,7 +2,7 @@
 
 How an AI agent uses IsoBlock. The builder fills each section as commands ship.
 
-Commands in this guide are available now (stage 2): `validate`, `check`, `render`, `describe`, and the editor page `dist/editor.html`. Commands from later stages are listed at the end of the Commands section.
+Commands in this guide are available now (stage 3): `validate`, `check`, `render`, `describe`, `patch`, `diff`, `compare`, and the editor page `dist/editor.html`. Commands from later stages are listed at the end of the Commands section.
 
 ## Install and build
 
@@ -27,6 +27,9 @@ isoblock validate <scene.json>
 isoblock check    <scene.json> [--json]
 isoblock render   <scene.json> -o <out.svg>
 isoblock describe <scene.json>
+isoblock patch    <scene.json> <patch> [-o <out.json>] [--dry-run] [--json]
+isoblock diff     <a.json> <b.json> [--json]
+isoblock compare  <scene.json> --variant NAME=FILE... [--format text|md|json]
 ```
 
 ### `validate`
@@ -52,6 +55,8 @@ error E_SCHEMA: scene does not match schema isoblock/1 (2 problems)
 | `E_JSON_PARSE` | The file is not valid JSON |
 | `E_SCHEMA` | The file does not match the schema |
 | `E_REF` | A reference does not resolve (duplicate id, unknown type, missing target) |
+| `E_PATCH` | A patch is malformed or one of its commands fails (unknown object, pointer that does not resolve, failing JSON Patch `test`) |
+| `E_LOCK` | A patch touches a lock (exit code 3) |
 | `E_USAGE` | Unknown or unavailable command or flag, or a bad argument |
 | `E_INTERNAL` | Unexpected failure inside the tool |
 
@@ -99,18 +104,21 @@ Agents do not need the image to work with a scene; use `describe`. Open the SVG 
 
 Prints a compact summary, about 30 to 60 lines, so an agent never has to read the whole file or an image. Exit code 0 even when checks fail. See the next section.
 
+### `patch`, `diff`, `compare`
+
+Described in their own sections below: [Patches](#patches), [`diff`](#diff) and [`compare`](#compare).
+
 ### Not available yet
 
 These commands and flags exist in the spec but arrive in later stages. Using one exits with code 2 and names the stage:
 
 | Command or flag | Stage |
 |---|---|
-| `patch`, `diff`, `compare` | 3 |
-| `solve`, `--only` | 4 |
+| `solve`, `--only` (and `solve` inside a patch) | 4 |
 | `export` (targets `runtime`, `godot`, `gen-bbox`), `-o out.png` | 5 |
-| `--state NAME` | 6 |
+| `--state NAME` (also `compare --state`) | 6 |
 
-Export targets `phaser` and `tiled` are not scheduled.
+Export targets `phaser` and `tiled` are not scheduled. `compare --render` is not scheduled either.
 
 ## Editor
 
@@ -204,10 +212,175 @@ Notes:
 - **`lane_clear` and `lane_reaches` support one lane shape:** exactly 2 points, parallel to u or v. Other shapes return `skip`. `lane_reaches` also returns `skip` for the `top` and `bottom` edges.
 - **`skip` is not a pass.** It means the tool could not evaluate the check: the check is not implemented in this stage (`reachable`, `capacity`, `min_screen_size`, `sort_consistency`, `state_stable`), or its input has an unsupported shape. A skipped check has `value: null` and `threshold: null`, and `check` exits 1.
 
-## Patches (from stage 3)
+## Patches
 
-Not available yet. Until then, the commands above only read scene files.
+Agents do not rewrite scene files. They send a small patch, and the tool applies it, checks the locks, and reports what changed. The loop for an agent: `describe` the scene, write a patch, run `patch --dry-run --json`, read the report, and run `patch` again without `--dry-run` once the report is what you want.
 
-## `compare` (from stage 3)
+```
+isoblock patch <scene.json> <patch> [-o <out.json>] [--dry-run] [--json]
+```
 
-Not available yet.
+- The result goes to `-o`, else back into `<scene.json>`, in the saved format (two-space JSON, keys in file order, one final newline).
+- `--dry-run` runs everything and prints the report but writes nothing: no scene file and no log line.
+- A patch is **atomic**: it applies to a copy of the scene, and any failure leaves the file as it was.
+- The scene file must be valid. If it is not, or if the patch file cannot be read, the command stops with exit code 2 and an error on stderr, and prints no report.
+
+### Patch files
+
+A file whose first non-blank character is `[` is a **JSON Patch** (RFC 6902): an array of operations `add`, `remove`, `replace`, `move`, `copy` and `test`, with JSON Pointers into the scene file (`/objects/3/pos/0`, `/objects/-` appends). The pointer `""` (the whole scene) is not allowed. A failing `test` makes the patch invalid.
+
+```
+[{"op": "replace", "path": "/objects/3/pos/0", "value": 7.2}]
+```
+
+Any other file is **short commands**: one command per line. Blank lines are ignored. A line that starts with `#` is a comment; the first comment line is the patch's **description** (the log and `compare` show it). Tokens are separated by spaces; double quotes group a token that contains spaces (`note="two words"`). Inside quotes, `\"` is a quote and `\\` is a backslash, which makes it possible to write a JSON value with strings: `set /objects/0/tags "[\"a\", \"b\"]"`.
+
+```
+# move the bench toward the path
+move bench v+0.2
+set /types/tree/size/2 2.2 note="measured from approved art"
+lock tree pos
+relate bench in_front_of tree gap 1..1.5 hard
+```
+
+| Command | Effect |
+|---|---|
+| `move <id> <u±n> [<v±n>]` | Adds to `pos`. Each axis at most once, in either order, with a sign: `move bench u-0.5 v+0.2`, `move bench v+1` |
+| `rot <id> <0\|90\|180\|270>` | Sets `rot` and recomputes `pos` so that the footprint keeps its center |
+| `set <pointer> <value> [note="<text>"]` | Replaces the value at an existing JSON Pointer. The value is read as JSON, else as a string (`2.5`, `true`, `"[1, 2]"`, `approved`). `note=` replaces the `note` of the assumption with that `path`; it is an error when there is none |
+| `lock <id> <lock>...` | Adds the locks the object does not have yet: `pos`, `pos.u`, `pos.v`, `rot`, `type`, or a JSON Pointer |
+| `relate <a> <rel> <b> [gap <min>..<max>] [axis <u\|v>] [t <min>..<max>] [min <n>] [hard] [weight <n>] [id=<id>] [source="<text>"]` | Appends a relation. `hard` is always written (`false` when not given). Without `id=` the id is the first free `r1`, `r2`, ... |
+| `solve ...` | Stage 4: a patch that contains it is invalid with `E_USAGE` |
+
+- There is no `unlock`: people remove locks in the editor or in the file.
+- `move` and `rot` round the coordinates they compute to 6 decimals. `rot` leaves `pos` as it is when the footprint keeps its shape (0 to 180).
+- `relate` does not check its names: an unknown object in `a` or `b` is `E_REF` and an unknown relation name is `E_SCHEMA`, both reported after the patch applied.
+- After the last command, every `assumptions[].value` is set to the value its `path` points to. A provisional number stays provisional: only a person removes the entry.
+
+### Locks
+
+A patch **touches a lock** when, compared with the original scene, any of these happens (only locks of the original scene count):
+
+- a locked value changes: `pos`, `pos.u` (the first number of `pos`), `pos.v`, `rot`, `type`, or the value at a JSON Pointer, including when it appears or is removed;
+- a lock entry disappears from an object;
+- a locked object disappears.
+
+`pos.u` blocks u only: `move o020 v+0.5` is applied while `move o020 u+1` is rejected. A move by zero changes nothing and touches nothing. A touched lock rejects the whole patch: nothing is written, the exit code is 3 and the report lists labels `<object id>.<lock>`, in object order, then lock order.
+
+### Outcomes
+
+The order is fixed:
+
+| Status | When | Error | Exit code |
+|---|---|---|---|
+| `invalid` | The patch is malformed or a command fails; `solve` | `E_PATCH`, `E_USAGE` | 2 |
+| `rejected` | The patch touches a lock | `E_LOCK` | 3 |
+| `invalid` | The result does not match the schema or has a broken reference | `E_SCHEMA`, `E_REF` | 2 |
+| `applied` | Everything else | none | 0 when no check of the result is `fail` or `skip`, else 1 |
+
+### Report
+
+```
+$ isoblock patch yard.scene.json spread.patch -o yard2.scene.json
+patch yard: applied
+~ /objects/crate2/pos [6.8,0.5] -> [7.2,0.5]
+check c4 clearance: fail -> pass (0.2 -> 0.6)
+failing checks: 2
+wrote yard2.scene.json
+```
+
+The first line is `patch <scene id>: applied|rejected|invalid`. Then come the error (`error <code>: <message>`), one line per change (the same lines as `diff`) and one line per check that changed, then the number of failing checks. With `--dry-run` the last line is `dry run: nothing written`. The report goes to stdout for all three statuses.
+
+`--json` prints this instead (the files are written as without it):
+
+```
+{
+  "scene": "yard",
+  "status": "applied",
+  "error": null,
+  "locks": [],
+  "diff": [ { "op": "replace", "path": "/objects/crate2/pos", "from": [6.8, 0.5], "to": [7.2, 0.5] } ],
+  "checks": [ { "id": "c4", "check": "clearance", "from": "fail", "to": "pass", "value": [0.2, 0.6] } ],
+  "failing": 2
+}
+```
+
+(Shown in a shorter layout; the tool prints standard two-space JSON.)
+
+- `status`: `applied`, `rejected` or `invalid`. `error` is `null` or `{ "code", "message" }`.
+- `locks`: the touched lock labels, only for a rejected patch.
+- `diff`: the changes from the original to the result, as `diff` prints them (see below).
+- `checks`: each check whose status changed or whose value changed by more than 1e-9, with `value: [before, after]`. Checks are matched by id; a check that the patch adds or removes shows in `diff`, not here.
+- `failing`: number of `fail` or `skip` results after the patch. A rejected or invalid patch has empty `diff` and `checks` and `failing: null`.
+
+### Patch log
+
+Every applied or lock-rejected patch that is not a dry run adds one line to `<output file without .json>.log.jsonl` (for `-o out.json`: `out.log.jsonl`; without `-o`: next to the scene file). Invalid patches are not logged.
+
+```
+{"seq":1,"patch":"tree.patch","description":null,"status":"rejected","error":{"code":"E_LOCK","message":"the patch touches locks: tree.pos"},"locks":["tree.pos"],"diff":[],"checks":[]}
+```
+
+`seq` counts the lines of the log from 1. `patch` is the file name of the patch (without its directory) and `description` its first comment line or `null`. The log has no timestamps: the version history of the files records when.
+
+## `diff`
+
+```
+isoblock diff <a.json> <b.json> [--json]
+```
+
+Lists the changes from scene a to scene b, matching items by identity and not by position:
+
+- Objects are compared key by key. An array whose items are all objects with a unique string `id` (in both scenes) is matched by `id`; the array `assumptions` is matched by `path`. Every other array (`pos`, `size`, `locks`, `points`, ...) is one value. The order of items and keys does not matter.
+- Each change has `op` (`add`, `remove` or `replace`), `path` (a JSON Pointer such as `/objects/crate2/pos` or `/relations/r3`, with `~` and `/` escaped), and `from` and `to` as they apply. Entries are sorted by path.
+- Text: `diff <a id> -> <b id>: <n> changes`, then `+ <path> <to>`, `- <path> <from>` or `~ <path> <from> -> <to>` per change, with compact JSON values. `--json` prints `{ "a", "b", "changes" }`.
+- The exit code is 0 when the command completes, whether or not the scenes differ.
+
+```
+$ isoblock diff yard.scene.json yard2.scene.json
+diff yard -> yard: 1 changes
+~ /objects/crate2/pos [6.8,0.5] -> [7.2,0.5]
+```
+
+## `compare`
+
+```
+isoblock compare <scene.json> --variant NAME=FILE... [--format text|md|json]
+```
+
+Compares the scene with 1 to 4 variants by measured values. It does not choose: it separates what is measurable from what needs judgment (balance, feel, gameplay intent), and a person decides.
+
+- A variant is a patch file or another scene file (a JSON file whose first character is `{`). Names must be unique and cannot be `base`. Columns are in the order given, base first.
+- Each variant is applied to a copy of the base. **Locks are ignored but recorded**: a variant that touches a lock is marked, not stopped. A variant that is malformed or gives an invalid scene stops the command with exit code 2.
+- **Every column runs the checks of the base scene**, so the columns are comparable. A variant that changes `checks` is compared under the base's checks.
+- The label of a variant is the first comment line of its patch, else its name. `--state` is added in stage 6 and `--render` is not scheduled.
+- The exit code is 0 when the command completes, even if checks fail.
+
+```
+$ isoblock compare yard.scene.json --variant A=yard.A.patch --variant B=yard.B.patch --variant C=yard.C.patch
+compare yard · state default · base vs A, B, C
+A = actor moves 0.6 along -u · B = crate2 moves 0.4 along u · C = tree moves 1.0 along u
+metric                       base    A         B         C
+failing checks               3       2         2         2
+locks touched                0       0         0         1 ✗ (tree.pos)
+clearance crate1×crate2 (u)  0.20 ✗  0.20 ✗    0.60      0.20 ✗
+lane_reaches haul (y px)     1104 ✗  1104 ✗    1104 ✗    1104 ✗
+visible actor (% occluded)   40 ✗    0         40 ✗      0
+objects moved / total (u)    -       1 / 0.60  1 / 0.40  1 / 1.00
+```
+
+How to read the table:
+
+- `failing checks`: checks with status `fail` or `skip`. `locks touched`: how many base locks the variant touches, then their labels; any entry marks the variant invalid (variant C above moves the locked tree).
+- One row per check that fails or is skipped in some column, or whose value differs from the base in some column, in the order of `checks`. The label names the check and its unit: `in_region <region>[/<strip>] (objects outside)`, `no_overlap (pairs)`, `clearance <a>×<b> (<unit>)`, `lane_clear <lane> (blocking objects)`, `lane_reaches <lane> (y px)`, `visible <target> (% occluded)`; other checks show as `<check> <id>`.
+- Cells: counts as integers, clearance with 2 decimals, `lane_reaches` in whole pixels (`none` when the lane does not reach the edge), `visible` in whole percent, `skip` for a skipped check. A trailing ` ✗` marks a value whose status is `fail` or `skip`.
+- `objects moved / total`: objects present in both scenes whose `pos` differs, and the sum of their ground distances.
+
+Formats: `text` (default, shown above, columns left-aligned and padded), `md` (the same rows as a Markdown table with the header `| metric | base | A | B | C |`) and `json`:
+
+```
+{ "scene", "state", "variants": [{ "name", "label" }], "failing", "locksTouched", "moved",
+  "checks": [{ "id", "check", "label", "threshold", "values", "status", "delta" }] }
+```
+
+Every list has one entry per column, base first (`label` is `null` for the base; `moved` is `null` for the base). `delta` is the value minus the base value rounded to 6 decimals, `null` for the base and for values that are `null`. `state` is `default` until stage 6 adds states.

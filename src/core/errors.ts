@@ -3,6 +3,8 @@ export type ErrorCode =
   | "E_JSON_PARSE"
   | "E_SCHEMA"
   | "E_REF"
+  | "E_PATCH"
+  | "E_LOCK"
   | "E_USAGE"
   | "E_INTERNAL";
 
@@ -19,7 +21,13 @@ export class IsoblockError extends Error {
   }
 }
 
+/** The same error with `prefix: ` in front of its message (for example `line 3`). */
+export function withPrefix(error: IsoblockError, prefix: string): IsoblockError {
+  return new IsoblockError(error.code, `${prefix}: ${error.message}`, error.details);
+}
+
 /** Process exit code for an error code (SPEC section 11). */
 export function exitCodeFor(code: ErrorCode): number {
-  return code === "E_INTERNAL" ? 70 : 2;
+  if (code === "E_INTERNAL") return 70;
+  return code === "E_LOCK" ? 3 : 2;
 }
