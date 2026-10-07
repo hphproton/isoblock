@@ -77,9 +77,24 @@ describe("parseArgs", () => {
     expect(usageError(["render", "a.json", "-o", "out.jpg"])).toMatch(/must end in \.svg or \.png/);
   });
 
-  it("names the stage that adds a flag or an output format", () => {
-    expect(usageError(["check", "a.json", "--state", "night"])).toMatch(/'--state' is added in stage 6/);
-    expect(usageError(["render", "a.json", "--state=night", "-o", "o.svg"])).toMatch(/'--state' is added in stage 6/);
+  it("parses --state for check, render, compare and export, and refuses it elsewhere", () => {
+    expect(parseArgs(["check", "a.json", "--state", "night"])).toMatchObject({ command: "check", state: "night" });
+    expect(parseArgs(["render", "a.json", "--state=night", "-o", "o.svg"])).toMatchObject({ command: "render", state: "night" });
+    expect(parseArgs(["compare", "a.json", "--variant", "A=a", "--state", "night"])).toMatchObject({ kind: "compare", state: "night" });
+    expect(parseArgs(["export", "a.json", "--target", "gen-bbox", "--state", "night"])).toMatchObject({ kind: "export", state: "night" });
+    expect(parseArgs(["check", "a.json"])).not.toHaveProperty("state");
+    for (const command of ["validate", "describe", "relations", "solve"]) {
+      expect(usageError([command, "a.json", "--state", "night"]), command).toMatch(new RegExp(`'--state' does not apply to '${command}'`));
+    }
+    expect(usageError(["patch", "a.json", "p", "--state", "night"])).toMatch(/'--state' does not apply to 'patch'/);
+    expect(usageError(["check", "a.json", "--state"])).toMatch(/'--state' needs a value/);
+  });
+
+  it("refuses --state with the runtime export target", () => {
+    expect(usageError(["export", "a.json", "--target", "runtime", "--state", "night"])).toMatch(/--state applies to the gen-bbox target only/);
+  });
+
+  it("names a flag that does not apply to a command", () => {
     expect(usageError(["check", "a.json", "--only", "a"])).toMatch(/'--only' does not apply to 'check'/);
   });
 
@@ -121,9 +136,8 @@ describe("parseArgs", () => {
     expect(parseArgs([...base, ...five.slice(0, 8)])).toMatchObject({ kind: "compare" });
   });
 
-  it("says what is not available for compare: --state names stage 6, --render is not scheduled, formats are checked", () => {
+  it("says what is not available for compare: --render is not scheduled, formats are checked", () => {
     const base = ["compare", "a.json", "--variant", "A=a"];
-    expect(usageError([...base, "--state", "night"])).toMatch(/'--state' is added in stage 6/);
     expect(usageError([...base, "--render"])).toMatch(/'--render' is not scheduled/);
     expect(usageError([...base, "--format", "html"])).toMatch(/unknown format 'html'/);
     expect(usageError([...base, "--format"])).toMatch(/'--format' needs a value/);

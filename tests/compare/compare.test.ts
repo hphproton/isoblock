@@ -18,7 +18,7 @@ function base(overrides: Record<string, unknown> = {}): Scene {
       { id: "k1", check: "clearance", a: "b", b: "a", min: 1 },
       { id: "k2", check: "no_overlap" },
       { id: "k3", check: "lane_reaches", lane: "L", edge: "right", region: "view" },
-      { id: "k4", check: "reachable" },
+      { id: "k4", check: "sort_consistency" },
     ],
     ...overrides,
   });
@@ -46,7 +46,7 @@ describe("compareVariants: measures", () => {
   });
 
   it("counts failing checks, skipped ones included", () => {
-    // base: clearance, lane_reaches, reachable (skip). P: the clearance passes.
+    // base: clearance, lane_reaches, sort_consistency (skip). P: the clearance passes.
     // Q leaves a and b touching at a corner (gap 0), so its clearance fails.
     expect(c.failing).toEqual([3, 2, 3]);
   });
@@ -80,7 +80,7 @@ describe("compareVariants: measures", () => {
 
   it("labels checks, with the ids in the order of the result", () => {
     expect(c.checks.map((k) => k.label)).toEqual([
-      "clearance a\u00d7b (u)", "no_overlap (pairs)", "lane_reaches L (y px)", "reachable k4",
+      "clearance a\u00d7b (u)", "no_overlap (pairs)", "lane_reaches L (y px)", "sort_consistency k4",
     ]);
   });
 });
@@ -151,7 +151,7 @@ describe("compare formats", () => {
         "clearance a\u00d7b (u)          0.50 \u2717  1.50      0.00 \u2717",
         "no_overlap (pairs)         0       0         1 \u2717",
         "lane_reaches L (y px)      none \u2717  none \u2717    none \u2717",
-        "reachable k4               skip \u2717  skip \u2717    skip \u2717",
+        "sort_consistency k4        skip \u2717  skip \u2717    skip \u2717",
         "objects moved / total (u)  -       1 / 1.00  1 / 2.00",
       ].join("\n"),
     );
@@ -187,7 +187,7 @@ describe("compare formats", () => {
       "| clearance a\u00d7b (u) | 0.50 \u2717 | 1.50 | 0.00 \u2717 |",
       "| no_overlap (pairs) | 0 | 0 | 1 \u2717 |",
       "| lane_reaches L (y px) | none \u2717 | none \u2717 | none \u2717 |",
-      "| reachable k4 | skip \u2717 | skip \u2717 | skip \u2717 |",
+      "| sort_consistency k4 | skip \u2717 | skip \u2717 | skip \u2717 |",
       "| objects moved / total (u) | - | 1 / 1.00 | 1 / 2.00 |",
     ]);
   });

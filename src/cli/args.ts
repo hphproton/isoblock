@@ -17,6 +17,8 @@ export type Parsed =
       readonly file: string;
       readonly json: boolean;
       readonly output?: string;
+      /** `--state` of `check` and `render`; absent when every object is present. */
+      readonly state?: string;
     }
   | {
       readonly kind: "patch";
@@ -45,12 +47,15 @@ export type Parsed =
       readonly bboxUnits?: "px" | "norm1000";
       /** `--bbox-order` of `gen-bbox`; absent when not given (the default is `xyxy`). */
       readonly bboxOrder?: "xyxy" | "yxyx";
+      /** `--state` of `gen-bbox`; absent when every object is present. */
+      readonly state?: string;
     }
   | {
       readonly kind: "compare";
       readonly file: string;
       readonly variants: readonly VariantArg[];
       readonly format: CompareFormat;
+      readonly state?: string;
     };
 
 export const USAGE = [
@@ -58,8 +63,8 @@ export const USAGE = [
   "",
   "Usage:",
   "  isoblock validate <scene.json>             schema and reference checks",
-  "  isoblock check    <scene.json> [--json]    run the scene's checks",
-  "  isoblock render   <scene.json> -o <out.svg|out.png>  draw the scene as SVG or PNG",
+  "  isoblock check    <scene.json> [--json] [--state NAME]  run the scene's checks",
+  "  isoblock render   <scene.json> [--state NAME] -o <out.svg|out.png>  draw the scene as SVG or PNG",
   "  isoblock describe <scene.json>             compact summary for agents",
   "  isoblock relations <scene.json> [--json]   measure the scene's relations",
   "  isoblock solve    <scene.json> [--only a,b] [-o <proposal.json>] [--patch <moves.patch>] [--json]",
@@ -67,10 +72,10 @@ export const USAGE = [
   "  isoblock patch    <scene.json> <patch> [-o <out.json>] [--dry-run] [--json]",
   "                                             apply a patch (JSON Patch or short commands)",
   "  isoblock diff     <a.json> <b.json> [--json]  list the changes from a to b",
-  "  isoblock compare  <scene.json> --variant NAME=FILE... [--format text|md|json]",
+  "  isoblock compare  <scene.json> --variant NAME=FILE... [--state NAME] [--format text|md|json]",
   "                                             compare the scene with 1 to 4 variants",
   "  isoblock export   <scene.json> --target runtime|gen-bbox [-o <out.json>]",
-  "                    [--bbox-units px|norm1000] [--bbox-order xyxy|yxyx]",
+  "                    [--bbox-units px|norm1000] [--bbox-order xyxy|yxyx] [--state NAME]",
   "                                             write the runtime file or the generation boxes",
   "  isoblock --help",
   "",
@@ -80,8 +85,6 @@ export const USAGE = [
 ].join("\n");
 
 const COMMANDS: readonly string[] = ["validate", "check", "render", "describe", "relations", "solve", "patch", "diff", "compare", "export"];
-/** Flags of later stages: name -> stage that adds it. */
-const LATER_FLAGS: Readonly<Record<string, number>> = { "--state": 6 };
 const EXPORT_TARGETS: readonly string[] = ["runtime", "gen-bbox"];
 const NOT_SCHEDULED_TARGETS: readonly string[] = ["godot", "phaser", "tiled"];
 const BBOX_UNITS: readonly string[] = ["px", "norm1000"];
@@ -95,6 +98,7 @@ const FLAG_COMMANDS: Readonly<Record<string, readonly string[]>> = {
   "--dry-run": ["patch"],
   "--variant": ["compare"],
   "--format": ["compare"],
+  "--state": ["check", "render", "compare", "export"],
   "--target": ["export"],
   "--bbox-units": ["export"],
   "--bbox-order": ["export"],
@@ -133,8 +137,6 @@ function scan(command: string, rest: readonly string[]): Scanned {
       positional.push(flag);
       continue;
     }
-    const later = LATER_FLAGS[flag];
-    if (later !== undefined) throw usage(`flag '${flag}' is added in stage ${later}`);
     if (flag === "--render" && command === "compare") throw usage("flag '--render' is not scheduled");
     const applies = FLAG_COMMANDS[flag];
     if (applies === undefined) throw usage(`unknown flag '${flag}'`);
@@ -170,19 +172,21 @@ function parseSolve(file: string, s: Scanned): Parsed {
 
 /** `export`: the target is required and checked before the file, so that its errors come first. */
 function parseExport(file: string, s: Scanned): Parsed {
-  const { "--bbox-units": units, "--bbox-order": order, "-o": output } = s.values;
+  const { "--bbox-units": units, "--bbox-order": order, "-o": output, "--state": state } = s.values;
   const target = s.values["--target"] as string;
   if (units !== undefined && !BBOX_UNITS.includes(units)) throw usage("--bbox-units must be px or norm1000");
   if (order !== undefined && !BBOX_ORDERS.includes(order)) throw usage("--bbox-order must be xyxy or yxyx");
   if (target === "runtime") {
     if (units !== undefined) throw usage("--bbox-units applies to the gen-bbox target only");
     if (order !== undefined) throw usage("--bbox-order applies to the gen-bbox target only");
+    if (state !== undefined) throw usage("--state applies to the gen-bbox target only: the runtime file does not carry states yet");
   }
   return {
     kind: "export", file, target: target as ExportTarget,
     ...(output === undefined ? {} : { output }),
     ...(units === undefined ? {} : { bboxUnits: units as "px" | "norm1000" }),
     ...(order === undefined ? {} : { bboxOrder: order as "xyxy" | "yxyx" }),
+    ...(state === undefined ? {} : { state }),
   };
 }
 
@@ -242,11 +246,16 @@ export function parseArgs(argv: readonly string[]): Parsed {
   if (command === "compare") {
     const format = s.values["--format"] ?? "text";
     if (!FORMATS.includes(format)) throw usage(`unknown format '${format}': use text, md or json`);
-    return { kind: "compare", file, variants: parseVariants(s.variants), format: format as CompareFormat };
+    const state = s.values["--state"];
+    return {
+      kind: "compare", file, variants: parseVariants(s.variants), format: format as CompareFormat,
+      ...(state === undefined ? {} : { state }),
+    };
   }
   if (command === "render") {
     if (s.values["-o"] === undefined) throw usage("render needs -o <out.svg|out.png>");
     if (!/\.(svg|png)$/i.test(s.values["-o"])) throw usage("output file must end in .svg or .png");
   }
-  return { kind: "run", command: command as Command, file, json: s.json, ...output };
+  const state = s.values["--state"];
+  return { kind: "run", command: command as Command, file, json: s.json, ...output, ...(state === undefined ? {} : { state }) };
 }

@@ -139,13 +139,49 @@ export interface VisibleCheck {
   readonly maxOccluded: number;
 }
 
+/** A ground point: `[u, v]`, `lane:<id>` or `anchor:<object id>/<anchor id>` (SPEC section 9.2). */
+export type PointRef = Vec2 | string;
+
+export interface ReachableCheck {
+  readonly id: string;
+  readonly check: "reachable";
+  readonly from: PointRef;
+  readonly to: PointRef;
+  readonly area?: string;
+  readonly radius?: number;
+  readonly step?: number;
+  readonly ignore?: readonly string[];
+  readonly max?: number;
+}
+
+export interface CapacityCheck {
+  readonly id: string;
+  readonly check: "capacity";
+  readonly kind: string;
+  readonly min: number;
+  readonly body?: Vec2;
+  readonly ids?: readonly string[];
+  readonly allow?: readonly string[];
+}
+
+export interface MinScreenSizeCheck {
+  readonly id: string;
+  readonly check: "min_screen_size";
+  readonly target: string;
+  readonly min: number;
+  readonly screenWidth?: number;
+}
+
 export type ImplementedCheck =
   | InRegionCheck
   | NoOverlapCheck
   | ClearanceCheck
   | LaneClearCheck
   | LaneReachesCheck
-  | VisibleCheck;
+  | VisibleCheck
+  | ReachableCheck
+  | CapacityCheck
+  | MinScreenSizeCheck;
 
 /** A check from the catalog that the current stage does not evaluate. */
 export interface OtherCheck {
@@ -199,5 +235,8 @@ export interface CheckResult {
   readonly ids: readonly string[];
   readonly pairs?: readonly (readonly [string, string])[];
   readonly occluders?: readonly string[];
+  /** `capacity`: labels `<object id>/<anchor id>` of the usable and of the blocked anchors. */
+  readonly accepted?: readonly string[];
+  readonly rejected?: readonly string[];
   readonly message: string;
 }

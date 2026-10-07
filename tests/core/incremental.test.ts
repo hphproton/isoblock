@@ -4,6 +4,7 @@ import { moveObject, setRotation, setTypeSize } from "../../src/core/edit";
 import { changedObjects, involves, updateResults } from "../../src/core/incremental";
 import type { Scene } from "../../src/core/types";
 import { fixtureNames, loadScene } from "../helpers/fixtures";
+import { loadWalk } from "../helpers/states";
 import { box, makeScene } from "../helpers/scene";
 
 const yard = loadScene("yard");
@@ -75,7 +76,14 @@ describe("involves", () => {
 
   it("never re-runs lane_reaches or unimplemented checks for object changes", () => {
     expect(involves({ id: "x", check: "lane_reaches", lane: "l", edge: "right", region: "view" }, only("a"))).toBe(false);
-    expect(involves({ id: "x", check: "reachable" }, only("a"))).toBe(false);
+    expect(involves({ id: "x", check: "sort_consistency" }, only("a"))).toBe(false);
+  });
+
+  it("re-runs reachable and capacity for any changed object, and min_screen_size for its target", () => {
+    expect(involves({ id: "x", check: "reachable", from: [0, 0], to: [1, 1] }, only("c"))).toBe(true);
+    expect(involves({ id: "x", check: "capacity", kind: "seat", min: 1 }, only("c"))).toBe(true);
+    expect(involves({ id: "x", check: "min_screen_size", target: "a", min: 10 }, only("a"))).toBe(true);
+    expect(involves({ id: "x", check: "min_screen_size", target: "a", min: 10 }, only("c"))).toBe(false);
   });
 
   it("re-runs visible for any changed object", () => {
@@ -215,5 +223,33 @@ describe("updateResults: per-object updates of in_region and no_overlap", () => 
     const update = updateResults(scene, next, before);
     expect(update.rerun).toEqual(["r1", "r2", "o1", "o3"]);
     expect(update.results[2]).toBe(before[2]);
+  });
+});
+
+describe("updateResults: the gameplay checks", () => {
+  const walk = loadWalk();
+  const before = runChecks(walk);
+
+  it("re-runs reachable, capacity and visible for any moved object, and min_screen_size only for its target", () => {
+    const next = moveObject(walk, "rock1", [8.6, 1.6]).scene;
+    const update = updateResults(walk, next, before);
+    expect(update.rerun).toEqual(["k1", "k2", "k3", "k4", "k5", "k6", "k7", "k8", "s1", "s2", "s3", "s4", "v1", "c1", "o1"]);
+    expect(update.results).toEqual(runChecks(next));
+    const walker = moveObject(walk, "walker1", [3.5, 3]).scene;
+    expect(updateResults(walk, walker, before).rerun).toContain("m1");
+    expect(updateResults(walk, next, before).rerun).not.toContain("m1");
+  });
+
+  it("gives the results of a full run after a move that opens a path", () => {
+    const next = moveObject(walk, "barrier1", [5, 7.5]).scene;
+    const update = updateResults(walk, next, before);
+    expect(update.results).toEqual(runChecks(next));
+    expect(update.results.find((r) => r.id === "k2")?.status).toBe("pass");
+  });
+
+  it("treats a change of the zones as a change of everything", () => {
+    const next = { ...walk, zones: (walk.zones ?? []).slice(0, 1) };
+    expect(changedObjects(walk, next)).toBe("all");
+    expect(updateResults(walk, next, before).results).toEqual(runChecks(next));
   });
 });

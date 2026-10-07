@@ -299,10 +299,13 @@ Threshold, ids and extra fields:
 - `capacity`: `threshold = min`; `ids` = the objects with at least one candidate, in the order of `objects`; `accepted` and `rejected` = labels `<object id>/<anchor id>` in candidate order.
 - `min_screen_size`: `threshold = min`; `ids = [target]`.
 - A zone named by `area` with fewer than 3 points: `skip`.
+- `area` may name a zone of any kind; blocked zones are cut out of it too. Zones with fewer than 3 points take no part as walkable or blocked ground. With `radius: 0` objects block no cell. No free cell at all gives `start is not on walkable ground`. A grid of more than 4,000,000 cells is `skip`, with a message that asks for a larger `step`.
+- `anchor:<object id>/<anchor id>`: ids may contain `/`; the first split from the left at which the object and an anchor of its type both exist is used.
+- `capacity`: objects outside `ids` still block bodies; `ids` of the result also lists objects whose candidates were all rejected. `min_screen_size` values are rounded to 6 decimals.
 
 **States.** `--state NAME` evaluates the scene without the objects in `states.NAME.hide`:
 - A check that names a hidden object by itself (`clearance` `a` or `b`, `visible` or `min_screen_size` `target`, an anchor in `reachable` `from` or `to`) is `skip`.
-- Lists (`ids`, `allow`, `ignore`) lose the hidden objects. Hidden objects do not overlap, block, occlude or count anywhere.
+- Lists (`ids`, `allow`, `ignore`) lose the hidden objects; a list that loses all of them names no object (it does not mean all objects). Hidden objects do not overlap, block, occlude or count anywhere.
 - Without `--state` every object is present.
 
 ## 10. Editor (web page)
@@ -340,7 +343,7 @@ Commands and flags arrive in the stages listed in section 17. A command, flag, e
 
 `render` requires `-o`; the file extension selects the format: `.svg`, or `.png` from stage 5 (section 14).
 
-`--state NAME` (stage 6) applies to `check`, `render`, `compare` and `export --target gen-bbox`: the command works on the scene in that state (section 9.2); hidden objects are not drawn and get no generation box. An unknown state name is a usage error. With `export --target runtime` it is a usage error: the runtime file carries all states from stage 7.
+`--state NAME` (stage 6) applies to `check`, `render`, `compare` and `export --target gen-bbox`: the command works on the scene in that state (section 9.2); hidden objects are not drawn and get no generation box. An unknown state name is a usage error, `default` included unless the scene defines it. `check --json --state` prints `{ "scene", "results" }` as without a state. With `export --target runtime` it is a usage error: the runtime file carries all states from stage 7.
 
 `export` writes to `-o`, else to stdout, in the saved format of section 10. `--target` is required; `-o` naming the input file is a usage error. `--bbox-units` and `--bbox-order` belong to `gen-bbox`; with `runtime` they are a usage error.
 
@@ -362,7 +365,7 @@ Exit codes:
 
 ### 11.1 `compare`: variants by measured values
 
-- **Input:** a base scene and 1–4 variants, `--variant NAME=FILE`, in the order given. A variant file is a patch (section 12) or another scene file (a JSON object with `schema`). Optionally at one state (`--state`, stage 6): every column is evaluated in that state, and the header names it; without it the header says `default`.
+- **Input:** a base scene and 1–4 variants, `--variant NAME=FILE`, in the order given. A variant file is a patch (section 12) or another scene file (a JSON object with `schema`). Optionally at one state (`--state`, stage 6): every column is evaluated in that state, and the header names it; without it the header says `default`. The hidden objects are those of the base scene's state, also for a scene variant with its own `states`; they are left out of `moved`.
 - **Method:** apply each variant to a copy of the base, ignoring locks but recording the locks it touches, and run the base scene's checks on every column. A variant file whose first non-blank character is `{` is a scene; any other file is a patch. Names are unique, not empty and not `base`. A variant that is malformed or produces an invalid scene stops `compare` with exit 2.
 - **Measures** (the JSON output has all of them):
   - `failing`: number of checks with status `fail` or `skip` (violated hard relations and the soft penalty are not scheduled for `compare`; use `relations`);
@@ -567,7 +570,7 @@ dist/        build output, not committed
   - fixed seeds;
   - coded errors;
   - TypeScript strict mode.
-- **Size budget (guide):** core about 6,500 lines after stage 6 (5,128 after stage 5); editor 1,500–2,000; each adapter 150–300.
+- **Size budget (guide):** core about 7,000 lines after stage 7 (5,694 after stage 6); editor 1,500–2,000; each adapter 150–300.
 - Engine adapters live in `adapters/<engine>/`. They are not npm code, import nothing from `src/`, and read only the runtime file.
 
 ## 17. Roadmap and acceptance criteria
@@ -575,7 +578,7 @@ dist/        build output, not committed
 | Stage | Scope | Done when |
 |---|---|---|
 | 1 | Schema, projection, geometry, display list, SVG; checks `in_region`, `no_overlap`, `clearance`, `lane_clear`, `lane_reaches`, `visible`; `skip` for unsupported checks and lane shapes; CLI `validate`, `check`, `render` (SVG), `describe`; exit codes of section 11 | All tests pass; `tests/golden/projection.json` matches; all `tests/fixtures/*.scene.json` match their `*.expected.json` within tolerance; `render` of `yard` produces an SVG that opens and shows the expected layout |
-| 2 | Editor: drag on both views, locks, undo, save, live check panel | 200 objects at 60 fps on a mid-range phone, measured on `tests/fixtures/crowd.scene.json` in headless Chromium with 4x CPU slowdown, phone profile (390x844 CSS px at pixel ratio 2, touch, one view), one pointer move per animation frame: the 95th-percentile interval between animation frames is at most 18.4 ms (1.1 display intervals) in at least one of up to 3 runs, because a busy host drops frames now and then; dragging a locked object is blocked; a saved file parses to the same data as the file opened, and saving twice gives byte-identical files |
+| 2 | Editor: drag on both views, locks, undo, save, live check panel | 200 objects at 60 fps on a mid-range phone, measured on `tests/fixtures/crowd.scene.json` in headless Chromium with 4x CPU slowdown, phone profile (390x844 CSS px at pixel ratio 2, touch, one view), one pointer move per animation frame: the 95th-percentile interval between animation frames is at most 18.4 ms (1.1 display intervals) in at least one of up to 3 runs, each on a fresh page, where a run must meet every condition of its test, because a busy host drops frames now and then; dragging a locked object is blocked; a saved file parses to the same data as the file opened, and saving twice gives byte-identical files |
 | 3 | Patches: short commands and JSON Patch, lock rejection, log; `diff`; `compare` | The 20 patches in `tests/fixtures/patches/` give their expected results; `compare` on `yard` with the 3 variants in `tests/fixtures/compare/` gives `yard.expected.json`, and its `text` and `md` output equal `yard.expected.txt` and `yard.expected.md` byte for byte |
 | 4 | Relations (section 7), `relations`, solver and minimal conflict set (section 8) | `relations` on `tests/fixtures/relations/relations.scene.json` gives its expected results; every scene in `tests/fixtures/solver/` meets its expected file; the solve of `perf` meets the performance rule of section 8 |
 | 5 | Painter's order of parts (section 13.4); `export --target runtime` (section 13.7) and `gen-bbox` (section 14); PNG render (section 14); Godot adapter and its cross-checks (sections 13.6, 13.8) | Every case in `tests/fixtures/export/cases.json` meets its expected files: the runtime file, and the `gen-bbox` file for each listed flag set, equal their expected files as JSON (same keys in the same order, numbers within the case file's tolerances) and are byte-identical over two runs; for each case with a `png`, `render -o out.png` decodes to the same size as that PNG and each RGBA channel of each pixel is within 1 of it; `dist/isoblock.mjs`, copied alone into an empty directory, writes a PNG; `npm run test:godot` passes section 13.6 on every case |

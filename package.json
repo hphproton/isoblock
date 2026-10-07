@@ -1,6 +1,6 @@
 {
   "name": "isoblock",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "Isometric scene layout as data: validate, check, render and describe.",
   "type": "module",
   "private": true,

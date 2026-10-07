@@ -3,6 +3,7 @@ import { genBboxFile } from "../core/export/genBbox";
 import { runtimeFile } from "../core/export/runtime";
 import { IsoblockError } from "../core/errors";
 import { serializeJson } from "../core/serialize";
+import { sceneInState } from "../core/states";
 import { parseScene } from "../core/validate";
 import type { Parsed } from "./args";
 import type { Io } from "./io";
@@ -20,7 +21,7 @@ export function runExportCommand(args: ExportArgs, io: Io): number {
   const scene = parseScene(io.readText(args.file));
   const file = args.target === "runtime"
     ? runtimeFile(scene)
-    : genBboxFile(scene, { units: args.bboxUnits ?? "px", order: args.bboxOrder ?? "xyxy" });
+    : genBboxFile(sceneInState(scene, args.state), { units: args.bboxUnits ?? "px", order: args.bboxOrder ?? "xyxy" });
   const text = serializeJson(file);
   if (args.output === undefined) {
     io.out(text);

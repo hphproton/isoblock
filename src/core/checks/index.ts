@@ -1,9 +1,12 @@
 import type { CheckResult, CheckSpec, ImplementedCheck, Scene } from "../types";
+import { checkCapacity } from "./capacity";
 import { checkClearance } from "./clearance";
 import { checkInRegion, updateInRegion } from "./inRegion";
 import { checkLaneClear } from "./laneClear";
 import { checkLaneReaches } from "./laneReaches";
+import { checkMinScreenSize } from "./minScreenSize";
 import { checkNoOverlap, updateNoOverlap } from "./noOverlap";
+import { checkReachable } from "./reachable";
 import { canonical, skipResult } from "./result";
 import { checkVisible } from "./visible";
 
@@ -27,6 +30,12 @@ function evaluate(scene: Scene, spec: CheckSpec): CheckResult {
       return checkLaneReaches(scene, implemented);
     case "visible":
       return checkVisible(scene, implemented);
+    case "reachable":
+      return checkReachable(scene, implemented);
+    case "capacity":
+      return checkCapacity(scene, implemented);
+    case "min_screen_size":
+      return checkMinScreenSize(scene, implemented);
     default:
       return skipResult(spec, `check "${spec.check}" is not implemented in this stage`);
   }

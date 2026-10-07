@@ -205,3 +205,24 @@ Template:
   - A negative control was run once by hand: draw order reversed in the adapter makes the cross-check fail (2122 to 17364 pixels differ on four cases) and 19 adapter checks fail.
 - Answer (maintainer): Approved as written. SPEC 13.6 now states the top-left rule for pixel centers on an edge and the case of a box thinner than 1 px, and SPEC 13.8 the error codes. The maintainer's own measure (a half-open even-odd rule) gives 17 differing pixels on `crowd` with the same adapter, also within the limit. AGENTS.md now says the export templates are needed only when a stage exports builds.
 
+
+## Q-021 · Gameplay checks and states where SPEC 9.2 is silent
+- Spec section: 6, 9.2, 11, 11.1
+- Question: A few cases of the stage 6 contract are not stated.
+- Reading chosen for now:
+  - `reachable`: `area` may name a zone of any `kind` (only its polygon matters); zones with `kind: "blocked"` and 3 or more points are cut out of every walkable area, also of `area`. A zone without 3 points is ignored as walkable or blocked ground, and is `skip` only when `area` names it. With `radius: 0` an object never closes a cell (a distance of 0 is at least `0 - EPS`), as the definition reads. No free cell at all gives `start is not on walkable ground`.
+  - `reachable` on a grid of more than 4,000,000 cells is `skip` with a message that asks for a larger `step`, because a mistyped `step` would otherwise exhaust memory. The limit is `MAX_CELLS` in `src/core/checks/walkGrid.ts`.
+  - `anchor:<object id>/<anchor id>`: ids may contain `/`; the first split from the left at which the object and its type's anchor both exist is used. The schema only requires `lane:<id>` or `anchor:<x>/<y>` as a string, and a reference that does not resolve is `E_REF`.
+  - `capacity`: `allow` is a list of object ids (not pairs as in `no_overlap`). Objects outside `ids` still block bodies. `ids` of the result lists the objects with at least one candidate, also when all their candidates are rejected. `body` entries may be 0.
+  - `min_screen_size` `value` is rounded to 6 decimals like the other computed numbers.
+  - In a state, a list that loses all its objects checks none (an empty list, not "all objects"); pairs of `no_overlap` `allow` that name a hidden object are dropped.
+  - `--state default` is a usage error unless the scene defines a state called `default`; the word `default` in the `compare` header is only what is shown without `--state`.
+  - `check --json --state NAME` prints `{ "scene", "results" }` as without a state (SPEC 11), although the expected files of the fixtures also carry a `state` key. The text summary names the state: `scene walk (state open): ...`.
+  - `compare --state NAME`: every column hides the objects that the **base** scene's state lists (like the base's checks), also for a scene variant that has its own `states`; hidden objects are not counted in `moved`. `locksTouched` does not depend on the state.
+- Answer (maintainer): Approved as written. SPEC 9.2 now states each point: `area` of any kind with blocked zones cut out, zones without 3 points, `radius: 0`, no free cell, the 4,000,000-cell limit, the anchor split, `capacity` blocking and `ids`, 6-decimal `min_screen_size` values, empty lists in a state, and `--state default`; SPEC 11 the `check --json` shape under a state; SPEC 11.1 that `compare --state` uses the base scene's state and leaves hidden objects out of `moved`. With `radius: 0` objects block nothing; a scene that needs blocking uses a radius above 0.
+
+## Q-022 · Which frame-time conditions follow the 3-run rule
+- Spec section: 17 (stage 2), Q-005
+- Question: Q-005 says the criterion is the p95 interval on the phone profile, and that the work time and the desktop profiles are information. The four tests in `tests/editor/frameTime.test.ts` still assert more: p95 work at most 16.7 ms on all four profiles, the median interval on two, and the p95 interval on the phone profile at the display rate. The roadmap asks for "up to 3 runs, pass when one run meets the criterion".
+- Reading chosen for now: Each test keeps the conditions it had and gets up to 3 runs, each on a fresh page; it passes when one run meets all of its conditions, and every run prints its numbers. Nothing was loosened. If only the phone interval should decide, the other conditions would become output only.
+- Answer (maintainer): Approved as written: every condition each test had stays, and a test passes when one of up to 3 runs meets all of them. SPEC 17 now says so.

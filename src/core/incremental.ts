@@ -7,7 +7,7 @@ export type Changed = ReadonlySet<string> | "all";
 /**
  * Compare two scenes by reference, the way immutable edits keep unchanged data shared. Objects
  * count as changed when their data changed or when the definition of their type changed.
- * The camera, frame, strips, lanes and check list reach every check, so a change there is `"all"`.
+ * The camera, frame, strips, zones, lanes and check list reach every check, so a change there is `"all"`.
  */
 export function changedObjects(prev: Scene, next: Scene): Changed {
   if (prev === next) return new Set();
@@ -15,6 +15,7 @@ export function changedObjects(prev: Scene, next: Scene): Changed {
     prev.camera !== next.camera ||
     prev.frame !== next.frame ||
     prev.strips !== next.strips ||
+    prev.zones !== next.zones ||
     prev.lanes !== next.lanes ||
     prev.checks !== next.checks
   ) {
@@ -73,7 +74,11 @@ export function involves(spec: CheckSpec, changed: ReadonlySet<string>): boolean
       return [...changed].some((id) => !ignored.has(id));
     }
     case "visible":
+    case "reachable":
+    case "capacity":
       return changed.size > 0;
+    case "min_screen_size":
+      return changed.has(check.target);
     default:
       return false;
   }

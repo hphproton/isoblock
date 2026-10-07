@@ -1,5 +1,6 @@
+import { laneRefId, parseAnchorRef } from "./checks/points";
 import { resolvePointer } from "./pointer";
-import type { CheckSpec, Scene } from "./types";
+import type { CheckSpec, PointRef, Scene } from "./types";
 
 function duplicates(label: string, ids: readonly string[]): string[] {
   const seen = new Set<string>();
@@ -53,7 +54,15 @@ function need(set: ReadonlySet<string>, kind: string, id: string, owner: string)
   return set.has(id) ? [] : [`${owner} refers to unknown ${kind} "${id}"`];
 }
 
-function checkErrors(check: CheckSpec, names: Names): string[] {
+/** A point parameter: a `[u, v]` point, `lane:<id>` or `anchor:<object id>/<anchor id>` (SPEC section 9.2). */
+function pointErrors(scene: Scene, names: Names, ref: PointRef, owner: string): string[] {
+  const lane = laneRefId(ref);
+  if (lane !== null) return need(names.lanes, "lane", lane, owner);
+  if (typeof ref === "string" && parseAnchorRef(scene, ref) === null) return [`${owner} refers to unknown anchor "${ref}"`];
+  return [];
+}
+
+function checkErrors(scene: Scene, check: CheckSpec, names: Names): string[] {
   const owner = `check "${check.id}"`;
   const objects = (ids: readonly string[] | undefined) =>
     (ids ?? []).flatMap((id) => need(names.objects, "object", id, owner));
@@ -86,6 +95,23 @@ function checkErrors(check: CheckSpec, names: Names): string[] {
       const c = check as Extract<CheckSpec, { check: "visible" }>;
       return objects([c.target]);
     }
+    case "reachable": {
+      const c = check as Extract<CheckSpec, { check: "reachable" }>;
+      return [
+        ...pointErrors(scene, names, c.from, owner),
+        ...pointErrors(scene, names, c.to, owner),
+        ...(c.area === undefined ? [] : need(names.zones, "zone", c.area, owner)),
+        ...objects(c.ignore),
+      ];
+    }
+    case "capacity": {
+      const c = check as Extract<CheckSpec, { check: "capacity" }>;
+      return [...objects(c.ids), ...objects(c.allow)];
+    }
+    case "min_screen_size": {
+      const c = check as Extract<CheckSpec, { check: "min_screen_size" }>;
+      return objects([c.target]);
+    }
     default:
       return [];
   }
@@ -111,7 +137,7 @@ export function referenceErrors(scene: Scene): string[] {
     if (!Object.hasOwn(scene.types, o.type)) out.push(`object "${o.id}" uses unknown type "${o.type}"`);
   }
   out.push(...relationErrors(scene, names));
-  for (const c of scene.checks ?? []) out.push(...checkErrors(c, names));
+  for (const c of scene.checks ?? []) out.push(...checkErrors(scene, c, names));
   for (const [state, def] of Object.entries(scene.states ?? {})) {
     for (const id of def.hide ?? []) {
       if (!names.objects.has(id)) out.push(`state "${state}" hides unknown object "${id}"`);

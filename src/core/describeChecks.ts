@@ -1,11 +1,13 @@
 import { fmt, percent, plain } from "./format";
 import type {
+  CapacityCheck,
   CheckResult,
   CheckSpec,
   ClearanceCheck,
   InRegionCheck,
   LaneClearCheck,
   LaneReachesCheck,
+  MinScreenSizeCheck,
   Scene,
 } from "./types";
 
@@ -42,6 +44,14 @@ function body(spec: CheckSpec, r: CheckResult): string {
     case "visible": {
       const who = r.occluders ?? [];
       return `${r.ids[0]}: ${percent(r.value ?? 0)}% occluded${who.length > 0 ? ` (${join(who)})` : ""}`;
+    }
+    case "reachable":
+      return `${join(r.ids) || "path"}: ${r.message}`;
+    case "capacity":
+      return `${(spec as CapacityCheck).kind}: ${r.value ?? 0} usable < ${r.threshold as number}${(r.rejected ?? []).length > 0 ? ` (blocked: ${join(r.rejected ?? [])})` : ""}`;
+    case "min_screen_size": {
+      const s = spec as MinScreenSizeCheck;
+      return `${s.target}: ${Math.round(r.value ?? 0)} px < ${plain(s.min)} px`;
     }
     default:
       return r.message;

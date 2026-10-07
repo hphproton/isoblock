@@ -61,7 +61,9 @@ The maintainer computes expected results with its own implementation, kept on br
 
 Give the builder this prompt, unchanged:
 
-`Role: builder. Follow AGENTS.md and build only the stage open in ROADMAP.md.`
+`Role: builder. Follow AGENTS.md and build only the stage open in ROADMAP.md, including its end-of-session steps: push your branch and open its pull request.`
+
+The words after the colon are the owner's request for the pull request; some agent environments wait for such a request before they open one.
 
 Do not give builders material from any specific game or client project.
 

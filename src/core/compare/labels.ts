@@ -1,4 +1,14 @@
-import type { CheckResult, CheckSpec, ClearanceCheck, InRegionCheck, LaneClearCheck, LaneReachesCheck, VisibleCheck } from "../types";
+import type {
+  CapacityCheck,
+  CheckResult,
+  CheckSpec,
+  ClearanceCheck,
+  InRegionCheck,
+  LaneClearCheck,
+  LaneReachesCheck,
+  MinScreenSizeCheck,
+  VisibleCheck,
+} from "../types";
 
 const TIMES = "\u00d7";
 
@@ -22,6 +32,12 @@ export function checkLabel(spec: CheckSpec, base: CheckResult, unit: string): st
       return `lane_reaches ${(spec as LaneReachesCheck).lane} (y px)`;
     case "visible":
       return `visible ${(spec as VisibleCheck).target} (% occluded)`;
+    case "reachable":
+      return `reachable ${spec.id} (${unit})`;
+    case "capacity":
+      return `capacity ${spec.id} (usable ${(spec as CapacityCheck).kind})`;
+    case "min_screen_size":
+      return `min_screen_size ${(spec as MinScreenSizeCheck).target} (px)`;
     default:
       return `${spec.check} ${spec.id}`;
   }

@@ -2,6 +2,31 @@
 
 ## Unreleased
 
+## 0.6.0
+
+Stage 6: states and the gameplay checks.
+
+### Added
+
+- States (SPEC 9.2). `states.<name>` has only `hide` (and `x-` keys) in the schema; a state that hides objects is applied with `--state NAME` to `check`, `render` (SVG and PNG), `compare` and `export --target gen-bbox`. In a state, hidden objects are not drawn, get no generation box and do not overlap, block, occlude or count anywhere; a check that names a hidden object by itself is `skip`; the lists `ids`, `allow` and `ignore` lose the hidden objects (a list that loses all of them checks none). An unknown state and `--state` with `export --target runtime` are usage errors (exit 2).
+- Check `reachable`: a walkable path from `from` to `to` on a grid of free cells (cell centers at `(i + 0.5) * step`; walkable zones or the zone `area`, minus blocked zones and the footprints within `radius`), the fewest moves between cells that share an edge, `max`, and the three messages `start is not on walkable ground`, `target is not on walkable ground` and `no walkable path`. Points are `[u, v]`, `lane:<id>` or `anchor:<object id>/<anchor id>`. A scene without a walkable zone, an `area` with fewer than 3 points, or a grid of more than 4,000,000 cells gives `skip`.
+- Check `capacity`: the anchors of a `kind` that can be used at once (candidates in file order, a `body` rectangle per anchor, `allow`), with `accepted` and `rejected` labels in the result.
+- Check `min_screen_size`: the on-screen height of a target, scaled by `screenWidth / frame.w`.
+- Schema and reference rules for the parameters of the three checks (`lane:`, `anchor:`, zones, objects). `check --json` results of `capacity` carry `accepted` and `rejected`.
+- `compare` labels and cells for the three checks, `compare --state NAME` (every column in the state of the base scene, the header names it), and the `state` field of the JSON output.
+- Core: `src/core/states.ts`, `src/core/checks/{reachable,walkGrid,capacity,minScreenSize,points,inState}.ts`, `src/core/polygon.ts` (the polygon tests that `inside` used, now shared).
+- Tests that load `tests/fixtures/gameplay/walk.scene.json` and every case of `tests/fixtures/states/cases.json` (check results per state, generation boxes, the block image, the `compare` case in all three formats), in the core, through the CLI with in-memory files and through `dist/isoblock.mjs`; unit tests for each check, the states, the schema and reference rules, `describe` and the editor's live check panel on `walk`.
+- `docs/AGENT_GUIDE.md` covers states, `--state` and the three checks.
+
+### Changed
+
+- `--state` is no longer "added in stage 6"; it is accepted by `check`, `render`, `compare` and `export` and refused by other commands (`flag '--state' does not apply to '<command>'`).
+- `reachable`, `capacity` and `min_screen_size` are no longer `skip` as "not implemented": a scene file that lists one without its parameters is now invalid (`E_SCHEMA`). `tests/fixtures/lane.scene.json` keeps `skip` for its `reachable` check because the scene has no walkable zone.
+- The text summary of `check` names the state: `scene walk (state open): ...`. The JSON output is unchanged.
+- The `describe` lines of the new checks: `FAIL k3 reachable bench2: path of 3.10 u (max 1.00)`, `FAIL s1 capacity seat: 4 usable < 6`, `FAIL m1 min_screen_size walker1: 126 px < 200 px`.
+- The editor's live check panel runs the three checks again when any object changes (`min_screen_size`: its target), and a change of the zones counts as a change of everything.
+- The frame-time tests of stage 2 measure up to 3 runs, each on a fresh page, and pass when one run meets the test's conditions (SPEC 17); every run prints its numbers.
+
 ## 0.5.0
 
 Stage 5: export for engines and image generation, the block image, and the Godot adapter.

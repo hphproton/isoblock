@@ -2,7 +2,7 @@
 
 How an AI agent uses IsoBlock. The builder fills each section as commands ship.
 
-Commands in this guide are available now (stage 5): `validate`, `check`, `render`, `describe`, `relations`, `solve`, `patch`, `diff`, `compare`, `export`, and the editor page `dist/editor.html`. Commands from later stages are listed at the end of the Commands section.
+Commands in this guide are available now (stage 6): `validate`, `check`, `render`, `describe`, `relations`, `solve`, `patch`, `diff`, `compare`, `export`, and the editor page `dist/editor.html`. Commands from later stages are listed at the end of the Commands section.
 
 ## Install and build
 
@@ -24,20 +24,20 @@ Every command takes a scene file (`*.scene.json`, format `isoblock/1`) and reads
 
 ```
 isoblock validate <scene.json>
-isoblock check    <scene.json> [--json]
-isoblock render   <scene.json> -o <out.svg|out.png>
+isoblock check    <scene.json> [--json] [--state NAME]
+isoblock render   <scene.json> [--state NAME] -o <out.svg|out.png>
 isoblock describe <scene.json>
 isoblock relations <scene.json> [--json]
 isoblock solve    <scene.json> [--only a,b] [-o <proposal.json>] [--patch <moves.patch>] [--json]
 isoblock patch    <scene.json> <patch> [-o <out.json>] [--dry-run] [--json]
 isoblock diff     <a.json> <b.json> [--json]
-isoblock compare  <scene.json> --variant NAME=FILE... [--format text|md|json]
-isoblock export   <scene.json> --target runtime|gen-bbox [-o <out.json>] [--bbox-units px|norm1000] [--bbox-order xyxy|yxyx]
+isoblock compare  <scene.json> --variant NAME=FILE... [--state NAME] [--format text|md|json]
+isoblock export   <scene.json> --target runtime|gen-bbox [-o <out.json>] [--bbox-units px|norm1000] [--bbox-order xyxy|yxyx] [--state NAME]
 ```
 
 ### `validate`
 
-Checks the file against `schema/isoblock-1.json`, then checks references: duplicate ids, object types that do not exist, relation targets, check parameters that name a missing region, strip, lane or object, states that hide a missing object, and assumption paths that do not resolve in the file.
+Checks the file against `schema/isoblock-1.json`, then checks references: duplicate ids, object types that do not exist, relation targets, check parameters that name a missing region, strip, zone, lane, object or anchor (`lane:<id>`, `anchor:<object id>/<anchor id>`), states that hide a missing object, and assumption paths that do not resolve in the file. A state may only have `hide` (and `x-` keys).
 
 ```
 $ isoblock validate yard.scene.json
@@ -76,10 +76,21 @@ PASS c3 lane_reaches: lane L1 meets right edge at y=765.58 (view y 150-1000)
 FAIL c4 lane_reaches: lane L2 meets right edge at y=1365.58 (view y 150-1000)
 FAIL c5 lane_reaches: lane does not reach edge
 SKIP c6 lane_clear: lane "L4" has 3 points; only 2-point lanes are supported
-SKIP c7 reachable: check "reachable" is not implemented in this stage
+SKIP c7 reachable: the scene has no zone with kind "walkable"
 ```
 
-`--json` prints `{ "scene": "<id>", "results": [...] }` instead. Each result has `id`, `check`, `status` (`pass`, `fail`, `warn` or `skip`), `value`, `threshold`, `ids` and `message`; `no_overlap` adds `pairs`, `visible` adds `occluders`. Keys are always in this order. `message` is one line meant for people; read `status`, `value` and `ids` instead of parsing it.
+`--json` prints `{ "scene": "<id>", "results": [...] }` instead. Each result has `id`, `check`, `status` (`pass`, `fail`, `warn` or `skip`), `value`, `threshold`, `ids` and `message`; `no_overlap` adds `pairs`, `visible` adds `occluders`, `capacity` adds `accepted` and `rejected`. Keys are always in this order. `message` is one line meant for people; read `status`, `value` and `ids` instead of parsing it.
+
+`--state NAME` checks the scene as it is in one of its states, with the objects that state hides taken out (see [States](#states)). The summary line then reads `scene walk (state open): ...`; `--json` keeps the same shape. An unknown state name exits 2 (`E_USAGE`) and lists the states the scene has.
+
+```
+$ isoblock check walk.scene.json --state open
+scene walk (state open): 17 checks, 13 pass, 4 fail, 0 warn, 0 skip
+PASS k1 reachable: path of 3.80 u
+PASS k2 reachable: path of 13.10 u
+FAIL k3 reachable: path of 3.10 u (max 1.00)
+...
+```
 
 Exit codes of `check`:
 
@@ -101,7 +112,7 @@ wrote yard.svg
 
 Agents do not need the image to work with a scene; use `describe`. Open the SVG only when a person asks to see it. Elements carry `data-layer` and `data-ref` attributes (the object, lane or region id) so a viewer can find them.
 
-`-o` is required and must end in `.svg` or `.png`.
+`-o` is required and must end in `.svg` or `.png`. `--state NAME` draws the scene in that state: the objects it hides are not drawn (SVG and PNG).
 
 #### Block image (PNG)
 
@@ -130,13 +141,9 @@ Described in [Export](#export) below.
 
 ### Not available yet
 
-These flags exist in the spec but arrive in a later stage. Using one exits with code 2 and names the stage:
+`--state` belongs to `check`, `render`, `compare` and `export --target gen-bbox`. On any other command it is a usage error (`flag '--state' does not apply to '<command>'`), and so it is with `export --target runtime`: the runtime file carries no states until stage 7.
 
-| Flag | Stage |
-|---|---|
-| `--state NAME` (also `compare --state`) | 6 |
-
-Export targets `godot`, `phaser` and `tiled` are not scheduled (the Godot adapter reads the `runtime` file instead). `compare --render` is not scheduled either.
+Export targets `godot`, `phaser` and `tiled` are not scheduled (the Godot adapter reads the `runtime` file instead). `compare --render` is not scheduled either. The checks `sort_consistency` and `state_stable` are not implemented: they return `skip`.
 
 ## Editor
 
@@ -205,7 +212,7 @@ assumptions: tree.size.h=2.40
 - **Header:** scene id, version and status from `meta`, unit, camera (`iso30`, `dimetric21`, or `u<angleU>/v<angleV>`), pixels per unit, frame size, and the first region that does not block the scene.
 - **Object table:** one row per object. `pos` is the footprint's minimum (u, v) corner after rotation. `size` is the type's size `w,d,h` before rotation. `rot` is 0, 90, 180 or 270. `locks` lists locked properties, comma-separated, or `-`.
 - **`*`:** a number that has an entry in `assumptions`. It is provisional: ask before relying on it.
-- **Check lines:** one per `fail`, `warn` or `skip` check, in `checks` order, with the ids involved. With none, the output says `checks: all N pass` (or `checks: none`).
+- **Check lines:** one per `fail`, `warn` or `skip` check, in `checks` order, with the ids involved. The gameplay checks read `FAIL k3 reachable bench2: path of 3.10 u (max 1.00)`, `FAIL s1 capacity seat: 4 usable < 6 (blocked: ...)` and `FAIL m1 min_screen_size walker1: 126 px < 200 px`. With none, the output says `checks: all N pass` (or `checks: none`).
 - **Numbers:** 2 decimals (up to 4 when 2 would lose information), whole pixels after `≈`, whole percentages.
 - **Assumptions:** `<type>.size.<w|d|h>`, `<type>.<part>.<u0|v0|h0|u1|v1|h1>`, or the JSON Pointer for other paths. `-` when there are none.
 
@@ -221,6 +228,9 @@ Parameters marked optional can be left out. A check with a wrong or unknown para
 | `lane_clear` | `lane`; optional `ignore` | No object outside `ignore` has a footprint that overlaps the lane | Number of blocking objects |
 | `lane_reaches` | `lane`, `edge` (`right`, `left`), `region` | The lane meets the frame edge, and the whole meeting segment lies inside the region's y range | Largest y of the meeting segment, in px. `null` and `fail` when the lane does not reach the edge |
 | `visible` | `target`, `maxOccluded`; optional `from` (default 0.55) | The share of the target's camera-facing faces hidden by other objects is at most `maxOccluded` | Occluded fraction, 0 to 1 |
+| `reachable` | `from`, `to` (points); optional `area`, `radius` (0.2), `step` (0.1), `ignore`, `max` | A walkable path exists from `from` to `to` on a grid of free cells, and with `max` it is at most that long | Path length in units (moves times `step`). `null` and `fail` when there is no path |
+| `capacity` | `kind`, `min`; optional `body` (`[0.5, 0.5]`), `ids`, `allow` (object ids) | At least `min` anchors of `kind` can be used at once | Number of usable anchors |
+| `min_screen_size` | `target`, `min` (pixels); optional `screenWidth` (default: the frame width) | The target is at least `min` pixels tall on screen | Pixels |
 
 Notes:
 
@@ -228,7 +238,41 @@ Notes:
 - `visible` samples the top face and the side faces from `from` times the height up to the full height, 64 points per face, and casts a ray toward the camera from each point through the parts of every other object. `occluders` lists the objects that hide at least one point.
 - Footprints always use the type's `size` rectangle, even when parts stick out. Parts matter for `visible` and for drawing.
 - **`lane_clear` and `lane_reaches` support one lane shape:** exactly 2 points, parallel to u or v. Other shapes return `skip`. `lane_reaches` also returns `skip` for the `top` and `bottom` edges.
-- **`skip` is not a pass.** It means the tool could not evaluate the check: the check is not implemented in this stage (`reachable`, `capacity`, `min_screen_size`, `sort_consistency`, `state_stable`), or its input has an unsupported shape. A skipped check has `value: null` and `threshold: null`, and `check` exits 1.
+- **`skip` is not a pass.** It means the tool could not evaluate the check: the check is not implemented in this stage (`sort_consistency`, `state_stable`), or its input has an unsupported shape (for example `reachable` in a scene with no walkable zone), or the check names an object that the chosen state hides. A skipped check has `value: null` and `threshold: null`, and `check` exits 1.
+
+### The gameplay checks
+
+A point in `reachable` is `[u, v]`, `lane:<id>` (the first point of the lane for `from`, its last point for `to`) or `anchor:<object id>/<anchor id>` (the anchor's ground point after rotation; its height is ignored).
+
+**`reachable`** walks a grid:
+
+- **Walkable area:** the polygon of the zone named by `area`, else every zone with `kind: "walkable"`; with neither, `skip`. Zones with `kind: "blocked"` are cut out.
+- **Grid:** the cell (i, j) has its center at `((i + 0.5) * step, (j + 0.5) * step)`. A cell is free when its center is in the walkable area (the boundary counts as inside), not in a blocked zone, and at least `radius` away from the footprint of every object, except the objects in `ignore` and the objects whose anchors `from` and `to` name.
+- **Start and target** are the free cells nearest to the points (ties: smaller i, then smaller j). If that cell is farther than `step` from the point, the check fails with `start is not on walkable ground` or `target is not on walkable ground`.
+- **Path:** the fewest moves between free cells that share an edge; the value is moves times `step`. No path: `fail`, `value: null`, `no walkable path`. With `max`, a longer path fails and keeps its value.
+- `ids` are the objects whose anchors `from` and `to` name. A gap close to `step + 2 * radius` wide may open or close as the grid shifts: use a smaller `step` where it matters. A grid of more than 4,000,000 cells is not evaluated (`skip`): use a larger `step`.
+
+**`capacity`** counts seats and the like. Candidates are the anchors with the given `kind`, objects in file order and anchors in type order (`ids` limits the objects). The body of a candidate is a rectangle `body` (`[w along u, d along v]`, never rotated) centered on the anchor's ground point. In order, a candidate is accepted when its body overlaps neither the footprint of another object (except those in `allow`) nor the body of a candidate accepted before. `accepted` and `rejected` list `<object id>/<anchor id>` labels.
+
+**`min_screen_size`** projects the 8 corners of every part of the target and takes the height of their screen bounds, times `screenWidth / frame.w` (so a scene drawn at 1000 px wide can be checked as if the screen were 1920 px wide).
+
+## States
+
+A state is a named set of hidden objects (tents put up for an event, a closed gate):
+
+```json
+"states": { "open": { "hide": ["barrier1"] }, "empty": { "hide": ["walker1", "rock1"] } }
+```
+
+A state only hides objects (and may carry `x-` keys); states that move objects are not scheduled. `--state NAME` works on `check`, `render`, `compare` and `export --target gen-bbox`; without it every object is present. In a state:
+
+- hidden objects are not drawn, get no generation box, and do not overlap, block, occlude or count anywhere (lanes, paths, seats, rays);
+- a check that names a hidden object by itself is `skip` (`clearance` `a` or `b`, the `target` of `visible` and `min_screen_size`, an anchor in `reachable` `from` or `to`), with a message that says which object and which state;
+- the lists `ids`, `allow` and `ignore` of a check lose the hidden objects; a list that loses all of them checks no object (it does not fall back to all objects).
+
+Usage errors (exit 2, `E_USAGE`): a state name the scene does not define (the message lists the states it has), and `--state` with `export --target runtime`.
+
+`compare --state NAME` evaluates every column in the state and names it in the header (`compare walk · state open · base vs A, B`). The hidden objects are those the **base** scene's state lists, in every column, as every column runs the base's checks; hidden objects are not counted as moved.
 
 ## Patches
 
@@ -371,7 +415,7 @@ Compares the scene with 1 to 4 variants by measured values. It does not choose: 
 - A variant is a patch file or another scene file (a JSON file whose first character is `{`). Names must be unique and cannot be `base`. Columns are in the order given, base first.
 - Each variant is applied to a copy of the base. **Locks are ignored but recorded**: a variant that touches a lock is marked, not stopped. A variant that is malformed or gives an invalid scene stops the command with exit code 2.
 - **Every column runs the checks of the base scene**, so the columns are comparable. A variant that changes `checks` is compared under the base's checks.
-- The label of a variant is the first comment line of its patch, else its name. `--state` is added in stage 6 and `--render` is not scheduled.
+- The label of a variant is the first comment line of its patch, else its name. `--state NAME` evaluates every column in that state (see [States](#states)); `--render` is not scheduled.
 - The exit code is 0 when the command completes, even if checks fail.
 
 ```
@@ -390,8 +434,8 @@ objects moved / total (u)    -       1 / 0.60  1 / 0.40  1 / 1.00
 How to read the table:
 
 - `failing checks`: checks with status `fail` or `skip`. `locks touched`: how many base locks the variant touches, then their labels; any entry marks the variant invalid (variant C above moves the locked tree).
-- One row per check that fails or is skipped in some column, or whose value differs from the base in some column, in the order of `checks`. The label names the check and its unit: `in_region <region>[/<strip>] (objects outside)`, `no_overlap (pairs)`, `clearance <a>×<b> (<unit>)`, `lane_clear <lane> (blocking objects)`, `lane_reaches <lane> (y px)`, `visible <target> (% occluded)`; other checks show as `<check> <id>`.
-- Cells: counts as integers, clearance with 2 decimals, `lane_reaches` in whole pixels (`none` when the lane does not reach the edge), `visible` in whole percent, `skip` for a skipped check. A trailing ` ✗` marks a value whose status is `fail` or `skip`.
+- One row per check that fails or is skipped in some column, or whose value differs from the base in some column, in the order of `checks`. The label names the check and its unit: `in_region <region>[/<strip>] (objects outside)`, `no_overlap (pairs)`, `clearance <a>×<b> (<unit>)`, `lane_clear <lane> (blocking objects)`, `lane_reaches <lane> (y px)`, `visible <target> (% occluded)`, `reachable <check id> (<unit>)`, `capacity <check id> (usable <kind>)`, `min_screen_size <target> (px)`; other checks show as `<check> <id>`.
+- Cells: counts as integers, clearance with 2 decimals, `lane_reaches` in whole pixels (`none` when the lane does not reach the edge), `visible` in whole percent, `reachable` with 2 decimals (`none` when there is no path), `capacity` as an integer, `min_screen_size` in whole pixels (halves up), `skip` for a skipped check. A trailing ` ✗` marks a value whose status is `fail` or `skip`.
 - `objects moved / total`: objects present in both scenes whose `pos` differs, and the sum of their ground distances.
 
 Formats: `text` (default, shown above, columns left-aligned and padded), `md` (the same rows as a Markdown table with the header `| metric | base | A | B | C |`) and `json`:
@@ -401,7 +445,7 @@ Formats: `text` (default, shown above, columns left-aligned and padded), `md` (t
   "checks": [{ "id", "check", "label", "threshold", "values", "status", "delta" }] }
 ```
 
-Every list has one entry per column, base first (`label` is `null` for the base; `moved` is `null` for the base). `delta` is the value minus the base value rounded to 6 decimals, `null` for the base and for values that are `null`. `state` is `default` until stage 6 adds states.
+Every list has one entry per column, base first (`label` is `null` for the base; `moved` is `null` for the base). `delta` is the value minus the base value rounded to 6 decimals, `null` for the base and for values that are `null`. `state` is the name given to `--state`, else `default`.
 
 ## Relations
 
@@ -555,6 +599,7 @@ Use `--only` to move a few objects and keep the rest of a settled layout: `isobl
 | `--target godot`, `phaser` or `tiled` | `export target '<name>' is not scheduled` |
 | another name | `unknown export target '<name>'` |
 | `--bbox-units` or `--bbox-order` with `runtime` | `--bbox-units applies to the gen-bbox target only` |
+| `--state` with `runtime` | `--state applies to the gen-bbox target only` |
 
 ### `--target runtime`
 
@@ -577,7 +622,7 @@ Each object, in file order (output of `yard`, one line each):
 - `footprint` is `[u0, v0, u1, v1]` after rotation. `parts[].box` is `[u0, v0, h0, u1, v1, h1]` in world units after rotation; a type without parts has one part, `body`. `anchors[].at` is `[u, v, h]` in world units after rotation; `facing` and `kind` appear only when the type gives them.
 - `order` is the part's place in the painter's order (SPEC section 13.4): 0 is drawn first. It is computed for all parts of all objects together, so a part of one object can sit between two parts of another (the canopy of a tree in front of an actor, the actor in front of the trunk). Adapters use it as the draw order and do not sort static objects. `render` and the editor draw in the same order.
 - Numbers the tool computes (footprints, boxes, anchors) are rounded to 6 decimals; `pos` is copied. `cameraDir` is the camera direction of SPEC section 5 with each component rounded to 9 decimals (`[1, 1, 1]` for true isometric).
-- Objects hold no state or slice data yet (stage 6).
+- Objects hold no state or slice data yet (stage 7).
 
 ### `--target gen-bbox`
 
@@ -612,6 +657,7 @@ $ isoblock export yard.scene.json --target gen-bbox --bbox-units norm1000 --bbox
 - `box` is the screen bounds of every corner of every part of the object, cut to the frame. An object that is outside the frame (nothing left of its box) is not listed. `clipped` is `true` when the frame cut the box. `hint` is the type's `genHint`; it is left out when the type has none. Boxes follow the order of the objects in the scene. Groups are not scheduled.
 - `--bbox-units px` (default) gives pixels rounded to 2 decimals; `norm1000` gives `x * 1000 / frame width` and `y * 1000 / frame height` as whole numbers, halves rounded up.
 - `--bbox-order xyxy` (default) gives `[x0, y0, x1, y1]`; `yxyx` gives `[y0, x0, y1, x1]`.
+- `--state NAME` leaves out the objects that state hides (see [States](#states)): `walk.scene.json --state open` has no box for `barrier1`. The other boxes are the same as without a state.
 - Generation never writes back to the scene file. A tool that measures a generated image against the boxes is outside this project.
 
 ## Godot adapter
@@ -651,7 +697,7 @@ The same script is available as the global class `IsoblockRuntime` once Godot ha
 - `load_file(path)` returns `{ data, code, message }`. `build(data, color_of)` returns `{ root, code, message }`; `color_of` takes the object's dictionary and returns the flat `Color` of its boxes (optional). `check(data)` validates without building. `project(camera, u, v, h)`, `unproject(camera, point, h)` and `camera_direction(camera)` match `tests/golden/projection.json` within 0.001.
 - Errors are returned with a code (and also printed): `E_SCHEMA` (a `schema` other than `isoblock-runtime/1`, or a missing key), `E_DUPLICATE_ID` (object, zone or lane ids, or the part or anchor ids of one object), `E_Z_RANGE` (more parts than `z_index` holds: 4097), `E_IO`, `E_JSON_PARSE`. On an error nothing is built and `root` is null.
 - The tree: root (named by the scene id) with three containers. `Objects` has one `Node2D` per object, named by its id, with meta `id`, `type`, `rot`, `tags` and `footprint`; each part is a child `Node2D` with an absolute `z_index` equal to its `order` and the faces of its box that point toward the camera as `Polygon2D` (antialiasing off, one flat color per object); each anchor is a `Marker2D` named by its id at its projected point, with meta `kind` and `facing`. `Zones` has one hidden `Polygon2D` per zone and `Lanes` one hidden `Line2D` per lane, each with its data as meta (`kind`, `points`, and for lanes `dir` and `width` in world units).
-- Gameplay reads zones, lanes and anchors from the meta; the adapter does not move anything. Moving objects and sorting them against static parts arrive in stage 6.
+- Gameplay reads zones, lanes and anchors from the meta; the adapter does not move anything. Moving objects and sorting them against static parts arrive in stage 7.
 
 ### Test
 

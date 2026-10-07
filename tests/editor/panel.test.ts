@@ -5,6 +5,8 @@ import type { Scene } from "../../src/core/types";
 import { checkRows, dragMouse, ev, frames, hasBrowser, launch, openEditor, posOf, sceneFile, sceneOf, screenOf, type View } from "../helpers/browser";
 import { loadScene } from "../helpers/fixtures";
 import { makeScene } from "../helpers/scene";
+import { walkScenePath } from "../helpers/states";
+import { readFileSync } from "node:fs";
 
 let browser: Browser;
 
@@ -334,6 +336,28 @@ describe.skipIf(!hasBrowser)("editor: check panel", () => {
     expect(live).toEqual(runChecks(scene as Scene).map((r) => [r.id, r.status]));
     await page.click("#undo");
     expect(await row("c3")).toBe("fail");
+    await context.close();
+  });
+
+  it("shows the gameplay checks and re-runs them live: opening a path flips reachable to pass", async () => {
+    const walk = JSON.parse(readFileSync(walkScenePath(), "utf8"));
+    const { page, context, errors } = await openEditor(browser, sceneFile("walk.scene.json", walk));
+    const row = (id: string) => ev<string>(page, `document.querySelector('[data-check="${id}"]').dataset.status`);
+    const shown = async () => (await checkRows(page)).map((r) => [r[0], r[1]]);
+    const opened = (await sceneOf(page)) as Scene;
+    expect(await shown()).toEqual(runChecks(opened).map((r) => [r.id, r.status]));
+    expect(await shown()).toHaveLength(17);
+    expect(await row("k2")).toBe("fail");
+    expect(await row("s2")).toBe("pass");
+    // Drag the barrier along v, out of the gap in the lawn (the plan view is fitted to the window).
+    const from = await screenOf(page, "plan", "barrier1");
+    await dragMouse(page, from, [from[0], from[1] + 60], 6);
+    expect(((await posOf(page, "barrier1")) as number[])[1]).toBeGreaterThan(7);
+    expect(await row("k2")).toBe("pass");
+    expect(await shown()).toEqual(runChecks((await sceneOf(page)) as Scene).map((r) => [r.id, r.status]));
+    await page.click("#undo");
+    expect(await row("k2")).toBe("fail");
+    expect(errors).toEqual([]);
     await context.close();
   });
 

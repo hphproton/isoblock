@@ -220,6 +220,9 @@
           { "$ref": "#/definitions/checkLaneClear" },
           { "$ref": "#/definitions/checkLaneReaches" },
           { "$ref": "#/definitions/checkVisible" },
+          { "$ref": "#/definitions/checkReachable" },
+          { "$ref": "#/definitions/checkCapacity" },
+          { "$ref": "#/definitions/checkMinScreenSize" },
           { "$ref": "#/definitions/checkNotImplemented" }
         ],
         "discriminator": { "propertyName": "check" }
@@ -229,6 +232,8 @@
       "type": "object",
       "additionalProperties": {
         "type": "object",
+        "additionalProperties": false,
+        "patternProperties": { "^x-": {} },
         "properties": {
           "hide": { "type": "array", "items": { "type": "string" } }
         }
@@ -350,12 +355,69 @@
         "maxOccluded": { "type": "number", "minimum": 0, "maximum": 1 }
       }
     },
+    "pointRef": {
+      "anyOf": [
+        { "$ref": "#/definitions/vec2" },
+        { "type": "string", "pattern": "^(lane:.+|anchor:.+/.+)$" }
+      ]
+    },
+    "checkReachable": {
+      "type": "object",
+      "required": ["id", "check", "from", "to"],
+      "additionalProperties": false,
+      "patternProperties": { "^x-": {} },
+      "properties": {
+        "id": { "type": "string" },
+        "check": { "const": "reachable" },
+        "from": { "$ref": "#/definitions/pointRef" },
+        "to": { "$ref": "#/definitions/pointRef" },
+        "area": { "type": "string", "minLength": 1 },
+        "radius": { "type": "number", "minimum": 0, "default": 0.2 },
+        "step": { "type": "number", "exclusiveMinimum": 0, "default": 0.1 },
+        "ignore": { "type": "array", "items": { "type": "string" } },
+        "max": { "type": "number", "minimum": 0 }
+      }
+    },
+    "checkCapacity": {
+      "type": "object",
+      "required": ["id", "check", "kind", "min"],
+      "additionalProperties": false,
+      "patternProperties": { "^x-": {} },
+      "properties": {
+        "id": { "type": "string" },
+        "check": { "const": "capacity" },
+        "kind": { "type": "string", "minLength": 1 },
+        "min": { "type": "number", "minimum": 0 },
+        "body": {
+          "type": "array",
+          "items": { "type": "number", "minimum": 0 },
+          "minItems": 2,
+          "maxItems": 2,
+          "default": [0.5, 0.5]
+        },
+        "ids": { "$ref": "#/definitions/idList" },
+        "allow": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "checkMinScreenSize": {
+      "type": "object",
+      "required": ["id", "check", "target", "min"],
+      "additionalProperties": false,
+      "patternProperties": { "^x-": {} },
+      "properties": {
+        "id": { "type": "string" },
+        "check": { "const": "min_screen_size" },
+        "target": { "type": "string", "minLength": 1 },
+        "min": { "type": "number", "minimum": 0 },
+        "screenWidth": { "type": "number", "exclusiveMinimum": 0 }
+      }
+    },
     "checkNotImplemented": {
       "type": "object",
       "required": ["id", "check"],
       "properties": {
         "id": { "type": "string" },
-        "check": { "enum": ["reachable", "capacity", "min_screen_size", "sort_consistency", "state_stable"] }
+        "check": { "enum": ["sort_consistency", "state_stable"] }
       }
     }
   }

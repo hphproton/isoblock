@@ -1,12 +1,14 @@
 import { runChecks } from "../checks";
+import { runChecksHiding } from "../checks/inState";
 import { round6 } from "../checks/result";
 import { EPS } from "../geometry";
+import { hiddenIn, withoutObjects } from "../states";
 import type { CheckResult, CheckSpec, CheckStatus, Scene } from "../types";
 import { failingCount } from "../patch/changes";
 import { applyVariant } from "./variant";
 import { checkLabel } from "./labels";
 
-/** The state `compare` runs at until stage 6 adds states. */
+/** The name `compare` shows when it runs without `--state`. */
 export const DEFAULT_STATE = "default";
 
 export interface VariantInput {
@@ -81,19 +83,26 @@ function rowOf(spec: CheckSpec, unit: string, columns: readonly (readonly CheckR
 
 /**
  * Apply each variant to a copy of the base scene, run the base scene's checks on every result and
- * measure (SPEC section 11.1). Locks are ignored but recorded. Throws like `applyVariant`.
+ * measure (SPEC section 11.1). Locks are ignored but recorded. With `state`, every column is
+ * evaluated in that state of the base scene (SPEC section 9.2): the objects it hides are not
+ * present, so they are not checked and not counted as moved. Throws like `applyVariant`; an
+ * unknown state is `E_USAGE`.
  */
-export function compareVariants(base: Scene, variants: readonly VariantInput[]): Comparison {
+export function compareVariants(base: Scene, variants: readonly VariantInput[], state?: string): Comparison {
+  const hidden = state === undefined ? undefined : hiddenIn(base, state);
   const applied = variants.map((v) => ({ name: v.name, ...applyVariant(base, v.name, v.text) }));
-  const columns = [runChecks(base), ...applied.map((a) => runChecks(a.scene))];
+  const resultsOf = (scene: Scene) =>
+    hidden === undefined ? runChecks(scene) : runChecksHiding(scene, hidden, state as string);
+  const present = (scene: Scene) => (hidden === undefined ? scene : withoutObjects(scene, hidden));
+  const columns = [resultsOf(base), ...applied.map((a) => resultsOf(a.scene))];
   return {
     scene: base.id,
-    state: DEFAULT_STATE,
+    state: state ?? DEFAULT_STATE,
     unit: base.units.name,
     variants: [{ name: "base", label: null }, ...applied.map((a) => ({ name: a.name, label: a.description ?? a.name }))],
     failing: columns.map(failingCount),
     locksTouched: [[], ...applied.map((a) => a.locks)],
-    moved: [null, ...applied.map((a) => movedOf(base, a.scene))],
+    moved: [null, ...applied.map((a) => movedOf(present(base), present(a.scene)))],
     checks: (base.checks ?? []).map((spec, i) => rowOf(spec, base.units.name, columns, i)),
   };
 }

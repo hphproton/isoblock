@@ -11,6 +11,8 @@ export function canonical(r: CheckResult): CheckResult {
     ids: r.ids,
     ...(r.pairs === undefined ? {} : { pairs: r.pairs }),
     ...(r.occluders === undefined ? {} : { occluders: r.occluders }),
+    ...(r.accepted === undefined ? {} : { accepted: r.accepted }),
+    ...(r.rejected === undefined ? {} : { rejected: r.rejected }),
     message: r.message,
   };
 }

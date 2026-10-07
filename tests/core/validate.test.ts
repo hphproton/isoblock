@@ -102,8 +102,7 @@ describe("validate: syntax and schema", () => {
 
   it("validates only id and check for checks the stage does not implement", () => {
     const scene = rawFixture("lane");
-    expect(scene.checks[6].check).toBe("reachable");
-    scene.checks[6].anything = { goes: true };
+    scene.checks.push({ id: "later", check: "sort_consistency", anything: { goes: true } });
     expect(() => validateScene(scene)).not.toThrow();
   });
 
@@ -159,7 +158,7 @@ describe("validate: references", () => {
 
   it("does not resolve references of checks the stage does not implement", () => {
     const scene = rawFixture("lane");
-    scene.checks[6].from = "nothing-here";
+    scene.checks.push({ id: "later", check: "state_stable", from: "nothing-here" });
     expect(() => validateScene(scene)).not.toThrow();
   });
 

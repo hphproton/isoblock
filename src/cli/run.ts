@@ -1,10 +1,12 @@
 import { runChecks } from "../core/checks";
+import { runChecksInState } from "../core/checks/inState";
 import { describeScene } from "../core/describe";
 import { buildDisplayList } from "../core/displayList";
 import { IsoblockError, exitCodeFor } from "../core/errors";
 import { evaluateRelations } from "../core/relations/evaluate";
 import { formatRelationsReport, relationsExitCode, relationsReportJson } from "../core/relations/report";
 import { checkExitCode, checkReportJson, formatCheckReport } from "../core/report";
+import { sceneInState } from "../core/states";
 import { parseScene } from "../core/validate";
 import { USAGE, parseArgs, type Parsed } from "./args";
 import { runCompareCommand, runDiffCommand, runPatchCommand } from "./commands";
@@ -24,8 +26,8 @@ function execute(args: RunArgs, io: Io): number {
       io.out(`ok: ${args.file} is a valid isoblock/1 scene (id ${scene.id})\n`);
       return 0;
     case "check": {
-      const results = runChecks(scene);
-      io.out(args.json ? `${JSON.stringify(checkReportJson(scene, results), null, 2)}\n` : `${formatCheckReport(scene, results)}\n`);
+      const results = args.state === undefined ? runChecks(scene) : runChecksInState(scene, args.state);
+      io.out(args.json ? `${JSON.stringify(checkReportJson(scene, results), null, 2)}\n` : `${formatCheckReport(scene, results, args.state)}\n`);
       return checkExitCode(results);
     }
     case "describe":
@@ -38,7 +40,7 @@ function execute(args: RunArgs, io: Io): number {
     }
     case "render": {
       const output = args.output as string;
-      const list = buildDisplayList(scene);
+      const list = buildDisplayList(sceneInState(scene, args.state));
       if (/\.png$/i.test(output)) {
         if (io.rasterize === undefined) throw new IsoblockError("E_INTERNAL", "no PNG rasterizer is available");
         io.writeBytes(output, io.rasterize(toSvg(list, { text: false })));

@@ -69,7 +69,7 @@ export function runDiffCommand(args: Of<"diff">, io: Io): number {
 /** `compare`: measure the scene and its variants side by side. Exits 0 when it completes. */
 export function runCompareCommand(args: Of<"compare">, io: Io): number {
   const scene = parseScene(io.readText(args.file));
-  const comparison = compareVariants(scene, args.variants.map((v) => ({ name: v.name, text: io.readText(v.file) })));
+  const comparison = compareVariants(scene, args.variants.map((v) => ({ name: v.name, text: io.readText(v.file) })), args.state);
   if (args.format === "json") printJson(io, compareJson(comparison));
   else io.out(`${args.format === "md" ? formatCompareMarkdown(comparison) : formatCompareText(comparison)}\n`);
   return 0;

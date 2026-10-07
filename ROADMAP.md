@@ -103,22 +103,22 @@ Not in stage 5: states and slices in the runtime file, `instantiate` by type and
 
 **Done when:** all tests pass, `npm run test:godot` passes, earlier fixtures still match, and the stage 5 criteria in SPEC section 17 hold.
 
-## Stage 6 · open
+## Stage 6 · done (0.6.0)
 
 States and the gameplay checks (SPEC sections 6, 9.2, 11, 11.1, 17). No engine work: the runtime file and the Godot adapter do not change in this stage. Fixtures: `tests/fixtures/gameplay/walk.scene.json` with `walk.expected.json`, and `tests/fixtures/states/` (case list `cases.json`, check results per state, generation boxes, one block image, one `compare` case).
 
-- [ ] `states.<name>` accepts only `hide` (plus `x-` keys) in the schema
-- [ ] `--state NAME` for `check`, `render` (SVG and PNG), `compare` and `export --target gen-bbox` (SPEC sections 9.2, 11, 11.1)
-- [ ] Usage errors: an unknown state name; `--state` with `export --target runtime`
-- [ ] `reachable`: grid, free cells, start and target cells, path length, `max`, its three messages (SPEC section 9.2)
-- [ ] `capacity`: candidates, bodies, `allow`, accepted and rejected labels
-- [ ] `min_screen_size` with `screenWidth`
-- [ ] Schema and reference rules for the parameters of the three checks (`lane:`, `anchor:`, zones)
-- [ ] `compare` labels and cells for the three checks
-- [ ] Tests load `tests/fixtures/gameplay/` and `tests/fixtures/states/cases.json` and compare every expected file
-- [ ] The frame-time tests of stage 2 measure up to 3 runs and pass when one run meets the criterion (SPEC section 17)
-- [ ] `docs/AGENT_GUIDE.md` covers states, `--state` and the three checks
-- [ ] Session log says `branch ready for review`
+- [x] `states.<name>` accepts only `hide` (plus `x-` keys) in the schema
+- [x] `--state NAME` for `check`, `render` (SVG and PNG), `compare` and `export --target gen-bbox` (SPEC sections 9.2, 11, 11.1)
+- [x] Usage errors: an unknown state name; `--state` with `export --target runtime`
+- [x] `reachable`: grid, free cells, start and target cells, path length, `max`, its three messages (SPEC section 9.2)
+- [x] `capacity`: candidates, bodies, `allow`, accepted and rejected labels
+- [x] `min_screen_size` with `screenWidth`
+- [x] Schema and reference rules for the parameters of the three checks (`lane:`, `anchor:`, zones)
+- [x] `compare` labels and cells for the three checks
+- [x] Tests load `tests/fixtures/gameplay/` and `tests/fixtures/states/cases.json` and compare every expected file
+- [x] The frame-time tests of stage 2 measure up to 3 runs and pass when one run meets the criterion (SPEC section 17)
+- [x] `docs/AGENT_GUIDE.md` covers states, `--state` and the three checks
+- [x] Session log says `branch ready for review`
 
 Not in stage 6: states in the runtime file and the Godot adapter, `sort_consistency`, slicing, `instantiate` by type (stage 7); a state switch in the editor, `state_stable`, states that move objects (not scheduled).
 

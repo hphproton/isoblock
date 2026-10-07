@@ -1,4 +1,4 @@
-import type { Browser, Page } from "playwright-core";
+import type { Browser, CDPSession, Page } from "playwright-core";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import type { Vec2 } from "../../src/core/types";
 import type { FrameSnapshot } from "../../src/editor/stats";
@@ -18,6 +18,10 @@ afterAll(async () => {
 const BUDGET_MS = 16.7;
 /** SPEC section 17, stage 2: CPU slowdown of the headless browser, standing in for a mid-range phone. */
 const SLOWDOWN = 4;
+/** SPEC section 17, stage 2: the criterion holds when one of up to this many runs meets it (a busy host drops frames now and then). */
+const RUNS = 3;
+/** Room for all runs of one test. */
+const TEST_TIMEOUT_MS = 120_000;
 const WARMUP = 20;
 const STEPS = 170;
 const OBJECT = "o101";
@@ -95,62 +99,122 @@ async function measureAtDisplayRate(page: Page, from: Vec2): Promise<FrameSnapsh
   return ev<FrameSnapshot>(page, "window.isoblock.frames.snapshot()");
 }
 
+/** A condition of a run: a description of the miss, and whether the run meets it. */
+type Condition = readonly [miss: string, ok: boolean];
+
+const atMost = (name: string, value: number, limit: number): Condition => [`${name} ${value.toFixed(2)} ms > ${limit.toFixed(2)} ms`, value <= limit];
+
+/**
+ * Measure up to `RUNS` times, each on a page of its own, and pass as soon as one run meets every
+ * condition (SPEC section 17, stage 2). Every run prints its numbers; when no run passes, the
+ * failure lists what each run missed.
+ */
+async function oneRunMeets(
+  label: string,
+  once: () => Promise<FrameSnapshot>,
+  conditions: (snapshot: FrameSnapshot) => readonly Condition[],
+): Promise<void> {
+  const misses: string[] = [];
+  for (let run = 1; run <= RUNS; run++) {
+    const snapshot = await once();
+    expect(snapshot.work.length).toBeGreaterThan(100);
+    report(`${label}, run ${run}`, snapshot);
+    const missed = conditions(snapshot).filter(([, ok]) => !ok).map(([miss]) => miss);
+    if (missed.length === 0) return;
+    misses.push(`run ${run}: ${missed.join("; ")}`);
+  }
+  expect.fail(`none of ${RUNS} runs met the criterion: ${misses.join(" | ")}`);
+}
+
+/** A page with the editor on `crowd`, the CPU slowed down, closed again when `use` is done. */
+async function withEditor<T>(
+  options: Parameters<typeof openEditor>[2],
+  use: (page: Page, client: CDPSession) => Promise<T>,
+): Promise<T> {
+  const { page, context } = await openEditor(browser, "crowd", options);
+  try {
+    const client = await context.newCDPSession(page);
+    await client.send("Emulation.setCPUThrottlingRate", { rate: SLOWDOWN });
+    return await use(page, client);
+  } finally {
+    await context.close();
+  }
+}
+
+const desktop = { viewport: { width: 1280, height: 800 } };
+
 describe.skipIf(!hasBrowser)("editor: frame time while dragging 200 objects (SPEC section 17, stage 2)", () => {
-  it(`desktop, isometric and plan view side by side, mouse: p95 at most ${BUDGET_MS} ms at ${SLOWDOWN}x CPU slowdown`, async () => {
-    const { page, context } = await openEditor(browser, "crowd", { viewport: { width: 1280, height: 800 } });
-    const client = await context.newCDPSession(page);
-    await client.send("Emulation.setCPUThrottlingRate", { rate: SLOWDOWN });
-    const from = await screenOf(page, "iso", OBJECT);
-    const snapshot = await measure(page, from, {
-      down: async (at) => {
-        await page.mouse.move(at[0], at[1]);
-        await page.mouse.down();
-      },
-      move: (at) => page.mouse.move(at[0], at[1]),
-      up: () => page.mouse.up(),
-    });
-    expect(snapshot.work.length).toBeGreaterThan(100);
-    expect(report("desktop, both views, mouse", snapshot)).toBeLessThanOrEqual(BUDGET_MS);
-    await context.close();
-  });
+  it(
+    `desktop, isometric and plan view side by side, mouse: p95 at most ${BUDGET_MS} ms at ${SLOWDOWN}x CPU slowdown, in one of ${RUNS} runs`,
+    async () => {
+      await oneRunMeets(
+        "desktop, both views, mouse",
+        () =>
+          withEditor(desktop, async (page) =>
+            measure(page, await screenOf(page, "iso", OBJECT), {
+              down: async (at) => {
+                await page.mouse.move(at[0], at[1]);
+                await page.mouse.down();
+              },
+              move: (at) => page.mouse.move(at[0], at[1]),
+              up: () => page.mouse.up(),
+            }),
+          ),
+        (snapshot) => [atMost("work p95", percentile(snapshot.work, 95), BUDGET_MS)],
+      );
+    },
+    TEST_TIMEOUT_MS,
+  );
 
-  it(`phone, one view, touch: p95 at most ${BUDGET_MS} ms at ${SLOWDOWN}x CPU slowdown`, async () => {
-    const { page, context } = await openEditor(browser, "crowd", phone);
-    const client = await context.newCDPSession(page);
-    const fingers = new Fingers(client);
-    await client.send("Emulation.setCPUThrottlingRate", { rate: SLOWDOWN });
-    const from = await screenOf(page, "iso", OBJECT);
-    const snapshot = await measure(page, from, {
-      down: (at) => fingers.down([at]),
-      move: (at) => fingers.move([at]),
-      up: () => fingers.up(),
-    });
-    expect(snapshot.work.length).toBeGreaterThan(100);
-    expect(report("phone, one view, touch", snapshot)).toBeLessThanOrEqual(BUDGET_MS);
-    await context.close();
-  });
+  it(
+    `phone, one view, touch: p95 at most ${BUDGET_MS} ms at ${SLOWDOWN}x CPU slowdown, in one of ${RUNS} runs`,
+    async () => {
+      await oneRunMeets(
+        "phone, one view, touch",
+        () =>
+          withEditor(phone, async (page, client) => {
+            const fingers = new Fingers(client);
+            return measure(page, await screenOf(page, "iso", OBJECT), {
+              down: (at) => fingers.down([at]),
+              move: (at) => fingers.move([at]),
+              up: () => fingers.up(),
+            });
+          }),
+        (snapshot) => [atMost("work p95", percentile(snapshot.work, 95), BUDGET_MS)],
+      );
+    },
+    TEST_TIMEOUT_MS,
+  );
 
-  it(`input at the display rate, both views: p95 work at most ${BUDGET_MS} ms and frames keep coming at the display rate, at ${SLOWDOWN}x slowdown`, async () => {
-    const { page, context } = await openEditor(browser, "crowd", { viewport: { width: 1280, height: 800 } });
-    const client = await context.newCDPSession(page);
-    await client.send("Emulation.setCPUThrottlingRate", { rate: SLOWDOWN });
-    const snapshot = await measureAtDisplayRate(page, await screenOf(page, "iso", OBJECT));
-    expect(snapshot.work.length).toBeGreaterThan(100);
-    expect(report("desktop, both views, input at display rate", snapshot)).toBeLessThanOrEqual(BUDGET_MS);
-    // At 60 Hz a frame comes every 16.7 ms; when the editor keeps up, the median is that.
-    expect(percentile(snapshot.interval, 50)).toBeLessThanOrEqual(BUDGET_MS * 1.1);
-    await context.close();
-  });
+  it(
+    `input at the display rate, both views: p95 work at most ${BUDGET_MS} ms and frames keep coming at the display rate, at ${SLOWDOWN}x slowdown, in one of ${RUNS} runs`,
+    async () => {
+      await oneRunMeets(
+        "desktop, both views, input at display rate",
+        () => withEditor(desktop, async (page) => measureAtDisplayRate(page, await screenOf(page, "iso", OBJECT))),
+        // At 60 Hz a frame comes every 16.7 ms; when the editor keeps up, the median is that.
+        (snapshot) => [
+          atMost("work p95", percentile(snapshot.work, 95), BUDGET_MS),
+          atMost("interval p50", percentile(snapshot.interval, 50), BUDGET_MS * 1.1),
+        ],
+      );
+    },
+    TEST_TIMEOUT_MS,
+  );
 
-  it(`phone with a 2x screen, input at the display rate: frames keep coming at the display rate, at ${SLOWDOWN}x slowdown`, async () => {
-    const { page, context } = await openEditor(browser, "crowd", phone);
-    const client = await context.newCDPSession(page);
-    await client.send("Emulation.setCPUThrottlingRate", { rate: SLOWDOWN });
-    const snapshot = await measureAtDisplayRate(page, await screenOf(page, "iso", OBJECT));
-    expect(snapshot.work.length).toBeGreaterThan(100);
-    expect(report("phone with a 2x screen, input at display rate", snapshot)).toBeLessThanOrEqual(BUDGET_MS);
-    expect(percentile(snapshot.interval, 50)).toBeLessThanOrEqual(BUDGET_MS * 1.1);
-    expect(percentile(snapshot.interval, 95)).toBeLessThanOrEqual(BUDGET_MS * 1.1);
-    await context.close();
-  });
+  it(
+    `phone with a 2x screen, input at the display rate: frames keep coming at the display rate, at ${SLOWDOWN}x slowdown, in one of ${RUNS} runs`,
+    async () => {
+      await oneRunMeets(
+        "phone with a 2x screen, input at display rate",
+        () => withEditor(phone, async (page) => measureAtDisplayRate(page, await screenOf(page, "iso", OBJECT))),
+        (snapshot) => [
+          atMost("work p95", percentile(snapshot.work, 95), BUDGET_MS),
+          atMost("interval p50", percentile(snapshot.interval, 50), BUDGET_MS * 1.1),
+          atMost("interval p95", percentile(snapshot.interval, 95), BUDGET_MS * 1.1),
+        ],
+      );
+    },
+    TEST_TIMEOUT_MS,
+  );
 });

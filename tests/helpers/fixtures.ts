@@ -77,7 +77,7 @@ export function expectMatchesExpected(
     near(act.value, exp.value, tol, `${tag} value`);
     near(act.threshold, exp.threshold, 1e-9, `${tag} threshold`);
     expect(act.ids, `${tag} ids`).toEqual(exp.ids);
-    for (const key of ["pairs", "occluders"]) {
+    for (const key of ["pairs", "occluders", "accepted", "rejected"]) {
       if (key in exp) expect(act[key], `${tag} ${key}`).toEqual(exp[key]);
     }
     if ("message" in exp) expect(act.message, `${tag} message`).toBe(exp.message);

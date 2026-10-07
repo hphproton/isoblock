@@ -83,9 +83,9 @@ describe("dist/isoblock.mjs: diff and compare", () => {
     expectMatchesCompare(JSON.parse(json.stdout), loadCompareExpected());
   });
 
-  it("compare exits 2 without a variant, with --state and with --render", () => {
+  it("compare exits 2 without a variant, with an unknown state and with --render", () => {
     expect(node("compare", fixturePath("yard")).status).toBe(2);
-    expect(node("compare", fixturePath("yard"), ...variants, "--state", "night").stderr).toMatch(/stage 6/);
+    expect(node("compare", fixturePath("yard"), ...variants, "--state", "night").stderr).toMatch(/unknown state/);
     expect(node("compare", fixturePath("yard"), ...variants, "--render").stderr).toMatch(/not scheduled/);
   });
 

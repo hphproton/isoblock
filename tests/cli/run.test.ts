@@ -61,10 +61,10 @@ describe("cli: check", () => {
   });
 
   it("exits 1 for skipped checks, even when nothing fails", () => {
-    const scene = makeScene({ checks: [{ id: "c1", check: "reachable" }] });
+    const scene = makeScene({ checks: [{ id: "c1", check: "sort_consistency" }] });
     const r = exec(["check", "s.json"], { "s.json": JSON.stringify(scene) });
     expect(r.code).toBe(1);
-    expect(r.out).toContain("SKIP c1 reachable");
+    expect(r.out).toContain("SKIP c1 sort_consistency");
   });
 
   it("exits 0 when every check passes", () => {
@@ -110,8 +110,8 @@ describe("cli: render", () => {
     expect(r.out).toContain("out.svg");
   });
 
-  it("exits 2 for --state and for a missing -o", () => {
-    expect(exec(["render", yard, "--state", "closed", "-o", "o.svg"]).code).toBe(2);
+  it("exits 2 for an unknown state and for a missing -o", () => {
+    expect(exec(["render", yard, "--state", "night", "-o", "o.svg"]).code).toBe(2);
     expect(exec(["render", yard]).code).toBe(2);
   });
 });
