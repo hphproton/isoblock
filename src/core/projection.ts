@@ -1,3 +1,4 @@
+import { round } from "./round";
 import type { Camera, Vec2, Vec3 } from "./types";
 
 const DEG = Math.PI / 180;
@@ -50,6 +51,15 @@ export function cameraDirection(camera: Camera): Vec3 {
   const ax = axes(camera);
   const [cu, cv] = solve(ax, 0, -ax.upY);
   return [cu, cv, 1];
+}
+
+/**
+ * The camera direction as the painter's order uses it (SPEC 13.4): every component rounded to
+ * 9 decimals, so that exact ties stay exact in every implementation.
+ */
+export function orderDirection(camera: Camera): Vec3 {
+  const [cu, cv, ch] = cameraDirection(camera);
+  return [round(cu, 9), round(cv, 9), ch];
 }
 
 /** `cu * u + cv * v + h`: larger means closer to the camera. */

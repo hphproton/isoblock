@@ -1,10 +1,12 @@
 import { EPS, type Box } from "./geometry";
-import { cameraDirection, depth, projector } from "./projection";
+import { depth, orderDirection, projector } from "./projection";
+import { round } from "./round";
 import type { Camera, Vec3 } from "./types";
 
 /** A box with the numbers the ordering needs: depth toward the camera and its screen bounds. */
 export interface BoxInfo {
   readonly box: Box;
+  /** `c` dot the box center, rounded to 6 decimals (SPEC 13.4). */
   readonly depth: number;
   /** Screen bounds: min x, min y, max x, max y. */
   readonly screen: readonly [number, number, number, number];
@@ -28,7 +30,7 @@ export function boxInfo(box: Box, camera: Camera, c: Vec3): BoxInfo {
     }
   }
   const centre = depth(c, (box.u0 + box.u1) / 2, (box.v0 + box.v1) / 2, (box.h0 + box.h1) / 2);
-  return { box, depth: centre, screen: [x0, y0, x1, y1] };
+  return { box, depth: round(centre, 6), screen: [x0, y0, x1, y1] };
 }
 
 function screensOverlap(a: BoxInfo, b: BoxInfo): boolean {
@@ -168,8 +170,8 @@ export function orderInfos(info: readonly BoxInfo[], c: Vec3): number[] {
   return result;
 }
 
-/** Painter's order for axis-aligned boxes: indices from back to front. */
+/** Painter's order for axis-aligned boxes (SPEC 13.4): indices from back to front. */
 export function drawOrder(boxes: readonly Box[], camera: Camera): number[] {
-  const c = cameraDirection(camera);
+  const c = orderDirection(camera);
   return orderInfos(boxes.map((b) => boxInfo(b, camera, c)), c);
 }

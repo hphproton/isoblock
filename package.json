@@ -1,6 +1,6 @@
 {
   "name": "isoblock",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "Isometric scene layout as data: validate, check, render and describe.",
   "type": "module",
   "private": true,
@@ -13,9 +13,11 @@
   "scripts": {
     "typecheck": "tsc --noEmit && tsc --noEmit -p src/editor",
     "test": "vitest run",
-    "build": "node scripts/build.mjs"
+    "build": "node scripts/build.mjs",
+    "test:godot": "node scripts/test-godot.mjs"
   },
   "dependencies": {
+    "@resvg/resvg-wasm": "2.6.2",
     "ajv": "^8.20.0"
   },
   "devDependencies": {

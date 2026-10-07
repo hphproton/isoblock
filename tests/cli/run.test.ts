@@ -110,8 +110,7 @@ describe("cli: render", () => {
     expect(r.out).toContain("out.svg");
   });
 
-  it("exits 2 for PNG output, for --state, and for a missing -o", () => {
-    expect(exec(["render", yard, "-o", "out.png"]).code).toBe(2);
+  it("exits 2 for --state and for a missing -o", () => {
     expect(exec(["render", yard, "--state", "closed", "-o", "o.svg"]).code).toBe(2);
     expect(exec(["render", yard]).code).toBe(2);
   });

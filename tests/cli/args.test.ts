@@ -36,19 +36,50 @@ describe("parseArgs", () => {
     expect(usageError(["check", "a.json", "b.json"])).toMatch(/unexpected argument 'b.json'/);
   });
 
-  it("names the stage that adds a command", () => {
-    expect(usageError(["export", "a.json", "--target", "runtime"])).toMatch(/'export' is added in stage 5/);
+  it("parses export with its target, output and gen-bbox flags", () => {
+    expect(parseArgs(["export", "a.json", "--target", "runtime"])).toEqual({ kind: "export", file: "a.json", target: "runtime" });
+    expect(parseArgs(["export", "a.json", "--target=runtime", "-o", "r.json"])).toEqual({
+      kind: "export", file: "a.json", target: "runtime", output: "r.json",
+    });
+    expect(parseArgs(["export", "a.json", "--target", "gen-bbox"])).toEqual({ kind: "export", file: "a.json", target: "gen-bbox" });
+    expect(parseArgs(["export", "--target", "gen-bbox", "a.json", "--bbox-units", "norm1000", "--bbox-order=yxyx", "-o", "b.json"])).toEqual({
+      kind: "export", file: "a.json", target: "gen-bbox", bboxUnits: "norm1000", bboxOrder: "yxyx", output: "b.json",
+    });
+  });
+
+  it("rejects export without a target, with an unknown target or with bad gen-bbox values", () => {
+    expect(usageError(["export", "a.json"])).toMatch(/export needs --target runtime or gen-bbox/);
+    expect(usageError(["export", "a.json", "--target", "mesh"])).toMatch(/unknown export target 'mesh'/);
+    expect(usageError(["export", "a.json", "--target", "gen-bbox", "--bbox-units", "em"])).toMatch(/--bbox-units must be px or norm1000/);
+    expect(usageError(["export", "a.json", "--target", "gen-bbox", "--bbox-order", "xy"])).toMatch(/--bbox-order must be xyxy or yxyx/);
+    expect(usageError(["export", "a.json", "--target"])).toMatch(/flag '--target' needs a value/);
+    expect(usageError(["export"])).toMatch(/missing scene file|export needs --target/);
+  });
+
+  it("rejects the bbox flags with the runtime target and flags of other commands", () => {
+    expect(usageError(["export", "a.json", "--target", "runtime", "--bbox-units", "px"])).toMatch(/--bbox-units applies to the gen-bbox target only/);
+    expect(usageError(["export", "a.json", "--target", "runtime", "--bbox-order", "xyxy"])).toMatch(/--bbox-order applies to the gen-bbox target only/);
+    expect(usageError(["export", "a.json", "--target", "runtime", "--json"])).toMatch(/'--json' does not apply to 'export'/);
+    expect(usageError(["check", "a.json", "--target", "runtime"])).toMatch(/'--target' does not apply to 'check'/);
+    expect(usageError(["render", "a.json", "-o", "o.svg", "--bbox-units", "px"])).toMatch(/'--bbox-units' does not apply to 'render'/);
   });
 
   it("says when an export target is not scheduled", () => {
-    expect(usageError(["export", "a.json", "--target", "phaser"])).toMatch(/'phaser' is not scheduled/);
+    for (const target of ["godot", "phaser", "tiled"]) {
+      expect(usageError(["export", "a.json", "--target", target])).toMatch(new RegExp(`export target '${target}' is not scheduled`));
+    }
     expect(usageError(["export", "a.json", "--target=tiled"])).toMatch(/'tiled' is not scheduled/);
+  });
+
+  it("accepts PNG and SVG output for render, and rejects other extensions", () => {
+    expect(parseArgs(["render", "a.json", "-o", "out.png"])).toMatchObject({ command: "render", output: "out.png" });
+    expect(parseArgs(["render", "a.json", "-o", "OUT.PNG"])).toMatchObject({ output: "OUT.PNG" });
+    expect(usageError(["render", "a.json", "-o", "out.jpg"])).toMatch(/must end in \.svg or \.png/);
   });
 
   it("names the stage that adds a flag or an output format", () => {
     expect(usageError(["check", "a.json", "--state", "night"])).toMatch(/'--state' is added in stage 6/);
     expect(usageError(["render", "a.json", "--state=night", "-o", "o.svg"])).toMatch(/'--state' is added in stage 6/);
-    expect(usageError(["render", "a.json", "-o", "out.png"])).toMatch(/PNG output is added in stage 5/);
     expect(usageError(["check", "a.json", "--only", "a"])).toMatch(/'--only' does not apply to 'check'/);
   });
 

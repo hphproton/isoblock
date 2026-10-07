@@ -14,6 +14,8 @@ await build({
   platform: "node",
   format: "esm",
   target: "node20",
+  // The WebAssembly module of the PNG rasterizer is inlined, so the bundle needs no other file.
+  loader: { ".wasm": "binary" },
   outfile: join(dist, "isoblock.mjs"),
   logLevel: "warning",
 });

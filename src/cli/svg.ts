@@ -35,14 +35,20 @@ function element(item: DisplayItem): string {
   return item.kind === "polygon" ? polygonElement(item) : labelElement(item);
 }
 
+export interface SvgOptions {
+  /** Write the labels. Default: true. A PNG is drawn without text so that fonts do not matter. */
+  readonly text?: boolean;
+}
+
 /** Write a display list as one standalone SVG document. */
-export function toSvg(list: DisplayList): string {
+export function toSvg(list: DisplayList, options: SvgOptions = {}): string {
   const { width, height } = list;
+  const items = options.text === false ? list.items.filter((item) => item.kind !== "label") : list.items;
   return [
     `<svg xmlns="http://www.w3.org/2000/svg" width="${num(width)}" height="${num(height)}" viewBox="0 0 ${num(width)} ${num(height)}">`,
     `<defs><clipPath id="frame"><rect width="${num(width)}" height="${num(height)}"/></clipPath></defs>`,
     `<g clip-path="url(#frame)" font-family="sans-serif">`,
-    ...list.items.map(element),
+    ...items.map(element),
     "</g>",
     "</svg>",
     "",

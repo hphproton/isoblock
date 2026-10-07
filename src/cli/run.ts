@@ -8,6 +8,7 @@ import { checkExitCode, checkReportJson, formatCheckReport } from "../core/repor
 import { parseScene } from "../core/validate";
 import { USAGE, parseArgs, type Parsed } from "./args";
 import { runCompareCommand, runDiffCommand, runPatchCommand } from "./commands";
+import { runExportCommand } from "./export";
 import { runSolveCommand } from "./solve";
 import type { Io } from "./io";
 import { toSvg } from "./svg";
@@ -37,7 +38,13 @@ function execute(args: RunArgs, io: Io): number {
     }
     case "render": {
       const output = args.output as string;
-      io.writeText(output, toSvg(buildDisplayList(scene)));
+      const list = buildDisplayList(scene);
+      if (/\.png$/i.test(output)) {
+        if (io.rasterize === undefined) throw new IsoblockError("E_INTERNAL", "no PNG rasterizer is available");
+        io.writeBytes(output, io.rasterize(toSvg(list, { text: false })));
+      } else {
+        io.writeText(output, toSvg(list));
+      }
       io.out(`wrote ${output}\n`);
       return 0;
     }
@@ -66,6 +73,8 @@ export function run(argv: readonly string[], io: Io): number {
         return runCompareCommand(args, io);
       case "solve":
         return runSolveCommand(args, io);
+      case "export":
+        return runExportCommand(args, io);
       default:
         return execute(args, io);
     }

@@ -171,3 +171,37 @@ Template:
   - The text output is `solve <id>: solved|conflict`, then `move <id> <u>,<v> -> <u>,<v>` per moved object, `hard violated: <ids|none>`, `soft penalty <p>, distance <d>`, and `conflict: <ids>` for a conflict; `wrote <file>` lines follow when files are written.
   - The performance test times `solveScene` (model, search, proposal, relation results) in Node through the test runner, median of 5 runs after one warm-up run.
 - Answer (maintainer): Approved as written. SPEC section 8 now states pointer locks on a position, the proposal of a `conflict`, `--only` and output path errors, and that `-o` follows assumption values like `patch`.
+
+## Q-018 · Export details where SPEC 13.7 and 14 are silent
+- Spec section: 11, 13.7, 14
+- Question: A few cases of `export` are not stated.
+- Reading chosen for now:
+  - `cameraDir` is the camera direction rounded to 9 decimals (the "rounded `c` of section 13.4"), not to 6 decimals like the other computed numbers. The fixtures have only `[1, 1, 1]`, so they do not tell.
+  - `pos` is copied from the scene as it is; footprints, part boxes and anchor positions are rounded to 6 decimals. `units`, strips, zones and lanes lose only their top-level `x-` keys.
+  - `export -o` naming the scene file is `E_USAGE` (as for `solve`), because an export never writes back. With `-o` the command prints `wrote <path>`; without it only the file goes to stdout.
+  - An unknown `--target` is `E_USAGE` (`unknown export target`); `godot`, `phaser` and `tiled` are `E_USAGE` (`not scheduled`). `--target` is checked before the scene file is read.
+  - `gen-bbox`: `clipped` is `true` when a bound is cut by more than EPS; `norm1000` is `floor(x * 1000 / size + 0.5)` with a guard of EPS, so exact halves go up; pixel values are rounded to 2 decimals.
+  - The SVG of `render`, the editor and the runtime file all use the order of SPEC 13.4 from one function. The camera direction of the order is `orderDirection` (9 decimals); `cameraDirection` of SPEC 5 is unchanged for the other users (the `visible` check, relations).
+- Answer (maintainer): Approved as written. SPEC 11 now states that `-o` naming the input file is a usage error, and SPEC 13.7 that `cameraDir` keeps the 9 decimals of section 13.4 and that `pos` is copied from the scene.
+
+## Q-019 · PNG output and the WebAssembly module
+- Spec section: 11, 14, 16, AGENTS.md (stack)
+- Question: `@resvg/resvg-wasm` starts asynchronously, but `run` is synchronous and the core is pure.
+- Reading chosen for now:
+  - `@resvg/resvg-wasm` is a runtime dependency pinned to exactly 2.6.2, the version that made the expected PNGs. It is used only in `src/cli/png.ts`.
+  - `Io` has two new members: `writeBytes`, and `rasterize`, which the host supplies before `run` is called. `src/cli/main.ts` loads the module (dynamic import, so other commands do not pay for it) only when the command is `render` with a `.png` output. `run` stays synchronous, and tests pass a rasterizer made from the module in `node_modules`. Without a rasterizer `render -o x.png` is `E_INTERNAL` (exit 70).
+  - `scripts/build.mjs` gets the esbuild loader `.wasm` = `binary`, which inlines the module (2.4 MB; `dist/isoblock.mjs` grows from 0.4 to 3.7 MB). Nothing else changes in the build.
+  - The PNG is made from the SVG without the `<text>` elements (`toSvg(list, { text: false })`), so that fonts cannot matter even if a font were loaded. For `yard` and `garden` the PNG bytes equal the expected files.
+- Answer (maintainer): Approved as written. The exact pin to 2.6.2 stays until the maintainer regenerates the expected PNGs with a newer version. SPEC 14 now says the text elements are removed before the SVG is rasterized.
+
+## Q-020 · Godot adapter and its cross-check
+- Spec section: 13.6, 13.8
+- Question: Several details of the adapter and of `npm run test:godot` are open.
+- Reading chosen for now:
+  - Tree: root (scene id) with `Objects`, `Zones` and `Lanes`; per object a `Node2D` with meta, a `Node2D` per part with `z_index` = `order` and `z_as_relative` off, `Polygon2D` faces without antialiasing (a face with no area is left out), `Marker2D` anchors under the object. Zones and lanes are hidden and keep their data as meta. Error codes: `E_SCHEMA`, `E_DUPLICATE_ID`, `E_Z_RANGE` (more than 4097 parts, because `z_index` is `order` and its limit is 4096), `E_IO`, `E_JSON_PARSE`; an error builds nothing.
+  - "Pixels that differ in which object they show" uses the top-left fill rule when a pixel center is exactly on a polygon edge. Without a rule for that case, an inclusive test gives 126 differing pixels on `crowd` (limit 100) and an exclusive one 101, because the grid positions of `crowd` put many horizontal edges at pixel centers. With the rule: `crowd` 24, `garden` 2, `yard` 2, `lane` 2, `overlap` 0, `visible` 0. The SVG writes coordinates with 2 decimals, which accounts for the rest.
+  - "Each object alone": a polygon box thinner than 1 px may cover no pixel center, so no pixels agree with it; any other missing box is a failure. Colors encode the object number (red * 256 + green), the engine writes its frame as raw RGBA next to the PNG, and the Node side decodes no PNG.
+  - `GODOT` names the binary (4.7.x is checked); the script uses `xvfb-run` when `DISPLAY` is not set; the project is copied to a temporary directory so that `.godot/` never appears in the repository. The export templates of the release are not downloaded, because the tests never export.
+  - A negative control was run once by hand: draw order reversed in the adapter makes the cross-check fail (2122 to 17364 pixels differ on four cases) and 19 adapter checks fail.
+- Answer (maintainer): Approved as written. SPEC 13.6 now states the top-left rule for pixel centers on an edge and the case of a box thinner than 1 px, and SPEC 13.8 the error codes. The maintainer's own measure (a half-open even-odd rule) gives 17 differing pixels on `crowd` with the same adapter, also within the limit. AGENTS.md now says the export templates are needed only when a stage exports builds.
+

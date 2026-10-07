@@ -61,7 +61,7 @@ describe("dist/isoblock.mjs", () => {
   });
 
   it("exits 2 for unavailable commands and flags", () => {
-    expect(node("export", fixturePath("yard"), "--target", "runtime").status).toBe(2);
+    expect(node("export", fixturePath("yard"), "--target", "godot").status).toBe(2);
     expect(node("check", "--state", "night", fixturePath("yard")).status).toBe(2);
   });
 });

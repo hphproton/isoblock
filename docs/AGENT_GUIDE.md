@@ -2,7 +2,7 @@
 
 How an AI agent uses IsoBlock. The builder fills each section as commands ship.
 
-Commands in this guide are available now (stage 4): `validate`, `check`, `render`, `describe`, `relations`, `solve`, `patch`, `diff`, `compare`, and the editor page `dist/editor.html`. Commands from later stages are listed at the end of the Commands section.
+Commands in this guide are available now (stage 5): `validate`, `check`, `render`, `describe`, `relations`, `solve`, `patch`, `diff`, `compare`, `export`, and the editor page `dist/editor.html`. Commands from later stages are listed at the end of the Commands section.
 
 ## Install and build
 
@@ -14,9 +14,9 @@ npm run build
 node dist/isoblock.mjs --help
 ```
 
-`npm run build` writes two files: `dist/isoblock.mjs`, the command line tool, which has no runtime dependencies beyond Node, and `dist/editor.html`, the editor, one self-contained page (see the Editor section). The examples below call the tool as `isoblock`; run it as `node dist/isoblock.mjs`.
+`npm run build` writes two files: `dist/isoblock.mjs`, the command line tool, which has no runtime dependencies beyond Node (the PNG renderer is inside it), and `dist/editor.html`, the editor, one self-contained page (see the Editor section). The examples below call the tool as `isoblock`; run it as `node dist/isoblock.mjs`.
 
-Other scripts: `npm test` runs the test suite, `npm run typecheck` runs the TypeScript checker.
+Other scripts: `npm test` runs the test suite, `npm run typecheck` runs the TypeScript checker, `npm run test:godot` runs the Godot adapter checks (see [Godot adapter](#godot-adapter); it needs Godot and Xvfb, which are not npm packages).
 
 ## Commands
 
@@ -25,13 +25,14 @@ Every command takes a scene file (`*.scene.json`, format `isoblock/1`) and reads
 ```
 isoblock validate <scene.json>
 isoblock check    <scene.json> [--json]
-isoblock render   <scene.json> -o <out.svg>
+isoblock render   <scene.json> -o <out.svg|out.png>
 isoblock describe <scene.json>
 isoblock relations <scene.json> [--json]
 isoblock solve    <scene.json> [--only a,b] [-o <proposal.json>] [--patch <moves.patch>] [--json]
 isoblock patch    <scene.json> <patch> [-o <out.json>] [--dry-run] [--json]
 isoblock diff     <a.json> <b.json> [--json]
 isoblock compare  <scene.json> --variant NAME=FILE... [--format text|md|json]
+isoblock export   <scene.json> --target runtime|gen-bbox [-o <out.json>] [--bbox-units px|norm1000] [--bbox-order xyxy|yxyx]
 ```
 
 ### `validate`
@@ -100,7 +101,20 @@ wrote yard.svg
 
 Agents do not need the image to work with a scene; use `describe`. Open the SVG only when a person asks to see it. Elements carry `data-layer` and `data-ref` attributes (the object, lane or region id) so a viewer can find them.
 
-`-o` is required and must end in `.svg`. PNG output arrives in stage 5.
+`-o` is required and must end in `.svg` or `.png`.
+
+#### Block image (PNG)
+
+`-o out.png` writes the same drawing as a PNG, at 1 pixel per frame unit (the image has the size of the frame), for people and tools that need a picture of the layout (the blocks of a scene to hand to an image generator, or a check by eye).
+
+```
+$ isoblock render yard.scene.json -o yard.png
+wrote yard.png
+```
+
+- The SVG is rasterized by `@resvg/resvg-wasm`, which is inside `dist/isoblock.mjs`: copy that one file anywhere and `node isoblock.mjs render scene.json -o out.png` works, with no other file and no network.
+- Text is left out (labels are not drawn) and no fonts are loaded, so the image is the same on every machine. Run the command twice and the files are byte-identical.
+- The SVG (`-o out.svg`) keeps its labels.
 
 ### `describe`
 
@@ -110,16 +124,19 @@ Prints a compact summary, about 30 to 60 lines, so an agent never has to read th
 
 Described in their own sections below: [Relations](#relations), [`solve`](#solve), [Patches](#patches), [`diff`](#diff) and [`compare`](#compare). The section [Workflow: relate, solve, patch](#workflow-relate-solve-patch) shows how they work together.
 
+### `export`
+
+Described in [Export](#export) below.
+
 ### Not available yet
 
-These commands and flags exist in the spec but arrive in later stages. Using one exits with code 2 and names the stage:
+These flags exist in the spec but arrive in a later stage. Using one exits with code 2 and names the stage:
 
-| Command or flag | Stage |
+| Flag | Stage |
 |---|---|
-| `export` (targets `runtime`, `godot`, `gen-bbox`), `-o out.png` | 5 |
 | `--state NAME` (also `compare --state`) | 6 |
 
-Export targets `phaser` and `tiled` are not scheduled. `compare --render` is not scheduled either.
+Export targets `godot`, `phaser` and `tiled` are not scheduled (the Godot adapter reads the `runtime` file instead). `compare --render` is not scheduled either.
 
 ## Editor
 
@@ -527,3 +544,127 @@ Outputs:
 5. Run `relations` and `check` again. Lock what is settled (`lock crate1 pos`) so later solves keep it.
 
 Use `--only` to move a few objects and keep the rest of a settled layout: `isoblock solve scene.json --only bench,crate1 --patch moves.patch`.
+
+## Export
+
+`isoblock export <scene> --target runtime|gen-bbox [-o out.json]` writes a file derived from the scene. The scene file stays the only source of truth: an export never writes back, and `-o` naming the scene file is a usage error. Without `-o` the file goes to stdout; with `-o` the command prints `wrote <path>`. Both files use the saved format (two-space indentation, one final newline), and the same scene gives the same bytes. `export` exits 0 when it completes, even if checks fail; it writes drafts too, so a game build decides which `meta.status` it accepts.
+
+| Usage error (exit 2) | Message starts |
+|---|---|
+| no `--target` | `export needs --target runtime or gen-bbox` |
+| `--target godot`, `phaser` or `tiled` | `export target '<name>' is not scheduled` |
+| another name | `unknown export target '<name>'` |
+| `--bbox-units` or `--bbox-order` with `runtime` | `--bbox-units applies to the gen-bbox target only` |
+
+### `--target runtime`
+
+The layout an engine needs, as `isoblock-runtime/1`: a reduced copy of the scene with no relations, checks, locks, assumptions, states or generation hints.
+
+```
+$ isoblock export yard.scene.json --target runtime -o yard.runtime.json
+wrote yard.runtime.json
+```
+
+Top-level keys, in this order: `schema`, `scene` (the scene id), `meta` (`version` and `status`, `null` when the scene has no `meta`), `units`, `camera` (`verticalScale` always present), `cameraDir`, `frame` (`w`, `h`, `regions` with `blocksScene` always present), `strips`, `objects`, `zones`, `lanes`. Entries of `units`, `strips`, `zones` and `lanes` are copied without their `x-` keys; an absent list is `[]`.
+
+Each object, in file order (output of `yard`, one line each):
+
+```
+{"id":"tree","type":"tree","pos":[3,0.2],"rot":0,"footprint":[3,0.2,4.2,1.4],"tags":["static"],"parts":[{"id":"trunk","box":[3.45,0.65,0,3.75,0.95,1.4],"order":1},{"id":"canopy","box":[2.8,0,1.4,4.4,1.6,2.4],"order":2}],"anchors":[]}
+{"id":"bench","type":"bench","pos":[3.4,2.6],"rot":0,"footprint":[3.4,2.6,4.6,3],"tags":[],"parts":[{"id":"body","box":[3.4,2.6,0,4.6,3,0.5],"order":3}],"anchors":[{"id":"seat1","at":[3.7,2.8,0.5],"facing":"back","kind":"seat"}]}
+```
+
+- `footprint` is `[u0, v0, u1, v1]` after rotation. `parts[].box` is `[u0, v0, h0, u1, v1, h1]` in world units after rotation; a type without parts has one part, `body`. `anchors[].at` is `[u, v, h]` in world units after rotation; `facing` and `kind` appear only when the type gives them.
+- `order` is the part's place in the painter's order (SPEC section 13.4): 0 is drawn first. It is computed for all parts of all objects together, so a part of one object can sit between two parts of another (the canopy of a tree in front of an actor, the actor in front of the trunk). Adapters use it as the draw order and do not sort static objects. `render` and the editor draw in the same order.
+- Numbers the tool computes (footprints, boxes, anchors) are rounded to 6 decimals; `pos` is copied. `cameraDir` is the camera direction of SPEC section 5 with each component rounded to 9 decimals (`[1, 1, 1]` for true isometric).
+- Objects hold no state or slice data yet (stage 6).
+
+### `--target gen-bbox`
+
+One screen box per object for image-generation tools that place objects by boxes, as `isoblock-genbbox/1`:
+
+```
+$ isoblock export yard.scene.json --target gen-bbox --bbox-units norm1000 --bbox-order yxyx | head -22
+{
+  "schema": "isoblock-genbbox/1",
+  "scene": "yard",
+  "frame": {
+    "w": 1000,
+    "h": 1000
+  },
+  "units": "norm1000",
+  "order": "yxyx",
+  "boxes": [
+    {
+      "id": "tree",
+      "type": "tree",
+      "box": [
+        220,
+        383,
+        488,
+        605
+      ],
+      "clipped": false,
+      "hint": "young tree with a round canopy"
+    },
+```
+
+- `box` is the screen bounds of every corner of every part of the object, cut to the frame. An object that is outside the frame (nothing left of its box) is not listed. `clipped` is `true` when the frame cut the box. `hint` is the type's `genHint`; it is left out when the type has none. Boxes follow the order of the objects in the scene. Groups are not scheduled.
+- `--bbox-units px` (default) gives pixels rounded to 2 decimals; `norm1000` gives `x * 1000 / frame width` and `y * 1000 / frame height` as whole numbers, halves rounded up.
+- `--bbox-order xyxy` (default) gives `[x0, y0, x1, y1]`; `yxyx` gives `[y0, x0, y1, x1]`.
+- Generation never writes back to the scene file. A tool that measures a generated image against the boxes is outside this project.
+
+## Godot adapter
+
+`adapters/godot/` holds a GDScript adapter for Godot 4.7 (Compatibility renderer). It reads the runtime file and builds a `Node2D` tree with the same projection and draw order as `render`. It is not npm code and imports nothing from `src/`.
+
+### Setup
+
+Copy `adapters/godot/isoblock_runtime.gd` into the game project (for example to `res://isoblock/`), and ship the runtime file of an approved scene next to the game data:
+
+```
+isoblock export yard.scene.json --target runtime -o game/data/scenes/yard.json
+```
+
+Release builds should load only files whose `meta.status` is `approved`; the file carries the status and the game decides. To change the layout, edit the scene file and export again: the engine never edits what the scene file owns.
+
+### Loading
+
+```gdscript
+extends Node2D
+
+const Runtime := preload("res://isoblock/isoblock_runtime.gd")
+
+
+func _ready() -> void:
+	var loaded := Runtime.load_file("res://data/scenes/yard.json")
+	if loaded["code"] != "":
+		return
+	var built := Runtime.build(loaded["data"], func(object: Dictionary) -> Color: return Color.from_hsv(float(object["id"].hash() % 360) / 360.0, 0.5, 0.9))
+	if built["code"] != "":
+		return
+	add_child(built["root"])
+```
+
+The same script is available as the global class `IsoblockRuntime` once Godot has scanned the project. This example ran with Godot 4.7.1: the `yard` file gives 5 objects, 2 lanes, and `Objects/bench/seat1` at (362.35, 520) with `kind` `seat` and `facing` `back`.
+
+- `load_file(path)` returns `{ data, code, message }`. `build(data, color_of)` returns `{ root, code, message }`; `color_of` takes the object's dictionary and returns the flat `Color` of its boxes (optional). `check(data)` validates without building. `project(camera, u, v, h)`, `unproject(camera, point, h)` and `camera_direction(camera)` match `tests/golden/projection.json` within 0.001.
+- Errors are returned with a code (and also printed): `E_SCHEMA` (a `schema` other than `isoblock-runtime/1`, or a missing key), `E_DUPLICATE_ID` (object, zone or lane ids, or the part or anchor ids of one object), `E_Z_RANGE` (more parts than `z_index` holds: 4097), `E_IO`, `E_JSON_PARSE`. On an error nothing is built and `root` is null.
+- The tree: root (named by the scene id) with three containers. `Objects` has one `Node2D` per object, named by its id, with meta `id`, `type`, `rot`, `tags` and `footprint`; each part is a child `Node2D` with an absolute `z_index` equal to its `order` and the faces of its box that point toward the camera as `Polygon2D` (antialiasing off, one flat color per object); each anchor is a `Marker2D` named by its id at its projected point, with meta `kind` and `facing`. `Zones` has one hidden `Polygon2D` per zone and `Lanes` one hidden `Line2D` per lane, each with its data as meta (`kind`, `points`, and for lanes `dir` and `width` in world units).
+- Gameplay reads zones, lanes and anchors from the meta; the adapter does not move anything. Moving objects and sorting them against static parts arrive in stage 6.
+
+### Test
+
+`npm run test:godot` checks the adapter against the tool. It needs Godot 4.7.1 and Xvfb (or a `DISPLAY`), which are not npm packages: download Godot from the GitHub release `4.7.1-stable`, check the file against that release's `SHA512-SUMS.txt`, keep it outside the repository, and point `GODOT` at it. The export templates in that release are not needed for the tests.
+
+```
+GODOT=/opt/godot/Godot_v4.7.1-stable_linux.x86_64 npm run test:godot
+```
+
+It builds the tool, runs the adapter's own tests in Godot (golden vectors, the node tree, the error codes), then, for every case in `tests/fixtures/export/cases.json`, exports the runtime file, renders the SVG, draws the file with the adapter at frame size (1 pixel per frame unit) and measures (SPEC section 13.6):
+
+- each object alone: the box of its pixels is within 1 pixel of the box of its polygons in the SVG on every edge;
+- the whole frame: at most 100 pixels per 1,000,000 differ in which object they show, compared with a painter's raster of the SVG polygons (a pixel center on an edge goes to the polygon that owns it by the top-left rule);
+- two runs of Godot give identical PNG bytes.
+
+The test prints one line per case and exits 0 only when everything holds. It is not part of `npm test`.

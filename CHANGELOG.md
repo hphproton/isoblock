@@ -2,6 +2,26 @@
 
 ## Unreleased
 
+## 0.5.0
+
+Stage 5: export for engines and image generation, the block image, and the Godot adapter.
+
+### Added
+
+- `isoblock export <scene> --target runtime|gen-bbox [-o out.json] [--bbox-units px|norm1000] [--bbox-order xyxy|yxyx]`. `--target runtime` writes the runtime file `isoblock-runtime/1` (SPEC 13.7): a reduced copy of the scene with footprints, parts and anchors in world units after rotation and the painter's `order` of every part. `--target gen-bbox` writes `isoblock-genbbox/1` (SPEC 14): one screen box per object, clipped to the frame, with the type's `genHint`; pixels or `norm1000`, `xyxy` or `yxyx`. Both use the saved format; without `-o` the file goes to stdout. A missing or unknown `--target`, the targets `godot`, `phaser` and `tiled` (not scheduled), the bbox flags with `runtime`, and `-o` naming the scene file are usage errors (exit 2).
+- `isoblock render <scene> -o out.png`: the block image, the SVG of `render` without text rasterized by `@resvg/resvg-wasm` (2.6.2, new runtime dependency) at 1 px per frame unit with no fonts. `dist/isoblock.mjs` carries the WebAssembly module and works alone. The bundle grows from 0.4 to 3.7 MB; other commands do not load the module.
+- Godot adapter in `adapters/godot/` (`isoblock_runtime.gd`, GDScript for Godot 4.7, Compatibility renderer) and its test project: loads a runtime file and builds a `Node2D` tree with debug boxes (`Polygon2D` faces per part with an absolute `z_index` equal to `order`), `Marker2D` anchors, and hidden zone and lane nodes; error codes `E_SCHEMA`, `E_DUPLICATE_ID`, `E_Z_RANGE`, `E_IO`, `E_JSON_PARSE`.
+- `npm run test:godot` (needs Godot 4.7.1 in `GODOT`, and Xvfb or a `DISPLAY`; not part of `npm test`): golden vectors, the adapter's own tests, and the cross-checks of SPEC 13.6 on every case of `tests/fixtures/export/cases.json`: each object alone within 1 px of its SVG polygons, the whole frame within 100 pixels per 1,000,000 of a painter's raster of the SVG, two runs byte-identical.
+- Core: `src/core/export/` (`runtimeFile`, `genBboxFile`, `partOrders`), `orderDirection`, `round`, `serializeJson`. CLI: `src/cli/export.ts`, `src/cli/png.ts`. Scripts: `scripts/test-godot.mjs` and `scripts/godot/` (the SVG reader and the measures of the cross-check, unit tested).
+- Tests that load every case of `tests/fixtures/export/cases.json` and compare every expected file (the runtime file and each `gen-bbox` flag set as JSON with the case file's tolerances, the PNG per channel), in the core, through the CLI with in-memory files and through `dist/isoblock.mjs` (also copied alone into an empty directory). The two expected PNGs are byte-identical to the output.
+- `docs/AGENT_GUIDE.md` covers `export`, the block image and the Godot adapter (setup, loading, test).
+
+### Changed
+
+- The painter's order of parts follows SPEC 13.4 exactly: the camera direction is rounded to 9 decimals and the depth of a part to 6, so that exact ties are exact in every implementation. `render` and the editor use it. On `crowd` the order of parts with equal rounded depth can differ from earlier versions.
+- `render -o` accepts `.svg` and `.png`; `export` and `--target` are no longer "added in stage 5".
+- `serializeJson` is the one function that writes the saved format; `serializeScene` calls it.
+
 ## 0.4.0
 
 Stage 4: relations, solver and minimal conflict set.

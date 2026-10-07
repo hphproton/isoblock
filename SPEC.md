@@ -319,7 +319,7 @@ Commands and flags arrive in the stages listed in section 17. A command, flag, e
 
 `render` requires `-o`; the file extension selects the format: `.svg`, or `.png` from stage 5 (section 14).
 
-`export` writes to `-o`, else to stdout, in the saved format of section 10. `--target` is required. `--bbox-units` and `--bbox-order` belong to `gen-bbox`; with `runtime` they are a usage error.
+`export` writes to `-o`, else to stdout, in the saved format of section 10. `--target` is required; `-o` naming the input file is a usage error. `--bbox-units` and `--bbox-order` belong to `gen-bbox`; with `runtime` they are a usage error.
 
 `check` output:
 - Default: one summary line, then one line per check: `PASS|FAIL|WARN|SKIP <id> <check>: <message>`.
@@ -460,6 +460,7 @@ scene.json (git) → isoblock export --target runtime → <game>/data/scenes/<id
 - An engine screenshot of the adapter's debug drawing (section 13.8) and the tool's render agree:
   - **Each object alone** (every other object hidden): the box of the object's pixels lies within 1 px of the box of its polygons in the SVG of `render`, on every edge. Pixel boxes run from the first to one past the last pixel. Both boxes are clipped to the frame; an object outside the frame draws nothing in either.
   - **Whole frame:** compared with a painter's raster of the SVG object polygons (each pixel center takes the last polygon that contains it, in document order, else the background), at most 100 pixels per 1,000,000 differ in which object they show.
+  - A pixel center exactly on a polygon edge belongs to the polygon by the top-left rule, as GPUs fill. An object whose clipped SVG box is less than 1 px wide or high may cover no pixel center; it then has no pixel box, and that is not a failure.
   - Two runs give identical PNG bytes.
 - Each object is also measured alone because an edge that another object hides cannot be measured in the whole frame.
 
@@ -474,13 +475,13 @@ scene.json (git) → isoblock export --target runtime → <game>/data/scenes/<id
 
 - Top-level keys in that order. `scene` is the scene `id`; `meta.version` and `meta.status` come from the scene's `meta`, `null` when absent.
 - `units` and every entry of `strips`, `zones` and `lanes` are copied from the scene file without their `x-` keys, keys in file order. An absent list is `[]`.
-- `camera`: `angleU`, `angleV`, `pxPerUnit`, `verticalScale` (default 1), `origin`. `cameraDir`: the rounded `c` of section 13.4.
+- `camera`: `angleU`, `angleV`, `pxPerUnit`, `verticalScale` (default 1), `origin`. `cameraDir`: the `c` of section 13.4, with its 9 decimals.
 - `frame`: `w`, `h` and `regions`, each `{ "id", "rect", "blocksScene" }` (`blocksScene` default `false`).
 - `objects` in file order, each `{ "id", "type", "pos", "rot", "footprint", "tags", "parts", "anchors" }`:
   - `rot` defaults to 0; `footprint` is `[u0, v0, u1, v1]` after rotation (section 6); `tags` is `[]` when the object has none.
   - `parts` in type order, each `{ "id", "box", "order" }`: `box` is `[u0, v0, h0, u1, v1, h1]` in world units after rotation; `order` is the part's position in the painter's order of section 13.4 (0 is drawn first).
   - `anchors`: the type's anchors as `{ "id", "at", "facing", "kind" }`, `at` = `[u, v, h]` in world units after rotation; `facing` and `kind` only when the type gives them. `[]` when the type has none.
-- Numbers the tool computes are rounded to 6 decimals. The file uses the saved format of section 10. Same input, same bytes.
+- Numbers the tool computes (footprints, part boxes, anchor positions) are rounded to 6 decimals; `pos` and copied values are written as they are in the scene. The file uses the saved format of section 10. Same input, same bytes.
 - Not in stage 5: states and slices (stage 6).
 
 ### 13.8 Godot adapter
@@ -489,7 +490,7 @@ scene.json (git) → isoblock export --target runtime → <game>/data/scenes/<id
 - Loads a runtime file and builds a `Node2D` tree: one node per object; one child per part with `z_index` = `order` (absolute). A scene with more parts than the `z_index` range holds is an error.
 - **Debug drawing:** each part draws the faces of its box that point toward the camera (as the display list does) as `Polygon2D` with antialiasing off, in one flat color per object that the caller chooses.
 - Each anchor becomes a `Marker2D` named by its id at its projected point, with `kind` and `facing` as metadata. Each zone becomes a `Polygon2D` of its projected ground points and each lane a `Line2D` through its projected points; both are hidden by default and keep their data as metadata.
-- A wrong `schema` value or a duplicate id is reported with its code, and nothing is built.
+- A wrong `schema` value or a duplicate id is reported with its code, and nothing is built. Codes: `E_SCHEMA`, `E_DUPLICATE_ID`, `E_Z_RANGE` (more parts than the `z_index` range), `E_IO`, `E_JSON_PARSE`.
 - **Tests:** `npm run test:godot` runs the golden vectors and the cross-checks of section 13.6 for every case in `tests/fixtures/export/cases.json`, at frame size, 1 px per frame unit, under Xvfb with Godot 4.7.1 (`GODOT` names the binary). It is not part of `npm test`, because Godot is not an npm package; the maintainer runs it at review.
 
 ## 14. Image-generation integration
@@ -505,7 +506,7 @@ scene.json (git) → isoblock export --target runtime → <game>/data/scenes/<id
   - `--bbox-units px` (default): pixels rounded to 2 decimals. `norm1000`: `x · 1000 / w` and `y · 1000 / h`, rounded to integers, halves up.
   - `--bbox-order xyxy` (default): `[x0, y0, x1, y1]`. `yxyx`: `[y0, x0, y1, x1]`.
   - `hint` only when the type has a `genHint`. Boxes follow file order. Groups are not scheduled.
-- **Block image** (`render -o out.png`, stage 5): the SVG that `render -o out.svg` writes, rasterized by `@resvg/resvg-wasm` at 1 px per frame unit with no fonts loaded. Text is left out, so the image does not depend on the fonts of the machine. `dist/isoblock.mjs` carries the WebAssembly module and needs no other file.
+- **Block image** (`render -o out.png`, stage 5): the SVG that `render -o out.svg` writes, without its text elements, rasterized by `@resvg/resvg-wasm` at 1 px per frame unit with no fonts loaded. Text is left out, so the image does not depend on the fonts of the machine. `dist/isoblock.mjs` carries the WebAssembly module and needs no other file.
 - **Per-object masks:** not scheduled.
 - **After generation:** a hook for external measuring tools to compare object positions in the new image with the layout. Measuring is outside the core.
 - Generation never writes back to the scene file.
@@ -543,7 +544,7 @@ dist/        build output, not committed
   - fixed seeds;
   - coded errors;
   - TypeScript strict mode.
-- **Size budget (guide):** core about 6,500 lines after stage 6 (4,866 after stage 4); editor 1,500–2,000; each adapter 150–300.
+- **Size budget (guide):** core about 6,500 lines after stage 6 (5,128 after stage 5); editor 1,500–2,000; each adapter 150–300.
 - Engine adapters live in `adapters/<engine>/`. They are not npm code, import nothing from `src/`, and read only the runtime file.
 
 ## 17. Roadmap and acceptance criteria

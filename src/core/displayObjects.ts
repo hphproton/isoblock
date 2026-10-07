@@ -2,7 +2,7 @@ import { typeColors, zoneColor } from "./colors";
 import { label, polygon, type DisplayLabel, type DisplayPolygon } from "./displayTypes";
 import { boxInfo, orderInfos, type BoxInfo } from "./drawOrder";
 import { EPS, worldParts, worldPoint, type Box } from "./geometry";
-import { cameraDirection, projector } from "./projection";
+import { orderDirection, projector } from "./projection";
 import type { Camera, ObjectType, Scene, SceneObject, Vec2, Vec3 } from "./types";
 
 /** Everything the display list draws for one object, kept between frames. */
@@ -67,7 +67,7 @@ export function objectItems(
   camera: Camera,
   cache: ObjectCache,
 ): { readonly boxes: readonly DisplayPolygon[]; readonly labels: readonly DisplayLabel[] } {
-  const c = cameraDirection(camera);
+  const c = orderDirection(camera);
   if (cache.camera !== camera) {
     cache.entries = new WeakMap();
     cache.camera = camera;

@@ -1,0 +1,13 @@
+; Test project for the IsoBlock Godot adapter. Godot 4.7, Compatibility renderer.
+; It is not a game: `npm run test:godot` drives the scripts in test/.
+
+config_version=5
+
+[application]
+
+config/name="IsoBlock adapter tests"
+
+[rendering]
+
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"

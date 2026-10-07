@@ -22,6 +22,13 @@ export const nodeIo: Io = {
       throw new IsoblockError("E_IO", `cannot write ${path}: ${reason(e)}`);
     }
   },
+  writeBytes(path, bytes) {
+    try {
+      writeFileSync(path, bytes);
+    } catch (e) {
+      throw new IsoblockError("E_IO", `cannot write ${path}: ${reason(e)}`);
+    }
+  },
   appendText(path, text) {
     try {
       appendFileSync(path, text);
