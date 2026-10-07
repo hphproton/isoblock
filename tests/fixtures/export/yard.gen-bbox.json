@@ -1,0 +1,68 @@
+{
+  "schema": "isoblock-genbbox/1",
+  "scene": "yard",
+  "frame": {
+    "w": 1000,
+    "h": 1000
+  },
+  "units": "px",
+  "order": "xyxy",
+  "boxes": [
+    {
+      "id": "tree",
+      "type": "tree",
+      "box": [
+        383.14,
+        220,
+        604.84,
+        488
+      ],
+      "clipped": false,
+      "hint": "young tree with a round canopy"
+    },
+    {
+      "id": "actor",
+      "type": "actor",
+      "box": [
+        364.43,
+        334.8,
+        419.86,
+        462.8
+      ],
+      "clipped": false
+    },
+    {
+      "id": "crate1",
+      "type": "crate",
+      "box": [
+        639.48,
+        512,
+        722.62,
+        608
+      ],
+      "clipped": false
+    },
+    {
+      "id": "crate2",
+      "type": "crate",
+      "box": [
+        694.91,
+        544,
+        778.05,
+        640
+      ],
+      "clipped": false
+    },
+    {
+      "id": "bench",
+      "type": "bench",
+      "box": [
+        327.71,
+        500,
+        438.56,
+        604
+      ],
+      "clipped": false
+    }
+  ]
+}

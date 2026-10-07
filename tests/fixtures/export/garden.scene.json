@@ -1,0 +1,78 @@
+{
+  "schema": "isoblock/1",
+  "id": "garden",
+  "units": { "name": "u", "note": "abstract unit", "perMeter": null },
+  "camera": { "angleU": 30, "angleV": 150, "pxPerUnit": 70, "verticalScale": 1, "origin": [400, 250] },
+  "frame": {
+    "w": 1000,
+    "h": 1000,
+    "regions": [
+      { "id": "hud", "rect": [0, 0, 1000, 120], "blocksScene": true },
+      { "id": "view", "rect": [0, 120, 1000, 1000] }
+    ]
+  },
+  "strips": [
+    { "id": "lawn", "v": [0, 9], "kind": "walkable" }
+  ],
+  "types": {
+    "gate": {
+      "size": [2.4, 0.6, 2.6],
+      "parts": [
+        { "id": "postA", "box": [0, 0, 0, 0.5, 0.6, 2.2] },
+        { "id": "postB", "box": [1.9, 0, 0, 2.4, 0.6, 2.2] },
+        { "id": "beam", "box": [0, 0, 2.2, 2.4, 0.6, 2.6] }
+      ],
+      "anchors": [{ "id": "pass", "at": [1.2, 0.3, 0], "facing": "front", "kind": "pass" }],
+      "genHint": "stone gate with two posts and a beam"
+    },
+    "lamp": {
+      "size": [0.4, 0.4, 2.8],
+      "parts": [
+        { "id": "pole", "box": [0.15, 0.15, 0, 0.25, 0.25, 2.4] },
+        { "id": "head", "box": [-0.2, -0.2, 2.4, 0.6, 0.6, 2.8] }
+      ],
+      "genHint": "garden lamp on a thin pole"
+    },
+    "bench": {
+      "size": [1.6, 0.5, 0.45],
+      "anchors": [
+        { "id": "seat1", "at": [0.4, 0.25, 0.45], "facing": "back", "kind": "seat" },
+        { "id": "seat2", "at": [1.2, 0.25, 0.45], "facing": "back", "kind": "seat" }
+      ],
+      "genHint": "wooden bench"
+    },
+    "rock": {
+      "size": [0.9, 0.7, 0.5]
+    },
+    "sign": {
+      "size": [0.6, 0.2, 1.6],
+      "parts": [
+        { "id": "post", "box": [0.25, 0.05, 0, 0.35, 0.15, 1.0] },
+        { "id": "board", "box": [0, 0, 1.0, 0.6, 0.2, 1.6] }
+      ],
+      "anchors": [{ "id": "read", "at": [0.3, -0.4, 0], "facing": "front", "kind": "wait" }],
+      "genHint": "small wooden sign"
+    }
+  },
+  "objects": [
+    { "id": "gate1", "type": "gate", "pos": [2, 1], "rot": 0, "tags": ["static"] },
+    { "id": "rock1", "type": "rock", "pos": [3, 2.1] },
+    { "id": "gate2", "type": "gate", "pos": [6, 3], "rot": 90, "tags": ["static"] },
+    { "id": "lamp1", "type": "lamp", "pos": [1, 4], "rot": 0 },
+    { "id": "bench1", "type": "bench", "pos": [3, 5], "rot": 270 },
+    { "id": "lamp2", "type": "lamp", "pos": [3.4, 5.3], "rot": 180 },
+    { "id": "bench2", "type": "bench", "pos": [8.5, 1], "rot": 90 },
+    { "id": "sign1", "type": "sign", "pos": [7, 6.5], "rot": 180 },
+    { "id": "sign2", "type": "sign", "pos": [5, 1.2], "rot": 270 },
+    { "id": "bench3", "type": "bench", "pos": [1, 7.4], "rot": 0 },
+    { "id": "rock2", "type": "rock", "pos": [30, -5], "rot": 90 }
+  ],
+  "zones": [
+    { "id": "plaza", "kind": "walkable", "points": [[1, 1], [9, 1], [9, 8], [1, 8]] },
+    { "id": "pond", "kind": "blocked" , "points": [[7.5, 4.5], [9, 4.5], [8.2, 6]] }
+  ],
+  "lanes": [
+    { "id": "path", "kind": "walk", "width": 0.6, "dir": "to_screen_left", "points": [[9.5, 2.5], [4.5, 2.5], [4.5, 7], [0, 7]] }
+  ],
+  "meta": { "version": 3, "status": "approved", "approvedBy": "fixture", "approvedAt": "2026-10-07" }
+}

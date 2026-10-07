@@ -1,0 +1,131 @@
+{
+  "schema": "isoblock-genbbox/1",
+  "scene": "garden",
+  "frame": {
+    "w": 1000,
+    "h": 1000
+  },
+  "units": "px",
+  "order": "yxyx",
+  "boxes": [
+    {
+      "id": "gate1",
+      "type": "gate",
+      "box": [
+        173,
+        424.25,
+        460,
+        606.11
+      ],
+      "clipped": false,
+      "hint": "stone gate with two posts and a beam"
+    },
+    {
+      "id": "rock1",
+      "type": "rock",
+      "box": [
+        393.5,
+        412.12,
+        484.5,
+        509.12
+      ],
+      "clipped": false
+    },
+    {
+      "id": "gate2",
+      "type": "gate",
+      "box": [
+        383,
+        436.37,
+        670,
+        618.24
+      ],
+      "clipped": false,
+      "hint": "stone gate with two posts and a beam"
+    },
+    {
+      "id": "lamp1",
+      "type": "lamp",
+      "box": [
+        215,
+        169.64,
+        442.5,
+        266.63
+      ],
+      "clipped": false,
+      "hint": "garden lamp on a thin pole"
+    },
+    {
+      "id": "bench1",
+      "type": "bench",
+      "box": [
+        498.5,
+        181.76,
+        603.5,
+        309.07
+      ],
+      "clipped": false,
+      "hint": "wooden bench"
+    },
+    {
+      "id": "lamp2",
+      "type": "lamp",
+      "box": [
+        344.5,
+        236.32,
+        572,
+        333.32
+      ],
+      "clipped": false,
+      "hint": "garden lamp on a thin pole"
+    },
+    {
+      "id": "bench2",
+      "type": "bench",
+      "box": [
+        551,
+        757.67,
+        656,
+        884.97
+      ],
+      "clipped": false,
+      "hint": "wooden bench"
+    },
+    {
+      "id": "sign1",
+      "type": "sign",
+      "box": [
+        610.5,
+        418.19,
+        740,
+        466.68
+      ],
+      "clipped": false,
+      "hint": "small wooden sign"
+    },
+    {
+      "id": "sign2",
+      "type": "sign",
+      "box": [
+        355,
+        593.99,
+        484.5,
+        642.49
+      ],
+      "clipped": false,
+      "hint": "small wooden sign"
+    },
+    {
+      "id": "bench3",
+      "type": "bench",
+      "box": [
+        512.5,
+        0,
+        617.5,
+        109.02
+      ],
+      "clipped": true,
+      "hint": "wooden bench"
+    }
+  ]
+}

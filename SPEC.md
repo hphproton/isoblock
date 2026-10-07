@@ -312,12 +312,14 @@ isoblock describe scene.json            # compact summary for agents (section 12
 isoblock patch    scene.json patch.txt [-o out.json] [--dry-run] [--json]
 isoblock diff     a.json b.json [--json]
 isoblock compare  scene.json --variant A=a.patch --variant B=b.patch [--state NAME] [--format text|md|json] [--render]
-isoblock export   scene.json --target runtime|godot|phaser|tiled|gen-bbox
+isoblock export   scene.json --target runtime|gen-bbox [-o out.json] [--bbox-units px|norm1000] [--bbox-order xyxy|yxyx]
 ```
 
-Commands and flags arrive in the stages listed in section 17. A command, flag, export target or output format not available in the current stage is a usage error (exit 2) that names the stage that adds it, or says it is not scheduled. Examples in stage 1: `--state` (stage 6), `render -o out.png` (stage 5). `compare --render` is not scheduled.
+Commands and flags arrive in the stages listed in section 17. A command, flag, export target or output format not available in the current stage is a usage error (exit 2) that names the stage that adds it, or says it is not scheduled. Examples in stage 1: `--state` (stage 6), `render -o out.png` (stage 5). `compare --render` and the export targets `godot`, `phaser` and `tiled` are not scheduled.
 
-`render` requires `-o`; the file extension selects the format (`.svg`, and `.png` from stage 5).
+`render` requires `-o`; the file extension selects the format: `.svg`, or `.png` from stage 5 (section 14).
+
+`export` writes to `-o`, else to stdout, in the saved format of section 10. `--target` is required. `--bbox-units` and `--bbox-order` belong to `gen-bbox`; with `runtime` they are a usage error.
 
 `check` output:
 - Default: one summary line, then one line per check: `PASS|FAIL|WARN|SKIP <id> <check>: <message>`.
@@ -412,26 +414,20 @@ relate bench in_front_of tree gap 1..1.5 hard
 
 The engine never edits what the scene file owns. To change the layout, edit the scene file and export again.
 
-### 13.2 Two loading modes
+### 13.2 Loading at runtime
 
-- **A. Load at runtime (recommended).**
-  - The game ships the approved `scene.runtime.json`. A thin engine adapter reads it, creates nodes by `type`, places them with the same projection, assigns draw order, and turns zones, lanes and anchors into gameplay objects.
-  - **Pros:** one source; hot reload during development; switching engines means rewriting only the adapter (about 150–300 lines).
-  - **Cons:** the engine's editor does not show the layout unless the adapter runs in the editor (for example a Godot `@tool` script).
-- **B. Generate engine scenes at build time:** `.tscn` for Godot, scene JSON for Phaser, TMX/JSON for Tiled.
-  - **Pros:** visible in the engine's editor.
-  - **Cons:** easy to drift. Generated files must say "generated, do not edit".
-- **Recommendation:** A is the main path; B is for viewing only.
+- The game ships the runtime file of an approved scene (section 13.7). A thin engine adapter reads it, places nodes with the same projection, applies the file's draw order, and turns zones, lanes and anchors into gameplay objects.
+- **Pros:** one source; hot reload during development; switching engines means rewriting only the adapter (about 150–300 lines).
+- **Cons:** the engine's editor does not show the layout unless the adapter runs in the editor (for example a Godot `@tool` script). That is not scheduled.
+- Generating engine scenes at build time (`.tscn` for Godot, scene JSON for Phaser, TMX/JSON for Tiled) is not scheduled: a second loading path would double the upkeep and drift from the first.
 
 ### 13.3 Adapter contract (every engine)
 
 - `project(u, v, h) → (x, y)`, matching the golden vectors.
-- `sortKey(object | actor)` following section 13.4.
-- `instantiate(type) → node`, through the type → prefab/scene/sprite map.
-- Image pivot = the type's ground-contact anchor, from the asset contract.
-- Zones become collision or navigation areas. Lanes become paths. Anchors become oriented gameplay points (`seat`, `queue_point`, `spawn`, `exit`, `wait`).
-- On a state change, apply that state's overrides (hide/show, reposition).
-- Validate on load: schema version, duplicate ids, types without a mapping. Report errors; never ignore them silently.
+- Draw order from the runtime file: a part with a smaller `order` is drawn earlier. Adapters do not sort static objects themselves. Moving objects: stage 6 (section 13.4).
+- Zones become areas, lanes become paths, anchors become oriented points (`seat`, `queue_point`, `spawn`, `exit`, `wait`) that keep their `kind` and `facing`.
+- Validate on load: the `schema` value and duplicate ids. Report errors; never ignore them silently.
+- From stage 6: `instantiate(type) → node` through the type → prefab/scene/sprite map, with the image pivot at the type's ground-contact anchor from the asset contract, together with slicing (section 13.4); types without a mapping are reported; on a state change, apply that state's overrides (hide/show, reposition). Stage 5 adapters draw parts as debug boxes.
 
 ### 13.4 Draw order: the main isometric trap
 
@@ -440,7 +436,14 @@ The engine never edits what the scene file owns. To change the layout, edit the 
   1. Slice long objects along their long axis; each slice is a sprite with its own sort point.
   2. Split an object into a front part and a back part.
   3. Static objects: precomputed topological order. Moving objects: sort by foot depth.
-- **Tool support:** `sort_consistency` walks a test actor through points around each object, compares the engine rule with geometric order, and reports objects that need slicing. Export includes `slices` for them.
+- **Tool support:** `sort_consistency` walks a test actor through points around each object, compares the engine rule with geometric order, and reports objects that need slicing. Export includes `slices` for them (stage 6).
+- **Painter's order of parts** (from stage 5 the rule for `render`, the editor and the runtime file):
+  1. List every part of every object: objects in file order, parts in type order (a type without parts has one part, `body`). A part's position in this list is its index.
+  2. For each part: its world box (section 6); `c` = the camera direction of section 5 with each component rounded to 9 decimals; `depth` = `c · center` of the box, rounded to 6 decimals; its screen bounds = the smallest and largest x and y of its 8 projected corners.
+  3. Two parts need an order only when their screen bounds overlap by more than EPS along x and along y.
+  4. Each axis (u, v, h) along which the two boxes are apart (the upper end of one is at most the lower end of the other plus EPS) votes: when `|c|` on that axis is at most EPS, the pair needs no order; otherwise the vote puts first the box on the side away from the camera (the lower box when `c` is positive on that axis). Votes that disagree: no order. No axis apart: the box with the smaller depth goes first; equal depths need no order.
+  5. Place parts one at a time: among the unplaced parts whose required predecessors are all placed, take the one with the smallest depth, then the smallest index. When there is none (a cycle), take the unplaced part with the smallest depth, then the smallest index.
+  - The rounding in step 2 keeps exact ties exact, so every implementation gives the same order. Ground, outlines and labels of the display list keep their place.
 
 ### 13.5 Flow and versions
 
@@ -448,18 +451,62 @@ The engine never edits what the scene file owns. To change the layout, edit the 
 scene.json (git) → isoblock export --target runtime → <game>/data/scenes/<id>.json → adapter
 ```
 
-- Only scenes with `meta.status = "approved"` are exported for release builds. Drafts are for development.
-- Each breaking format change bumps the `schema` value and is listed in `CHANGELOG.md` with upgrade steps. From version 1.0.0 it also ships a migration script.
+- Release builds load only scenes with `meta.status = "approved"`; drafts are for development. The runtime file carries the status and the game enforces this; `export` writes drafts too.
+- Each breaking change of the scene format or the runtime format bumps its `schema` value and is listed in `CHANGELOG.md` with upgrade steps. From version 1.0.0 it also ships a migration script.
 
 ### 13.6 Cross-checks
 
-- Core and every adapter run the golden vectors.
-- An engine screenshot (debug overlay) and the tool's render differ by at most 1 px.
+- Core and every adapter run the golden vectors of `tests/golden/projection.json`, within 0.001.
+- An engine screenshot of the adapter's debug drawing (section 13.8) and the tool's render agree:
+  - **Each object alone** (every other object hidden): the box of the object's pixels lies within 1 px of the box of its polygons in the SVG of `render`, on every edge. Pixel boxes run from the first to one past the last pixel. Both boxes are clipped to the frame; an object outside the frame draws nothing in either.
+  - **Whole frame:** compared with a painter's raster of the SVG object polygons (each pixel center takes the last polygon that contains it, in document order, else the background), at most 100 pixels per 1,000,000 differ in which object they show.
+  - Two runs give identical PNG bytes.
+- Each object is also measured alone because an edge that another object hides cannot be measured in the whole frame.
+
+### 13.7 Runtime file (`isoblock-runtime/1`)
+
+`export --target runtime` writes the layout an engine needs: a reduced copy of the scene without relations, checks, locks, assumptions or generation hints.
+
+```json
+{ "schema": "isoblock-runtime/1", "scene": "yard", "meta": { "version": 1, "status": "draft" },
+  "units": {}, "camera": {}, "cameraDir": [1, 1, 1], "frame": {}, "strips": [], "objects": [], "zones": [], "lanes": [] }
+```
+
+- Top-level keys in that order. `scene` is the scene `id`; `meta.version` and `meta.status` come from the scene's `meta`, `null` when absent.
+- `units` and every entry of `strips`, `zones` and `lanes` are copied from the scene file without their `x-` keys, keys in file order. An absent list is `[]`.
+- `camera`: `angleU`, `angleV`, `pxPerUnit`, `verticalScale` (default 1), `origin`. `cameraDir`: the rounded `c` of section 13.4.
+- `frame`: `w`, `h` and `regions`, each `{ "id", "rect", "blocksScene" }` (`blocksScene` default `false`).
+- `objects` in file order, each `{ "id", "type", "pos", "rot", "footprint", "tags", "parts", "anchors" }`:
+  - `rot` defaults to 0; `footprint` is `[u0, v0, u1, v1]` after rotation (section 6); `tags` is `[]` when the object has none.
+  - `parts` in type order, each `{ "id", "box", "order" }`: `box` is `[u0, v0, h0, u1, v1, h1]` in world units after rotation; `order` is the part's position in the painter's order of section 13.4 (0 is drawn first).
+  - `anchors`: the type's anchors as `{ "id", "at", "facing", "kind" }`, `at` = `[u, v, h]` in world units after rotation; `facing` and `kind` only when the type gives them. `[]` when the type has none.
+- Numbers the tool computes are rounded to 6 decimals. The file uses the saved format of section 10. Same input, same bytes.
+- Not in stage 5: states and slices (stage 6).
+
+### 13.8 Godot adapter
+
+- Lives in `adapters/godot/`: GDScript for Godot 4.7 with the Compatibility renderer, 150–300 lines without its tests. It is not npm code and imports nothing from `src/`.
+- Loads a runtime file and builds a `Node2D` tree: one node per object; one child per part with `z_index` = `order` (absolute). A scene with more parts than the `z_index` range holds is an error.
+- **Debug drawing:** each part draws the faces of its box that point toward the camera (as the display list does) as `Polygon2D` with antialiasing off, in one flat color per object that the caller chooses.
+- Each anchor becomes a `Marker2D` named by its id at its projected point, with `kind` and `facing` as metadata. Each zone becomes a `Polygon2D` of its projected ground points and each lane a `Line2D` through its projected points; both are hidden by default and keep their data as metadata.
+- A wrong `schema` value or a duplicate id is reported with its code, and nothing is built.
+- **Tests:** `npm run test:godot` runs the golden vectors and the cross-checks of section 13.6 for every case in `tests/fixtures/export/cases.json`, at frame size, 1 px per frame unit, under Xvfb with Godot 4.7.1 (`GODOT` names the binary). It is not part of `npm test`, because Godot is not an npm package; the maintainer runs it at review.
 
 ## 14. Image-generation integration
 
-- **`gen-bbox`:** one screen box per object or group, with a short description from `types[].genHint`. Configurable format: normalized 0–1000 or pixels; `[y0, x0, y1, x1]` or `[x0, y0, x1, y1]`.
-- **Layout references:** block image and per-object masks (PNG).
+- **`gen-bbox`** (`export --target gen-bbox`): one screen box per object, with a short description from `types[].genHint`, for image-generation tools that place objects by boxes.
+
+```json
+{ "schema": "isoblock-genbbox/1", "scene": "yard", "frame": { "w": 1000, "h": 1000 }, "units": "px", "order": "xyxy",
+  "boxes": [{ "id": "tree", "type": "tree", "box": [383.14, 220, 604.84, 488], "clipped": false, "hint": "young tree with a round canopy" }] }
+```
+
+  - `box`: the screen bounds of every corner of every part of the object, intersected with the frame `[0, 0, w, h]`. An object is left out when that intersection is at most EPS wide or at most EPS high. `clipped` is `true` when the frame cut the bounds.
+  - `--bbox-units px` (default): pixels rounded to 2 decimals. `norm1000`: `x · 1000 / w` and `y · 1000 / h`, rounded to integers, halves up.
+  - `--bbox-order xyxy` (default): `[x0, y0, x1, y1]`. `yxyx`: `[y0, x0, y1, x1]`.
+  - `hint` only when the type has a `genHint`. Boxes follow file order. Groups are not scheduled.
+- **Block image** (`render -o out.png`, stage 5): the SVG that `render -o out.svg` writes, rasterized by `@resvg/resvg-wasm` at 1 px per frame unit with no fonts loaded. Text is left out, so the image does not depend on the fonts of the machine. `dist/isoblock.mjs` carries the WebAssembly module and needs no other file.
+- **Per-object masks:** not scheduled.
 - **After generation:** a hook for external measuring tools to compare object positions in the new image with the layout. Measuring is outside the core.
 - Generation never writes back to the scene file.
 
@@ -473,9 +520,12 @@ scene.json (git) → isoblock export --target runtime → <game>/data/scenes/<id
 ```
 src/
   core/      pure TypeScript: schema, model, projection, geometry, checks, displayList, describe (later: sort, solver, patch)
-  cli/       Node: arguments, file I/O, SVG output (PNG from stage 5 via resvg-wasm, optional dependency)
+  cli/       Node: arguments, file I/O, SVG output; PNG from stage 5 via @resvg/resvg-wasm, bundled into dist/isoblock.mjs
   editor/    from stage 2: one HTML page + ES modules, no framework; draws the displayList on Canvas 2D
 schema/      isoblock-1.json
+adapters/
+  godot/     from stage 5: GDScript adapter for Godot 4.7 and its test project (section 13.8)
+scripts/     build and test scripts (test-godot.mjs from stage 5)
 tests/
   golden/    projection.json (stage 6 adds sort.json)
   fixtures/  *.scene.json + *.expected.json (synthetic scenes, maintained by the maintainer)
@@ -489,12 +539,12 @@ dist/        build output, not committed
   - immutable data (each patch creates a new scene);
   - the core imports no Node built-in modules and does not use `process` or the DOM;
   - one file per check, at most 150 lines, with its own test;
-  - few dependencies (JSON Schema validation only, unless the maintainer approves more);
+  - few dependencies: `ajv`, and `@resvg/resvg-wasm` from stage 5 (more only when the maintainer approves);
   - fixed seeds;
   - coded errors;
   - TypeScript strict mode.
 - **Size budget (guide):** core about 6,500 lines after stage 6 (4,866 after stage 4); editor 1,500–2,000; each adapter 150–300.
-- Engine adapters live outside this package until stage 5 decides their layout.
+- Engine adapters live in `adapters/<engine>/`. They are not npm code, import nothing from `src/`, and read only the runtime file.
 
 ## 17. Roadmap and acceptance criteria
 
@@ -504,10 +554,12 @@ dist/        build output, not committed
 | 2 | Editor: drag on both views, locks, undo, save, live check panel | 200 objects at 60 fps on a mid-range phone, measured on `tests/fixtures/crowd.scene.json` in headless Chromium with 4x CPU slowdown, phone profile (390x844 CSS px at pixel ratio 2, touch, one view), one pointer move per animation frame: the 95th-percentile interval between animation frames is at most 18.4 ms (1.1 display intervals); dragging a locked object is blocked; a saved file parses to the same data as the file opened, and saving twice gives byte-identical files |
 | 3 | Patches: short commands and JSON Patch, lock rejection, log; `diff`; `compare` | The 20 patches in `tests/fixtures/patches/` give their expected results; `compare` on `yard` with the 3 variants in `tests/fixtures/compare/` gives `yard.expected.json`, and its `text` and `md` output equal `yard.expected.txt` and `yard.expected.md` byte for byte |
 | 4 | Relations (section 7), `relations`, solver and minimal conflict set (section 8) | `relations` on `tests/fixtures/relations/relations.scene.json` gives its expected results; every scene in `tests/fixtures/solver/` meets its expected file; the solve of `perf` meets the performance rule of section 8 |
-| 5 | `export` targets `runtime`, `godot`, `gen-bbox`; Godot adapter; cross golden tests; PNG render | The sample scene loaded in Godot differs by at most 1 px |
+| 5 | Painter's order of parts (section 13.4); `export --target runtime` (section 13.7) and `gen-bbox` (section 14); PNG render (section 14); Godot adapter and its cross-checks (sections 13.6, 13.8) | Every case in `tests/fixtures/export/cases.json` meets its expected files: the runtime file, and the `gen-bbox` file for each listed flag set, equal their expected files as JSON (same keys in the same order, numbers within the case file's tolerances) and are byte-identical over two runs; for each case with a `png`, `render -o out.png` decodes to the same size as that PNG and each RGBA channel of each pixel is within 1 of it; `dist/isoblock.mjs`, copied alone into an empty directory, writes a PNG; `npm run test:godot` passes section 13.6 on every case |
 | 6 | States, `sort_consistency` and slicing, `reachable`, `capacity` | The bundled tests pass |
 
-Export targets `phaser` and `tiled` are not scheduled.
+Export targets `godot`, `phaser` and `tiled` are not scheduled.
+
+Export fixtures: `tests/fixtures/export/cases.json` = `{ tolerance, cases }`, each case `{ name, scene, runtime, genBbox: [{ args, file }], png }`. `scene` is a path from the repository root; `runtime`, `file` and `png` are file names in `tests/fixtures/export/`; `args` are the flags added to `export --target gen-bbox`; `png` is `null` when the case has none. Tolerances: `world` for runtime numbers, `px` and `norm1000` for `gen-bbox` numbers by unit, `pngChannel` for PNG channels. The expected PNGs come from resvg 2.6.2 with no fonts loaded.
 
 Patch fixtures: `tests/fixtures/patches/<name>.patch` with `<name>.expected.json` = `{ base, tolerance, exit, status, error, locks, diff, checks, failing }`. `base` names `tests/fixtures/<base>.scene.json`; `exit` is the exit code of `isoblock patch` on a copy of that scene; `error` is the error code or `null`; `locks`, `diff`, `checks` and `failing` are the fields of the `--json` report (`failing` is `null` unless the patch is applied). Check values compare within `tolerance.value` (pixels `tolerance.valuePx`), diff numbers within `tolerance.coordinate`; messages are not compared.
 
@@ -524,7 +576,8 @@ Versions: the maintainer sets `version` in `package.json` in the release commit 
 - **Boxes are not final shapes.** Re-check visibility and collisions once real art exists. Parts that follow the art closely reduce the error.
 - **Orthographic projection does not shrink distant objects.** A backdrop stays as wide as the foreground, so it is often drawn at its own scale (a `decor` strip). Physical scale is not checked there.
 - **A simple solver can get stuck in a weak solution.** People can always drag and lock. A weak solver also widens the conflict set, because deletion filtering trusts it to find solutions.
-- **Each engine sorts draw order its own way.** Golden tests and `sort_consistency` are mandatory.
+- **Each engine sorts draw order its own way.** Golden tests and `sort_consistency` are mandatory. The runtime file carries the order of static parts so that adapters do not sort them.
+- **The block image has no text** (section 14).
 
 ## 19. Open questions
 
@@ -532,7 +585,6 @@ Versions: the maintainer sets `version` in `package.json` in the release commit 
 2. Is free rotation needed?
 3. Should walkable areas be polygons or grids?
 4. Is concurrent editing needed? (Initially: no.)
-5. Should the runtime file be complete, or reduced to what engines need?
 
 ## 20. Repository workflow
 

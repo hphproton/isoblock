@@ -1,0 +1,34 @@
+{
+  "schema": "isoblock-genbbox/1",
+  "scene": "visible",
+  "frame": {
+    "w": 1000,
+    "h": 1000
+  },
+  "units": "px",
+  "order": "xyxy",
+  "boxes": [
+    {
+      "id": "h1",
+      "type": "actor",
+      "box": [
+        514.02,
+        350,
+        565.98,
+        480
+      ],
+      "clipped": false
+    },
+    {
+      "id": "w",
+      "type": "wall",
+      "box": [
+        366.79,
+        200,
+        713.21,
+        700
+      ],
+      "clipped": false
+    }
+  ]
+}

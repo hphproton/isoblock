@@ -1,0 +1,105 @@
+{
+  "tolerance": {
+    "world": 0.00001,
+    "px": 0.02,
+    "norm1000": 1,
+    "pngChannel": 1
+  },
+  "cases": [
+    {
+      "name": "yard",
+      "scene": "tests/fixtures/yard.scene.json",
+      "runtime": "yard.runtime.json",
+      "genBbox": [
+        {
+          "args": [],
+          "file": "yard.gen-bbox.json"
+        },
+        {
+          "args": [
+            "--bbox-units",
+            "norm1000",
+            "--bbox-order",
+            "yxyx"
+          ],
+          "file": "yard.gen-bbox.norm1000-yxyx.json"
+        }
+      ],
+      "png": "yard.png"
+    },
+    {
+      "name": "lane",
+      "scene": "tests/fixtures/lane.scene.json",
+      "runtime": "lane.runtime.json",
+      "genBbox": [
+        {
+          "args": [],
+          "file": "lane.gen-bbox.json"
+        }
+      ],
+      "png": null
+    },
+    {
+      "name": "overlap",
+      "scene": "tests/fixtures/overlap.scene.json",
+      "runtime": "overlap.runtime.json",
+      "genBbox": [
+        {
+          "args": [],
+          "file": "overlap.gen-bbox.json"
+        }
+      ],
+      "png": null
+    },
+    {
+      "name": "visible",
+      "scene": "tests/fixtures/visible.scene.json",
+      "runtime": "visible.runtime.json",
+      "genBbox": [
+        {
+          "args": [],
+          "file": "visible.gen-bbox.json"
+        }
+      ],
+      "png": null
+    },
+    {
+      "name": "crowd",
+      "scene": "tests/fixtures/crowd.scene.json",
+      "runtime": "crowd.runtime.json",
+      "genBbox": [
+        {
+          "args": [],
+          "file": "crowd.gen-bbox.json"
+        }
+      ],
+      "png": null
+    },
+    {
+      "name": "garden",
+      "scene": "tests/fixtures/export/garden.scene.json",
+      "runtime": "garden.runtime.json",
+      "genBbox": [
+        {
+          "args": [],
+          "file": "garden.gen-bbox.json"
+        },
+        {
+          "args": [
+            "--bbox-units",
+            "norm1000"
+          ],
+          "file": "garden.gen-bbox.norm1000-xyxy.json"
+        },
+        {
+          "args": [
+            "--bbox-order",
+            "yxyx"
+          ],
+          "file": "garden.gen-bbox.px-yxyx.json"
+        }
+      ],
+      "png": "garden.png"
+    }
+  ]
+}

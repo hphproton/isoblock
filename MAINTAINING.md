@@ -31,12 +31,14 @@ Review by behavior. Read code only when a step below fails.
 3. Run `node dist/isoblock.mjs describe tests/fixtures/yard.scene.json` and compare with SPEC Appendix B.
 4. Run `node dist/isoblock.mjs render tests/fixtures/yard.scene.json -o yard.svg`, convert it to an image and look at it: draw order around the tree, both lanes, the crates.
 5. Run `validate` on a broken file (for example `{"schema":"x"}`); it must exit 2.
-6. Core purity (no Node built-in modules, no `process`, no DOM): list every module specifier in `src/core` with `grep -rhoE "(from|import\\(|require\\() *['\"][^'\"]+['\"]" src/core | sort -u`; each must be relative (`./`, `../`) or an approved package (`ajv`). `grep -rnwE "process|document|window" src/core` prints nothing. Each file in `src/core/checks/` has at most 150 lines.
+6. Core purity (no Node built-in modules, no `process`, no DOM): list every module specifier in `src/core` with `grep -rhoE "(from|import\\(|require\\() *['\"][^'\"]+['\"]" src/core | sort -u`; each must be relative (`./`, `../`) or an approved package (`ajv`). `@resvg/resvg-wasm` (stage 5) belongs in `src/cli`, not in `src/core`. `grep -rnwE "process|document|window" src/core` prints nothing. Each file in `src/core/checks/` has at most 150 lines.
 7. Content rules (SPEC section 20): no non-English text, no project-specific names, scenes or measurements. Scan for non-ASCII characters and review each hit; the symbols used by `describe` output (`·`, `×`, `≈`) are expected.
 8. `ROADMAP.md` ticks match what the log reports and what you verified. New questions in `QUESTIONS.md` have answers or a decision to defer.
 9. From stage 2, open `dist/editor.html` in Chromium with your own script: save twice (identical bytes, same data as opened); drag a locked object (no move) and a `pos.u` lock (v only); after a few drags, compare the check panel with `check --json` on the saved file; measure the frame interval on the phone profile of SPEC section 17.
 10. From stage 3, with your own script: run `patch --json` on a copy of the base scene for every file in `tests/fixtures/patches/` and compare exit code, status, error code, locks, diff, check changes and `failing` with its expected file; check that a rejected patch leaves the scene unchanged and that the log gains one line; run `compare` on `yard` with the three variants in all three formats and compare with the expected files.
 11. From stage 4, with your own script: run `relations --json` on the relation fixture and compare with its expected file; run `solve --json -o` (and `--only` when given) on every solver fixture twice; check `status`, `conflict`, the constraints of SPEC section 8 on the proposal (view, overlap, grid, `unchanged`), soft penalty and distance bounds, byte-identical runs, and recompute the relation results of the proposal with the reference implementation; apply the `--patch` output with `patch` and check that it gives the same positions; time `perf`.
+
+12. From stage 5, with your own script: for every case in `tests/fixtures/export/cases.json`, run `export --target runtime` and `export --target gen-bbox` with each flag set twice, compare with the expected files (key order, numbers within the tolerances) and check byte-identical runs; run `render -o out.png` for each case with a `png` and compare the pixels; copy `dist/isoblock.mjs` alone into an empty directory and render a PNG there; check that the part order of the runtime file equals the order of the faces in the SVG of `render`; run `npm run test:godot` with your own Godot 4.7.1 download, then measure the adapter's PNGs against the SVGs with your own script (SPEC section 13.6).
 
 Write the result in `log/<yyyy-mm-dd>-maintainer-<n>.md`: steps run, outcomes, decision.
 
@@ -51,7 +53,7 @@ The squash commit on `main` is the release, identified by `version` and commit h
 
 ## Reference implementation
 
-The maintainer computes expected results with its own implementation, kept on branch `maintainer/reference` and never merged. Recompute with it whenever a check, patch or `compare` definition changes.
+The maintainer computes expected results with its own implementation, kept on branch `maintainer/reference` and never merged. Recompute with it whenever a check, patch, `compare` or export definition changes.
 
 ## Start the next builder session
 

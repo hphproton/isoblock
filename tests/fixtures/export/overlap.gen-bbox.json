@@ -1,0 +1,56 @@
+{
+  "schema": "isoblock-genbbox/1",
+  "scene": "overlap",
+  "frame": {
+    "w": 1000,
+    "h": 1000
+  },
+  "units": "px",
+  "order": "xyxy",
+  "boxes": [
+    {
+      "id": "a",
+      "type": "box",
+      "box": [
+        453.4,
+        350,
+        626.6,
+        550
+      ],
+      "clipped": false
+    },
+    {
+      "id": "b",
+      "type": "box",
+      "box": [
+        453.4,
+        400,
+        626.6,
+        600
+      ],
+      "clipped": false
+    },
+    {
+      "id": "c",
+      "type": "box",
+      "box": [
+        713.21,
+        500,
+        886.41,
+        700
+      ],
+      "clipped": false
+    },
+    {
+      "id": "r",
+      "type": "long",
+      "box": [
+        20.38,
+        550,
+        280.19,
+        800
+      ],
+      "clipped": false
+    }
+  ]
+}

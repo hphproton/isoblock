@@ -84,8 +84,24 @@ Not in stage 4: `facing`, relation rows in `compare`, a solve button in the edit
 
 **Done when:** all tests pass, earlier fixtures still match, and the stage 4 criteria in SPEC section 17 hold.
 
-## Stage 5 · not open
-Export targets `runtime`, `godot`, `gen-bbox`; Godot adapter; PNG render (SPEC sections 13, 14, 17). Before it opens: the owner decides the engine, and the maintainer specifies the export formats and adds the fixtures.
+## Stage 5 · open
+
+Export for engines and image generation, and the Godot adapter (SPEC sections 11, 13, 14, 16, 17). The engine is Godot 4.7 with GDScript; trial E1 (pull request #8, not merged) showed that a builder session can run it. Fixtures: `tests/fixtures/export/` (case list `cases.json`, the new scene `garden.scene.json`, expected runtime files, generation boxes and block images).
+
+- [ ] Painter's order of parts exactly as SPEC section 13.4 (rounded camera direction and depth); `render` and the editor use it
+- [ ] `export --target runtime` (SPEC section 13.7): key order, rounding, saved format, `-o` or stdout
+- [ ] `export --target gen-bbox` with `--bbox-units` and `--bbox-order` (SPEC section 14)
+- [ ] Usage errors: missing `--target`, the targets `godot`, `phaser` and `tiled` (not scheduled), bbox flags with `runtime`
+- [ ] `render -o out.png` with `@resvg/resvg-wasm`, no fonts; `dist/isoblock.mjs` works alone
+- [ ] Godot adapter in `adapters/godot/` (SPEC section 13.8)
+- [ ] `npm run test:godot`: golden vectors and the cross-checks of SPEC section 13.6 on every case
+- [ ] Tests load `tests/fixtures/export/cases.json` and compare every expected file
+- [ ] `docs/AGENT_GUIDE.md` covers `export`, the block image and the Godot adapter (setup, loading, test)
+- [ ] Session log says `branch ready for review`
+
+Not in stage 5: states and slices in the runtime file, `instantiate` by type and sorting of moving objects (stage 6); generated engine scenes (`.tscn`), per-object masks, groups in `gen-bbox`, export from the editor (not scheduled).
+
+**Done when:** all tests pass, `npm run test:godot` passes, earlier fixtures still match, and the stage 5 criteria in SPEC section 17 hold.
 
 ## Stage 6 · not open
 States, `sort_consistency`, `reachable`, `capacity` (SPEC sections 9, 13.4, 17).
