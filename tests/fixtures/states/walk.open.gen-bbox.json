@@ -1,0 +1,100 @@
+{
+  "schema": "isoblock-genbbox/1",
+  "scene": "walk",
+  "frame": {
+    "w": 1000,
+    "h": 900
+  },
+  "units": "px",
+  "order": "xyxy",
+  "boxes": [
+    {
+      "id": "hedge1",
+      "type": "hedge",
+      "box": [
+        468.04,
+        314,
+        800.59,
+        572
+      ],
+      "clipped": false
+    },
+    {
+      "id": "bench1",
+      "type": "bench",
+      "box": [
+        494.02,
+        263,
+        603.14,
+        353
+      ],
+      "clipped": false
+    },
+    {
+      "id": "bench2",
+      "type": "bench",
+      "box": [
+        249.8,
+        431,
+        358.92,
+        521
+      ],
+      "clipped": false
+    },
+    {
+      "id": "table1",
+      "type": "table",
+      "box": [
+        764.22,
+        440,
+        847.36,
+        533
+      ],
+      "clipped": false
+    },
+    {
+      "id": "rock1",
+      "type": "rock",
+      "box": [
+        831.77,
+        494,
+        894.12,
+        560
+      ],
+      "clipped": false
+    },
+    {
+      "id": "table2",
+      "type": "table",
+      "box": [
+        670.69,
+        494,
+        753.83,
+        587
+      ],
+      "clipped": false
+    },
+    {
+      "id": "shelter1",
+      "type": "shelter",
+      "box": [
+        920.1,
+        392,
+        1000,
+        659
+      ],
+      "clipped": true
+    },
+    {
+      "id": "walker1",
+      "type": "walker",
+      "box": [
+        499.22,
+        308,
+        540.78,
+        434
+      ],
+      "clipped": false
+    }
+  ]
+}

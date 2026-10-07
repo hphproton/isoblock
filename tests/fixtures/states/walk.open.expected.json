@@ -1,0 +1,211 @@
+{
+  "scene": "walk",
+  "state": "open",
+  "tolerance": {
+    "value": 0.01,
+    "valuePx": 1.0
+  },
+  "results": [
+    {
+      "id": "k1",
+      "check": "reachable",
+      "threshold": null,
+      "ids": [
+        "bench1"
+      ],
+      "status": "pass",
+      "value": 3.8
+    },
+    {
+      "id": "k2",
+      "check": "reachable",
+      "threshold": null,
+      "ids": [
+        "table1"
+      ],
+      "status": "pass",
+      "value": 13.1
+    },
+    {
+      "id": "k3",
+      "check": "reachable",
+      "threshold": 1,
+      "ids": [
+        "bench2"
+      ],
+      "status": "fail",
+      "value": 3.1
+    },
+    {
+      "id": "k4",
+      "check": "reachable",
+      "threshold": null,
+      "ids": [
+        "shelter1"
+      ],
+      "status": "pass",
+      "value": 1.75
+    },
+    {
+      "id": "k5",
+      "check": "reachable",
+      "threshold": null,
+      "ids": [
+        "bench1"
+      ],
+      "status": "fail",
+      "value": null,
+      "message": "start is not on walkable ground"
+    },
+    {
+      "id": "k6",
+      "check": "reachable",
+      "threshold": null,
+      "ids": [],
+      "status": "fail",
+      "value": null,
+      "message": "target is not on walkable ground"
+    },
+    {
+      "id": "k7",
+      "check": "reachable",
+      "threshold": null,
+      "ids": [],
+      "status": "pass",
+      "value": 3.8
+    },
+    {
+      "id": "k8",
+      "check": "reachable",
+      "threshold": null,
+      "ids": [
+        "table2"
+      ],
+      "status": "pass",
+      "value": 6.7
+    },
+    {
+      "id": "s1",
+      "check": "capacity",
+      "status": "fail",
+      "value": 4,
+      "threshold": 6,
+      "ids": [
+        "bench1",
+        "bench2"
+      ],
+      "accepted": [
+        "bench1/seat1",
+        "bench1/seat2",
+        "bench2/seat1",
+        "bench2/seat2"
+      ],
+      "rejected": []
+    },
+    {
+      "id": "s2",
+      "check": "capacity",
+      "status": "pass",
+      "value": 6,
+      "threshold": 5,
+      "ids": [
+        "table1",
+        "table2"
+      ],
+      "accepted": [
+        "table1/s1",
+        "table1/s3",
+        "table1/s4",
+        "table2/s1",
+        "table2/s2",
+        "table2/s4"
+      ],
+      "rejected": [
+        "table1/s2",
+        "table2/s3"
+      ]
+    },
+    {
+      "id": "s3",
+      "check": "capacity",
+      "status": "pass",
+      "value": 4,
+      "threshold": 4,
+      "ids": [
+        "table1"
+      ],
+      "accepted": [
+        "table1/s1",
+        "table1/s2",
+        "table1/s3",
+        "table1/s4"
+      ],
+      "rejected": []
+    },
+    {
+      "id": "s4",
+      "check": "capacity",
+      "status": "pass",
+      "value": 1,
+      "threshold": 1,
+      "ids": [
+        "shelter1"
+      ],
+      "accepted": [
+        "shelter1/door"
+      ],
+      "rejected": []
+    },
+    {
+      "id": "m1",
+      "check": "min_screen_size",
+      "status": "pass",
+      "value": 126,
+      "threshold": 100,
+      "ids": [
+        "walker1"
+      ]
+    },
+    {
+      "id": "m2",
+      "check": "min_screen_size",
+      "status": "pass",
+      "value": 241.92,
+      "threshold": 220,
+      "ids": [
+        "walker1"
+      ]
+    },
+    {
+      "id": "v1",
+      "check": "visible",
+      "status": "pass",
+      "value": 0,
+      "threshold": 0.1,
+      "ids": [
+        "walker1"
+      ],
+      "occluders": []
+    },
+    {
+      "id": "c1",
+      "check": "clearance",
+      "status": "pass",
+      "value": 0.4,
+      "threshold": 0.3,
+      "ids": [
+        "table1",
+        "rock1"
+      ]
+    },
+    {
+      "id": "o1",
+      "check": "no_overlap",
+      "status": "pass",
+      "value": 0,
+      "threshold": 0,
+      "ids": [],
+      "pairs": []
+    }
+  ]
+}

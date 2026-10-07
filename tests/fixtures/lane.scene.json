@@ -181,8 +181,8 @@
     {
       "id": "c7",
       "check": "reachable",
-      "from": "L3",
-      "to": "e"
+      "from": "lane:L3",
+      "to": [7.5, 5.5]
     }
   ],
   "states": {},

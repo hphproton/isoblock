@@ -1,0 +1,96 @@
+{
+  "scene": "yard",
+  "state": "closed",
+  "tolerance": {
+    "value": 0.01,
+    "valuePx": 1.0
+  },
+  "results": [
+    {
+      "id": "c1",
+      "check": "in_region",
+      "status": "pass",
+      "value": 0,
+      "threshold": 0,
+      "ids": []
+    },
+    {
+      "id": "c2",
+      "check": "in_region",
+      "status": "pass",
+      "value": 0,
+      "threshold": 0,
+      "ids": []
+    },
+    {
+      "id": "c3",
+      "check": "no_overlap",
+      "status": "pass",
+      "value": 0,
+      "threshold": 0,
+      "ids": [],
+      "pairs": []
+    },
+    {
+      "id": "c4",
+      "check": "clearance",
+      "status": "fail",
+      "value": 0.2,
+      "threshold": 0.5,
+      "ids": [
+        "crate1",
+        "crate2"
+      ]
+    },
+    {
+      "id": "c5",
+      "check": "clearance",
+      "status": "skip",
+      "value": null,
+      "threshold": null,
+      "ids": []
+    },
+    {
+      "id": "c6",
+      "check": "lane_clear",
+      "status": "pass",
+      "value": 0,
+      "threshold": 0,
+      "ids": []
+    },
+    {
+      "id": "c7",
+      "check": "lane_reaches",
+      "threshold": [
+        150,
+        1000
+      ],
+      "ids": [
+        "haul"
+      ],
+      "status": "fail",
+      "value": 1104.145188
+    },
+    {
+      "id": "c8",
+      "check": "visible",
+      "status": "fail",
+      "value": 0.401042,
+      "threshold": 0.05,
+      "ids": [
+        "actor"
+      ],
+      "occluders": [
+        "tree"
+      ]
+    },
+    {
+      "id": "c9",
+      "check": "visible",
+      "status": "skip",
+      "value": null,
+      "threshold": null,
+      "ids": []
+    }
+  ]
+}

@@ -1,0 +1,90 @@
+{
+  "schema": "isoblock/1",
+  "id": "walk",
+  "units": { "name": "u", "note": "abstract unit", "perMeter": null },
+  "camera": { "angleU": 30, "angleV": 150, "pxPerUnit": 60, "verticalScale": 1, "origin": [520, 230] },
+  "frame": {
+    "w": 1000,
+    "h": 900,
+    "regions": [
+      { "id": "view", "rect": [0, 0, 1000, 900] }
+    ]
+  },
+  "strips": [
+    { "id": "ground", "v": [0, 8], "kind": "walkable" }
+  ],
+  "types": {
+    "bench": {
+      "size": [1.6, 0.5, 0.45],
+      "anchors": [
+        { "id": "seat1", "at": [0.4, 0.25, 0.45], "facing": "back", "kind": "seat" },
+        { "id": "seat2", "at": [1.2, 0.25, 0.45], "facing": "back", "kind": "seat" }
+      ]
+    },
+    "table": {
+      "size": [0.8, 0.8, 0.75],
+      "anchors": [
+        { "id": "s1", "at": [-0.3, 0.4, 0], "facing": "right", "kind": "seat" },
+        { "id": "s2", "at": [1.1, 0.4, 0], "facing": "left", "kind": "seat" },
+        { "id": "s3", "at": [0.4, -0.3, 0], "facing": "front", "kind": "seat" },
+        { "id": "s4", "at": [0.4, 1.1, 0], "facing": "back", "kind": "seat" }
+      ]
+    },
+    "hedge": { "size": [0.4, 6, 1.1] },
+    "barrier": { "size": [0.4, 2, 1] },
+    "rock": { "size": [0.6, 0.6, 0.5] },
+    "shelter": {
+      "size": [2, 1.5, 2.5],
+      "parts": [
+        { "id": "walls", "box": [0, 0, 0, 2, 1.5, 2.1] },
+        { "id": "top", "box": [-0.2, -0.2, 2.1, 2.2, 1.7, 2.5] }
+      ],
+      "anchors": [{ "id": "door", "at": [1, 1.7, 0], "facing": "front", "kind": "entry" }]
+    },
+    "walker": { "size": [0.4, 0.4, 1.7] }
+  },
+  "objects": [
+    { "id": "hedge1", "type": "hedge", "pos": [5, 0], "tags": ["static"] },
+    { "id": "barrier1", "type": "barrier", "pos": [5, 6] },
+    { "id": "bench1", "type": "bench", "pos": [1, 1] },
+    { "id": "bench2", "type": "bench", "pos": [2, 5.6], "rot": 90 },
+    { "id": "table1", "type": "table", "pos": [7, 1.5] },
+    { "id": "rock1", "type": "rock", "pos": [8.2, 1.6] },
+    { "id": "table2", "type": "table", "pos": [7, 3.3] },
+    { "id": "shelter1", "type": "shelter", "pos": [10.2, 0.6] },
+    { "id": "walker1", "type": "walker", "pos": [3, 3] }
+  ],
+  "zones": [
+    { "id": "lawn", "kind": "walkable", "points": [[0, 0], [10, 0], [10, 8], [0, 8]] },
+    { "id": "yardside", "kind": "walkable", "points": [[10, 2], [12.5, 2], [12.5, 5], [10, 5]] },
+    { "id": "pond", "kind": "blocked", "points": [[6, 5.2], [8.6, 5.2], [8.6, 7.2], [6, 7.2]] }
+  ],
+  "lanes": [
+    { "id": "entry", "kind": "walk", "width": 0.8, "dir": "to_screen_right", "points": [[0.3, 4], [3, 4]] },
+    { "id": "back", "kind": "walk", "width": 0.8, "dir": "to_screen_left", "points": [[12, 3.5], [10.5, 3.5]] }
+  ],
+  "checks": [
+    { "id": "k1", "check": "reachable", "from": "lane:entry", "to": "anchor:bench1/seat1" },
+    { "id": "k2", "check": "reachable", "from": "lane:entry", "to": "anchor:table1/s1" },
+    { "id": "k3", "check": "reachable", "from": [1, 5], "to": "anchor:bench2/seat2", "max": 1 },
+    { "id": "k4", "check": "reachable", "from": "lane:back", "to": "anchor:shelter1/door", "radius": 0.3, "step": 0.25 },
+    { "id": "k5", "check": "reachable", "from": [-2, -2], "to": "anchor:bench1/seat2" },
+    { "id": "k6", "check": "reachable", "from": "lane:entry", "to": [7.3, 6.2] },
+    { "id": "k7", "check": "reachable", "from": [12, 2.5], "to": [10.3, 4.6], "area": "yardside" },
+    { "id": "k8", "check": "reachable", "from": "lane:entry", "to": "anchor:table2/s1", "ignore": ["hedge1"] },
+    { "id": "s1", "check": "capacity", "kind": "seat", "min": 6, "ids": ["bench1", "bench2"] },
+    { "id": "s2", "check": "capacity", "kind": "seat", "min": 5, "ids": ["table1", "table2"] },
+    { "id": "s3", "check": "capacity", "kind": "seat", "min": 4, "ids": ["table1"], "allow": ["rock1"] },
+    { "id": "s4", "check": "capacity", "kind": "entry", "min": 1, "body": [0.6, 0.6] },
+    { "id": "m1", "check": "min_screen_size", "target": "walker1", "min": 100 },
+    { "id": "m2", "check": "min_screen_size", "target": "walker1", "min": 220, "screenWidth": 1920 },
+    { "id": "v1", "check": "visible", "target": "walker1", "maxOccluded": 0.1 },
+    { "id": "c1", "check": "clearance", "a": "rock1", "b": "table1", "min": 0.3 },
+    { "id": "o1", "check": "no_overlap", "ids": ["bench1", "bench2", "rock1", "table1", "table2"] }
+  ],
+  "states": {
+    "open": { "hide": ["barrier1"] },
+    "empty": { "hide": ["walker1", "rock1"] }
+  },
+  "meta": { "version": 1, "status": "draft", "approvedBy": null, "approvedAt": null }
+}

@@ -164,7 +164,7 @@ Schema rules (`schema/isoblock-1.json`):
 - Required top-level keys: `schema`, `id`, `units`, `camera`, `frame`, `types`, `objects`. Optional: `strips`, `zones`, `lanes`, `relations`, `checks`, `states`, `assumptions`, `meta`.
 - Required fields inside: `units.name`; `camera.angleU`, `angleV`, `pxPerUnit`, `origin` (`verticalScale` defaults to 1); `frame.w`, `h`, `regions`; region `id`, `rect` (`blocksScene` optional); strip `id`, `v`; type `size`; part `id`, `box`; anchor `id`, `at`; object `id`, `type`, `pos` (`rot` defaults to 0); zone `id` (`kind` and `points`, a ground polygon of at least 3 `[u, v]` points, are optional); lane `id`, `width`, `points` (at least 2); relation `id`, `rel`; check `id`, `check` plus the parameters 9.1 requires; assumption `path`, `value`. Everything else shown in the example is optional.
 - Strict where this spec defines a shape: unknown keys are errors (catches typos). Keys starting with `x-` are always allowed, for extensions.
-- `zones[]` requires `id`. `states.<name>` is an object; `hide`, when present, is an array of object ids. `relations[]` requires `rel` from section 7; `order_along` needs `ids`, every other `rel` needs `a`.
+- `zones[]` requires `id`. `states.<name>` is an object whose only key is `hide` (plus `x-` keys); `hide`, when present, is an array of object ids. A state only hides objects; moving objects in a state is not scheduled. `relations[]` requires `rel` from section 7; `order_along` needs `ids`, every other `rel` needs `a`.
 - `kind`, `dir` and `facing` are free strings. Vocabulary checks belong to a project profile.
 - `ids`, when present on a check, must be non-empty. Absent means all objects.
 - `checks[].check` must be a name from section 9. For checks not implemented in the current stage, only `id` and `check` are validated.
@@ -176,7 +176,7 @@ Reference rules (`E_REF`):
 - Ids are unique within `frame.regions`, `strips`, `objects`, `zones`, `lanes`, `relations` and `checks`, and within the parts and the anchors of one type.
 - `objects[].type` names a key of `types`.
 - Relation `a`, `b` and `ids` resolve to an object id, `zone:<id>`, `lane:<id>`, `strip:<id>.v0` or `strip:<id>.v1`.
-- Parameters of checks implemented in the current stage name existing regions, strips, lanes and objects. Parameters of checks not implemented yet are not resolved.
+- Parameters of checks implemented in the current stage name existing regions, strips, zones, lanes, objects and anchors (`lane:<id>`, `anchor:<object id>/<anchor id>`, section 9.2). Parameters of checks not implemented yet are not resolved.
 - `states.<name>.hide` names existing objects.
 - Every `assumptions[].path` is a JSON Pointer that resolves in the file.
 
@@ -282,7 +282,28 @@ Ordering:
 - Results follow the order of `checks` in the scene file.
 - Object ids in `ids` and `occluders` follow the order of `objects`, including `clearance`. Exception: `no_overlap` sorts `ids` alphabetically; each pair in `pairs` is sorted alphabetically, and the list of pairs is sorted ascending.
 
-Messages: builders choose message wording, except the `lane_reaches` message above and the `describe` lines in Appendix B.
+Messages: builders choose message wording, except the `lane_reaches` message above, the `reachable` messages of section 9.2 and the `describe` lines in Appendix B.
+
+### 9.2 Exact definitions for stage 6
+
+Tolerance and EPS as in 9.1; `reachable` values are units, `min_screen_size` values are pixels. A point parameter is `[u, v]`, `lane:<id>` (the lane's first point for `from`, its last point for `to`), or `anchor:<object id>/<anchor id>` (the anchor's ground point after rotation; its h is ignored).
+
+| `check` | Parameters | Computation | `value` |
+|---|---|---|---|
+| `reachable` | `from`, `to` (points), `area` (optional zone id), `radius` (default 0.2), `step` (default 0.1), `ignore` (optional object ids), `max` (optional) | Walkable area: the polygon of `area`, else every zone with `kind: "walkable"` and at least 3 points; none: `skip`. Grid cell (i, j), for all integers i and j, has its center at ((i + 0.5)·step, (j + 0.5)·step). A cell is free when its center is inside the walkable area, not inside a zone with `kind: "blocked"`, and at a distance of at least `radius − EPS` from the footprint of every object except those in `ignore` and the objects whose anchors `from` and `to` name. A point is inside a polygon when the even-odd test says so or its distance to the boundary is at most EPS. Start and target: the free cell whose center is nearest the point (distances within EPS of the smallest count as equal; then smaller i, then smaller j). When that distance exceeds `step + EPS`: `fail`, `value = null`, message `start is not on walkable ground` or `target is not on walkable ground`. Path: fewest moves between free cells that share an edge; none: `fail`, `value = null`, message `no walkable path`. Passes when a path exists and, with `max`, `value <= max + EPS` | Moves × step, rounded to 6 decimals |
+| `capacity` | `kind`, `min`, `body` (default `[0.5, 0.5]`), `ids` (optional), `allow` (optional) | Candidates: the anchors whose `kind` equals `kind`, of the objects in `ids` (default all); objects in file order, anchors in type order. A candidate's body is the rectangle `body` (w along u, d along v, never rotated) centered on its ground point. Each candidate in order is accepted when its body overlaps (as in `no_overlap`) neither the footprint of an object other than its own and those in `allow`, nor the body of a candidate already accepted. Passes when `value >= min` | Number of accepted candidates |
+| `min_screen_size` | `target`, `min` (pixels), `screenWidth` (optional, default `frame.w`) | Height of the screen bounds of the 8 corners of every part of the target, times `screenWidth / frame.w`. Passes when `value >= min − EPS` | Pixels |
+
+Threshold, ids and extra fields:
+- `reachable`: `threshold = max` (`null` without it); `ids` = the objects whose anchors `from` and `to` name, in the order of `objects`, each once.
+- `capacity`: `threshold = min`; `ids` = the objects with at least one candidate, in the order of `objects`; `accepted` and `rejected` = labels `<object id>/<anchor id>` in candidate order.
+- `min_screen_size`: `threshold = min`; `ids = [target]`.
+- A zone named by `area` with fewer than 3 points: `skip`.
+
+**States.** `--state NAME` evaluates the scene without the objects in `states.NAME.hide`:
+- A check that names a hidden object by itself (`clearance` `a` or `b`, `visible` or `min_screen_size` `target`, an anchor in `reachable` `from` or `to`) is `skip`.
+- Lists (`ids`, `allow`, `ignore`) lose the hidden objects. Hidden objects do not overlap, block, occlude or count anywhere.
+- Without `--state` every object is present.
 
 ## 10. Editor (web page)
 
@@ -292,7 +313,7 @@ Messages: builders choose message wording, except the `lane_reaches` message abo
 - **Property panel:** numbers with units; a lock toggle per property; provisional mark for assumptions.
 - **Check panel:** pass/fail updates live; tapping a row highlights the objects involved.
 - **Toggleable overlays:** strips, lanes, zones, anchors, frame regions, occlusion rays, sort points.
-- **State switch:** day, night, events.
+- **State switch:** day, night, events (not scheduled).
 - **History:** undo, redo; saved versions with notes; compare two versions.
 - **Export:** frame image, scene file, engine package, generation boxes.
 - **Touch:** one-finger drag, two-finger zoom, large hit targets.
@@ -312,12 +333,14 @@ isoblock describe scene.json            # compact summary for agents (section 12
 isoblock patch    scene.json patch.txt [-o out.json] [--dry-run] [--json]
 isoblock diff     a.json b.json [--json]
 isoblock compare  scene.json --variant A=a.patch --variant B=b.patch [--state NAME] [--format text|md|json] [--render]
-isoblock export   scene.json --target runtime|gen-bbox [-o out.json] [--bbox-units px|norm1000] [--bbox-order xyxy|yxyx]
+isoblock export   scene.json --target runtime|gen-bbox [-o out.json] [--bbox-units px|norm1000] [--bbox-order xyxy|yxyx] [--state NAME]
 ```
 
 Commands and flags arrive in the stages listed in section 17. A command, flag, export target or output format not available in the current stage is a usage error (exit 2) that names the stage that adds it, or says it is not scheduled. Examples in stage 1: `--state` (stage 6), `render -o out.png` (stage 5). `compare --render` and the export targets `godot`, `phaser` and `tiled` are not scheduled.
 
 `render` requires `-o`; the file extension selects the format: `.svg`, or `.png` from stage 5 (section 14).
+
+`--state NAME` (stage 6) applies to `check`, `render`, `compare` and `export --target gen-bbox`: the command works on the scene in that state (section 9.2); hidden objects are not drawn and get no generation box. An unknown state name is a usage error. With `export --target runtime` it is a usage error: the runtime file carries all states from stage 7.
 
 `export` writes to `-o`, else to stdout, in the saved format of section 10. `--target` is required; `-o` naming the input file is a usage error. `--bbox-units` and `--bbox-order` belong to `gen-bbox`; with `runtime` they are a usage error.
 
@@ -339,16 +362,16 @@ Exit codes:
 
 ### 11.1 `compare`: variants by measured values
 
-- **Input:** a base scene and 1–4 variants, `--variant NAME=FILE`, in the order given. A variant file is a patch (section 12) or another scene file (a JSON object with `schema`). Optionally at one state (from stage 6).
+- **Input:** a base scene and 1–4 variants, `--variant NAME=FILE`, in the order given. A variant file is a patch (section 12) or another scene file (a JSON object with `schema`). Optionally at one state (`--state`, stage 6): every column is evaluated in that state, and the header names it; without it the header says `default`.
 - **Method:** apply each variant to a copy of the base, ignoring locks but recording the locks it touches, and run the base scene's checks on every column. A variant file whose first non-blank character is `{` is a scene; any other file is a patch. Names are unique, not empty and not `base`. A variant that is malformed or produces an invalid scene stops `compare` with exit 2.
 - **Measures** (the JSON output has all of them):
   - `failing`: number of checks with status `fail` or `skip` (violated hard relations and the soft penalty are not scheduled for `compare`; use `relations`);
   - `locksTouched`: labels `<object id>.<lock>` of the base locks the variant touches (section 12); any entry marks the variant invalid;
   - `checks`: every check with its label, threshold, `values` (one per column), `status` (one per column) and `delta` (value minus the base value, rounded to 6 decimals; `null` for the base and for values that are `null` or not numbers);
   - `moved`: objects present in both scenes whose `pos` moved more than 1e-9, as `count` and total `distance` (sum of ground distances, rounded to 6 decimals); `null` for the base.
-- **Check labels:** `in_region <region>[/<strip>] (objects outside)`, `no_overlap (pairs)`, `clearance <a>×<b> (<unit>)` with the ids in the order of the result's `ids`, `lane_clear <lane> (blocking objects)`, `lane_reaches <lane> (y px)`, `visible <target> (% occluded)`.
+- **Check labels:** `in_region <region>[/<strip>] (objects outside)`, `no_overlap (pairs)`, `clearance <a>×<b> (<unit>)` with the ids in the order of the result's `ids`, `lane_clear <lane> (blocking objects)`, `lane_reaches <lane> (y px)`, `visible <target> (% occluded)`, `reachable <check id> (<unit>)`, `capacity <check id> (usable <kind>)`, `min_screen_size <target> (px)`.
 - **Variant labels:** the first comment line of the patch (section 12), else the variant name.
-- **`text` format** (Appendix D is the contract): line 1 `compare <scene id> · state <state> · base vs <names>`; line 2 `<name> = <label>` for each variant, joined with ` · `; then a table. Rows: `failing checks`; `locks touched` (count, then ` ✗ (<labels>)` when not zero); one row per check that is `fail` or `skip` in some column, or whose value differs from the base in some column (a non-zero delta, or `null` against a number), in `checks` order; `objects moved / total (<unit>)` (`-` for the base, else `<count> / <distance>`). Cells: counts as integers; clearance values and distances with 2 decimals; `lane_reaches` whole pixels (`none` when `null`); `visible` whole percent; `skip` for skipped checks; ` ✗` after a value whose status is `fail` or `skip`. Columns are left-aligned; each column is as wide as its widest cell (header included, counted in Unicode code points) plus 2 spaces; trailing spaces are removed.
+- **`text` format** (Appendix D is the contract): line 1 `compare <scene id> · state <state> · base vs <names>`; line 2 `<name> = <label>` for each variant, joined with ` · `; then a table. Rows: `failing checks`; `locks touched` (count, then ` ✗ (<labels>)` when not zero); one row per check that is `fail` or `skip` in some column, or whose value differs from the base in some column (a non-zero delta, or `null` against a number), in `checks` order; `objects moved / total (<unit>)` (`-` for the base, else `<count> / <distance>`). Cells: counts as integers; clearance values and distances with 2 decimals; `lane_reaches` whole pixels (`none` when `null`); `visible` whole percent; `reachable` with 2 decimals (`none` when `null`); `capacity` as an integer; `min_screen_size` whole pixels, halves up; `skip` for skipped checks; ` ✗` after a value whose status is `fail` or `skip`. Columns are left-aligned; each column is as wide as its widest cell (header included, counted in Unicode code points) plus 2 spaces; trailing spaces are removed.
 - **`md` format:** the same rows as a Markdown table with the header `| metric | base | <names> |`.
 - **`json` format:** `{ "scene", "state", "variants": [{ "name", "label" }], "failing", "locksTouched", "moved", "checks": [{ "id", "check", "label", "threshold", "values", "status", "delta" }] }`; every list has one entry per column, base first (`label` is `null` for the base).
 - **Not scheduled:** layout indicators (occupied share of the view per third of the frame, largest empty area, on-screen size of key objects) and `--render`.
@@ -427,7 +450,7 @@ The engine never edits what the scene file owns. To change the layout, edit the 
 - Draw order from the runtime file: a part with a smaller `order` is drawn earlier. Adapters do not sort static objects themselves. Moving objects: stage 6 (section 13.4).
 - Zones become areas, lanes become paths, anchors become oriented points (`seat`, `queue_point`, `spawn`, `exit`, `wait`) that keep their `kind` and `facing`.
 - Validate on load: the `schema` value and duplicate ids. Report errors; never ignore them silently.
-- From stage 6: `instantiate(type) → node` through the type → prefab/scene/sprite map, with the image pivot at the type's ground-contact anchor from the asset contract, together with slicing (section 13.4); types without a mapping are reported; on a state change, apply that state's overrides (hide/show, reposition). Stage 5 adapters draw parts as debug boxes.
+- From stage 7: `instantiate(type) → node` through the type → prefab/scene/sprite map, with the image pivot at the type's ground-contact anchor from the asset contract, together with slicing (section 13.4); types without a mapping are reported; on a state change, apply that state's overrides (hide/show, reposition). Stage 5 adapters draw parts as debug boxes.
 
 ### 13.4 Draw order: the main isometric trap
 
@@ -436,7 +459,7 @@ The engine never edits what the scene file owns. To change the layout, edit the 
   1. Slice long objects along their long axis; each slice is a sprite with its own sort point.
   2. Split an object into a front part and a back part.
   3. Static objects: precomputed topological order. Moving objects: sort by foot depth.
-- **Tool support:** `sort_consistency` walks a test actor through points around each object, compares the engine rule with geometric order, and reports objects that need slicing. Export includes `slices` for them (stage 6).
+- **Tool support:** `sort_consistency` walks a test actor through points around each object, compares the engine rule with geometric order, and reports objects that need slicing. Export includes `slices` for them (stage 7).
 - **Painter's order of parts** (from stage 5 the rule for `render`, the editor and the runtime file):
   1. List every part of every object: objects in file order, parts in type order (a type without parts has one part, `body`). A part's position in this list is its index.
   2. For each part: its world box (section 6); `c` = the camera direction of section 5 with each component rounded to 9 decimals; `depth` = `c · center` of the box, rounded to 6 decimals; its screen bounds = the smallest and largest x and y of its 8 projected corners.
@@ -482,7 +505,7 @@ scene.json (git) → isoblock export --target runtime → <game>/data/scenes/<id
   - `parts` in type order, each `{ "id", "box", "order" }`: `box` is `[u0, v0, h0, u1, v1, h1]` in world units after rotation; `order` is the part's position in the painter's order of section 13.4 (0 is drawn first).
   - `anchors`: the type's anchors as `{ "id", "at", "facing", "kind" }`, `at` = `[u, v, h]` in world units after rotation; `facing` and `kind` only when the type gives them. `[]` when the type has none.
 - Numbers the tool computes (footprints, part boxes, anchor positions) are rounded to 6 decimals; `pos` and copied values are written as they are in the scene. The file uses the saved format of section 10. Same input, same bytes.
-- Not in stage 5: states and slices (stage 6).
+- Not in stages 5 and 6: states and slices (stage 7).
 
 ### 13.8 Godot adapter
 
@@ -528,7 +551,7 @@ adapters/
   godot/     from stage 5: GDScript adapter for Godot 4.7 and its test project (section 13.8)
 scripts/     build and test scripts (test-godot.mjs from stage 5)
 tests/
-  golden/    projection.json (stage 6 adds sort.json)
+  golden/    projection.json (stage 7 adds sort.json)
   fixtures/  *.scene.json + *.expected.json (synthetic scenes, maintained by the maintainer)
 docs/        AGENT_GUIDE.md
 dist/        build output, not committed
@@ -552,13 +575,18 @@ dist/        build output, not committed
 | Stage | Scope | Done when |
 |---|---|---|
 | 1 | Schema, projection, geometry, display list, SVG; checks `in_region`, `no_overlap`, `clearance`, `lane_clear`, `lane_reaches`, `visible`; `skip` for unsupported checks and lane shapes; CLI `validate`, `check`, `render` (SVG), `describe`; exit codes of section 11 | All tests pass; `tests/golden/projection.json` matches; all `tests/fixtures/*.scene.json` match their `*.expected.json` within tolerance; `render` of `yard` produces an SVG that opens and shows the expected layout |
-| 2 | Editor: drag on both views, locks, undo, save, live check panel | 200 objects at 60 fps on a mid-range phone, measured on `tests/fixtures/crowd.scene.json` in headless Chromium with 4x CPU slowdown, phone profile (390x844 CSS px at pixel ratio 2, touch, one view), one pointer move per animation frame: the 95th-percentile interval between animation frames is at most 18.4 ms (1.1 display intervals); dragging a locked object is blocked; a saved file parses to the same data as the file opened, and saving twice gives byte-identical files |
+| 2 | Editor: drag on both views, locks, undo, save, live check panel | 200 objects at 60 fps on a mid-range phone, measured on `tests/fixtures/crowd.scene.json` in headless Chromium with 4x CPU slowdown, phone profile (390x844 CSS px at pixel ratio 2, touch, one view), one pointer move per animation frame: the 95th-percentile interval between animation frames is at most 18.4 ms (1.1 display intervals) in at least one of up to 3 runs, because a busy host drops frames now and then; dragging a locked object is blocked; a saved file parses to the same data as the file opened, and saving twice gives byte-identical files |
 | 3 | Patches: short commands and JSON Patch, lock rejection, log; `diff`; `compare` | The 20 patches in `tests/fixtures/patches/` give their expected results; `compare` on `yard` with the 3 variants in `tests/fixtures/compare/` gives `yard.expected.json`, and its `text` and `md` output equal `yard.expected.txt` and `yard.expected.md` byte for byte |
 | 4 | Relations (section 7), `relations`, solver and minimal conflict set (section 8) | `relations` on `tests/fixtures/relations/relations.scene.json` gives its expected results; every scene in `tests/fixtures/solver/` meets its expected file; the solve of `perf` meets the performance rule of section 8 |
 | 5 | Painter's order of parts (section 13.4); `export --target runtime` (section 13.7) and `gen-bbox` (section 14); PNG render (section 14); Godot adapter and its cross-checks (sections 13.6, 13.8) | Every case in `tests/fixtures/export/cases.json` meets its expected files: the runtime file, and the `gen-bbox` file for each listed flag set, equal their expected files as JSON (same keys in the same order, numbers within the case file's tolerances) and are byte-identical over two runs; for each case with a `png`, `render -o out.png` decodes to the same size as that PNG and each RGBA channel of each pixel is within 1 of it; `dist/isoblock.mjs`, copied alone into an empty directory, writes a PNG; `npm run test:godot` passes section 13.6 on every case |
-| 6 | States, `sort_consistency` and slicing, `reachable`, `capacity` | The bundled tests pass |
+| 6 | States (hiding objects) and `--state` for `check`, `render`, `compare` and `export --target gen-bbox`; checks `reachable`, `capacity` and `min_screen_size` (section 9.2) | `check --json` on `tests/fixtures/gameplay/walk.scene.json` gives `walk.expected.json`; every case of `tests/fixtures/states/cases.json` meets its expected files; earlier fixtures still match |
+| 7 | `sort_consistency` and slicing (section 13.4); runtime file with states and slices; Godot adapter: states, `instantiate` by type with pivots, sorting of moving objects | Criteria and fixtures are written when the stage opens |
 
-Export targets `godot`, `phaser` and `tiled` are not scheduled.
+Export targets `godot`, `phaser` and `tiled`, the check `state_stable` and states that move objects are not scheduled.
+
+Gameplay fixture: `tests/fixtures/gameplay/walk.scene.json` with `walk.expected.json`, in the format of the stage 1 check fixtures; messages are compared only where 9.1 or 9.2 fixes them.
+
+State fixtures: `tests/fixtures/states/cases.json` = `{ cases, compare }`. Each case `{ scene, state, checks, genBbox, png }`: `check --json --state <state>` matches `checks` (format and tolerance of the check fixtures; the file also names its `state`); `export --target gen-bbox --state <state>` matches `genBbox` (as the stage 5 `gen-bbox` files, `px` tolerance 0.02) unless it is `null`; `render --state <state> -o out.png` matches `png` (each RGBA channel within 1) unless it is `null`. Each `compare` entry `{ scene, state, variants: [{ name, file }], expected: { json, text, md } }`: `compare --state <state>` with the variants in that order gives `text` and `md` byte for byte and `json` as the stage 3 compare fixture. Paths in `scene` are from the repository root; the others are in `tests/fixtures/states/`.
 
 Export fixtures: `tests/fixtures/export/cases.json` = `{ tolerance, cases }`, each case `{ name, scene, runtime, genBbox: [{ args, file }], png }`. `scene` is a path from the repository root; `runtime`, `file` and `png` are file names in `tests/fixtures/export/`; `args` are the flags added to `export --target gen-bbox`; `png` is `null` when the case has none. Tolerances: `world` for runtime numbers, `px` and `norm1000` for `gen-bbox` numbers by unit, `pngChannel` for PNG channels. The expected PNGs come from resvg 2.6.2 with no fonts loaded.
 
@@ -579,6 +607,7 @@ Versions: the maintainer sets `version` in `package.json` in the release commit 
 - **A simple solver can get stuck in a weak solution.** People can always drag and lock. A weak solver also widens the conflict set, because deletion filtering trusts it to find solutions.
 - **Each engine sorts draw order its own way.** Golden tests and `sort_consistency` are mandatory. The runtime file carries the order of static parts so that adapters do not sort them.
 - **The block image has no text** (section 14).
+- **`reachable` works on a grid.** A gap close to `step + 2 · radius` wide may open or close as the grid shifts; use a smaller `step` where it matters.
 
 ## 19. Open questions
 

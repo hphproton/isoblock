@@ -40,6 +40,8 @@ Review by behavior. Read code only when a step below fails.
 
 12. From stage 5, with your own script: for every case in `tests/fixtures/export/cases.json`, run `export --target runtime` and `export --target gen-bbox` with each flag set twice, compare with the expected files (key order, numbers within the tolerances) and check byte-identical runs; run `render -o out.png` for each case with a `png` and compare the pixels; copy `dist/isoblock.mjs` alone into an empty directory and render a PNG there; check that the part order of the runtime file equals the order of the faces in the SVG of `render`; run `npm run test:godot` with your own Godot 4.7.1 download, then measure the adapter's PNGs against the SVGs with your own script (SPEC section 13.6).
 
+13. From stage 6, with your own script: run `check --json` on `tests/fixtures/gameplay/walk.scene.json` and on every case of `tests/fixtures/states/cases.json` with its `--state`, and compare with the expected files; run `export --target gen-bbox --state`, `render --state -o out.png` and `compare --state` for the cases that list them; run random scenes with zones, anchors and states through `check --json` and compare `reachable`, `capacity` and `min_screen_size` with the reference implementation; check that an unknown state and `--state` with `export --target runtime` exit 2.
+
 Write the result in `log/<yyyy-mm-dd>-maintainer-<n>.md`: steps run, outcomes, decision.
 
 ## Release

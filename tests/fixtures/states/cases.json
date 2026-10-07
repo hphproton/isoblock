@@ -1,0 +1,46 @@
+{
+  "cases": [
+    {
+      "scene": "tests/fixtures/gameplay/walk.scene.json",
+      "state": "open",
+      "checks": "walk.open.expected.json",
+      "genBbox": "walk.open.gen-bbox.json",
+      "png": null
+    },
+    {
+      "scene": "tests/fixtures/gameplay/walk.scene.json",
+      "state": "empty",
+      "checks": "walk.empty.expected.json",
+      "genBbox": null,
+      "png": null
+    },
+    {
+      "scene": "tests/fixtures/yard.scene.json",
+      "state": "closed",
+      "checks": "yard.closed.expected.json",
+      "genBbox": "yard.closed.gen-bbox.json",
+      "png": "yard.closed.png"
+    }
+  ],
+  "compare": [
+    {
+      "scene": "tests/fixtures/gameplay/walk.scene.json",
+      "state": "open",
+      "variants": [
+        {
+          "name": "A",
+          "file": "compare/walk.A.patch"
+        },
+        {
+          "name": "B",
+          "file": "compare/walk.B.patch"
+        }
+      ],
+      "expected": {
+        "json": "compare/walk.open.expected.json",
+        "text": "compare/walk.open.expected.txt",
+        "md": "compare/walk.open.expected.md"
+      }
+    }
+  ]
+}
