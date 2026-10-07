@@ -1,0 +1,81 @@
+{
+  "schema": "isoblock/1",
+  "id": "court",
+  "units": { "name": "u", "note": "abstract unit", "perMeter": null },
+  "camera": { "angleU": 30, "angleV": 150, "pxPerUnit": 60, "verticalScale": 1, "origin": [500, 160] },
+  "frame": {
+    "w": 1000,
+    "h": 1000,
+    "regions": [
+      { "id": "hud", "rect": [0, 0, 1000, 100], "blocksScene": true },
+      { "id": "view", "rect": [0, 100, 1000, 1000] }
+    ]
+  },
+  "types": {
+    "wall": { "size": [4, 0.3, 1.2], "genHint": "low stone wall" },
+    "post": { "size": [0.3, 0.3, 1.5] },
+    "bench": {
+      "size": [1.6, 0.5, 0.45],
+      "anchors": [
+        { "id": "seat1", "at": [0.4, 0.25, 0.45], "facing": "front", "kind": "seat" },
+        { "id": "seat2", "at": [1.2, 0.25, 0.45], "facing": "front", "kind": "seat" }
+      ]
+    },
+    "counter": {
+      "size": [3, 0.8, 1],
+      "parts": [
+        { "id": "base", "box": [0, 0, 0, 3, 0.8, 0.9] },
+        { "id": "top", "box": [-0.1, -0.1, 0.9, 3.1, 0.9, 1] }
+      ]
+    },
+    "shed": { "size": [2, 1.5, 2.1] },
+    "kiosk": {
+      "size": [1.5, 1.5, 2.3],
+      "parts": [
+        { "id": "body", "box": [0, 0, 0, 1.5, 1.5, 1.9] },
+        { "id": "roof", "box": [-0.5, -0.5, 1.9, 2, 2, 2.3] }
+      ]
+    },
+    "tree": {
+      "size": [1.2, 1.2, 2.4],
+      "parts": [
+        { "id": "trunk", "box": [0.45, 0.45, 0, 0.75, 0.75, 1.4] },
+        { "id": "canopy", "box": [-0.2, -0.2, 1.4, 1.4, 1.4, 2.4] }
+      ]
+    },
+    "crate": { "size": [0.6, 0.6, 0.6] },
+    "box": { "size": [0.4, 0.4, 0.5] }
+  },
+  "objects": [
+    { "id": "wall_back", "type": "wall", "pos": [1, 0.5], "rot": 0, "tags": ["static"] },
+    { "id": "wall_side", "type": "wall", "pos": [0.5, 1.5], "rot": 90, "tags": ["static"] },
+    { "id": "post", "type": "post", "pos": [5.3, 0.5] },
+    { "id": "bench", "type": "bench", "pos": [2, 2.2] },
+    { "id": "shed", "type": "shed", "pos": [6.5, 1.5] },
+    { "id": "box", "type": "box", "pos": [6.2, 3] },
+    { "id": "crate", "type": "crate", "pos": [4.2, 3.8] },
+    { "id": "tree", "type": "tree", "pos": [1.4, 4.2] },
+    { "id": "counter", "type": "counter", "pos": [5, 6.6] },
+    { "id": "kiosk", "type": "kiosk", "pos": [2, 6.5] }
+  ],
+  "zones": [
+    { "id": "yard", "kind": "walkable", "points": [[1, 1], [9, 1], [9, 6], [1, 6]] },
+    { "id": "pond", "kind": "blocked", "points": [[3.6, 4.6], [5.2, 4.6], [5.2, 5.6], [3.6, 5.6]] },
+    { "id": "mark", "kind": "interaction" }
+  ],
+  "checks": [
+    { "id": "s1", "check": "sort_consistency", "actor": [0.4, 0.4, 1.7] },
+    { "id": "s2", "check": "sort_consistency", "actor": [0.4, 0.4, 1.7], "ids": ["wall_back", "wall_side", "post", "bench", "crate", "tree"] },
+    { "id": "s3", "check": "sort_consistency", "actor": [0.4, 0.4, 1.7], "maxPixels": 300 },
+    { "id": "s4", "check": "sort_consistency", "actor": [0.4, 0.4, 1.7], "area": "yard" },
+    { "id": "s5", "check": "sort_consistency", "actor": [0.8, 0.8, 1], "step": 0.2, "reach": 0.5 },
+    { "id": "s6", "check": "sort_consistency", "actor": [0.4, 0.4, 1.7], "area": "mark" },
+    { "id": "s7", "check": "sort_consistency", "actor": [0.4, 0.4, 1.7], "ids": ["box"] },
+    { "id": "s8", "check": "sort_consistency", "actor": [0.4, 0.4, 1.7], "reach": 0.05, "ids": ["shed", "kiosk", "counter"] }
+  ],
+  "states": {
+    "closed": { "hide": ["kiosk"] },
+    "cleared": { "hide": ["box", "shed"], "x-note": "the shed and the box are removed" }
+  },
+  "meta": { "version": 1, "status": "draft", "approvedBy": null, "approvedAt": null }
+}

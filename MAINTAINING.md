@@ -42,6 +42,8 @@ Review by behavior. Read code only when a step below fails.
 
 13. From stage 6, with your own script: run `check --json` on `tests/fixtures/gameplay/walk.scene.json` and on every case of `tests/fixtures/states/cases.json` with its `--state`, and compare with the expected files; run `export --target gen-bbox --state`, `render --state -o out.png` and `compare --state` for the cases that list them; run random scenes with zones, anchors and states through `check --json` and compare `reachable`, `capacity` and `min_screen_size` with the reference implementation; check that an unknown state and `--state` with `export --target runtime` exit 2.
 
+14. From stage 7, with your own script: run `check --json` (with `--state` where given) and `compare` for every case of `tests/fixtures/sort/cases.json`, and `export --target runtime` twice for every case of `tests/fixtures/runtime/cases.json`, and compare with the expected files; run random scenes (rotations, overhanging parts, long and thin footprints, zones, states, cameras other than true isometric) through `check --json` and `export --target runtime`, and compare `sort_consistency` and the sprites with the reference implementation; draw the sprites of a few runtime files in key order with your own Godot driver and compare with the SVG (SPEC section 13.6), where scenes without mismatches show no more differing pixels than the part order does.
+
 Write the result in `log/<yyyy-mm-dd>-maintainer-<n>.md`: steps run, outcomes, decision.
 
 ## Release

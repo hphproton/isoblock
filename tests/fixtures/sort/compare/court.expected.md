@@ -1,0 +1,12 @@
+| metric | base | A | B |
+|---|---|---|---|
+| failing checks | 7 | 6 | 7 |
+| locks touched | 0 | 0 | 0 |
+| sort_consistency s1 (objects out of order) | 4 ✗ | 3 ✗ | 4 ✗ |
+| sort_consistency s3 (objects out of order) | 2 ✗ | 2 ✗ | 2 ✗ |
+| sort_consistency s4 (objects out of order) | 2 ✗ | 1 ✗ | 2 ✗ |
+| sort_consistency s5 (objects out of order) | 2 ✗ | 1 ✗ | 2 ✗ |
+| sort_consistency s6 (objects out of order) | skip ✗ | skip ✗ | skip ✗ |
+| sort_consistency s7 (objects out of order) | 1 ✗ | 0 | 1 ✗ |
+| sort_consistency s8 (objects out of order) | 3 ✗ | 3 ✗ | 3 ✗ |
+| objects moved / total (u) | - | 1 / 0.40 | 1 / 1.56 |

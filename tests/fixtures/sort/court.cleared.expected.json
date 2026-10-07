@@ -1,0 +1,96 @@
+{
+  "scene": "court",
+  "state": "cleared",
+  "tolerance": {
+    "value": 0.01,
+    "valuePx": 1.0
+  },
+  "results": [
+    {
+      "id": "s1",
+      "check": "sort_consistency",
+      "status": "fail",
+      "value": 2,
+      "threshold": 0,
+      "ids": [
+        "counter",
+        "kiosk"
+      ],
+      "worst": 409.2,
+      "positions": 7464
+    },
+    {
+      "id": "s2",
+      "check": "sort_consistency",
+      "status": "pass",
+      "value": 0,
+      "threshold": 0,
+      "ids": [],
+      "worst": 0,
+      "positions": 5196
+    },
+    {
+      "id": "s3",
+      "check": "sort_consistency",
+      "status": "fail",
+      "value": 1,
+      "threshold": 0,
+      "ids": [
+        "kiosk"
+      ],
+      "worst": 409.2,
+      "positions": 7464
+    },
+    {
+      "id": "s4",
+      "check": "sort_consistency",
+      "status": "pass",
+      "value": 0,
+      "threshold": 0,
+      "ids": [],
+      "worst": 0,
+      "positions": 3458
+    },
+    {
+      "id": "s5",
+      "check": "sort_consistency",
+      "status": "pass",
+      "value": 0,
+      "threshold": 0,
+      "ids": [],
+      "worst": 0,
+      "positions": 1023
+    },
+    {
+      "id": "s6",
+      "check": "sort_consistency",
+      "status": "skip",
+      "value": null,
+      "threshold": null,
+      "ids": []
+    },
+    {
+      "id": "s7",
+      "check": "sort_consistency",
+      "status": "pass",
+      "value": 0,
+      "threshold": 0,
+      "ids": [],
+      "worst": 0,
+      "positions": 0
+    },
+    {
+      "id": "s8",
+      "check": "sort_consistency",
+      "status": "fail",
+      "value": 2,
+      "threshold": 0,
+      "ids": [
+        "counter",
+        "kiosk"
+      ],
+      "worst": 409.2,
+      "positions": 168
+    }
+  ]
+}

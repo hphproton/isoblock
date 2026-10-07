@@ -1,0 +1,213 @@
+{
+  "scene": "court",
+  "state": "default",
+  "variants": [
+    {
+      "name": "base",
+      "label": null
+    },
+    {
+      "name": "A",
+      "label": "move the box clear of the shed"
+    },
+    {
+      "name": "B",
+      "label": "turn the counter"
+    }
+  ],
+  "failing": [
+    7,
+    6,
+    7
+  ],
+  "locksTouched": [
+    [],
+    [],
+    []
+  ],
+  "moved": [
+    null,
+    {
+      "count": 1,
+      "distance": 0.4
+    },
+    {
+      "count": 1,
+      "distance": 1.555635
+    }
+  ],
+  "checks": [
+    {
+      "id": "s1",
+      "check": "sort_consistency",
+      "label": "sort_consistency s1 (objects out of order)",
+      "threshold": 0,
+      "values": [
+        4,
+        3,
+        4
+      ],
+      "status": [
+        "fail",
+        "fail",
+        "fail"
+      ],
+      "delta": [
+        null,
+        -1,
+        0
+      ]
+    },
+    {
+      "id": "s2",
+      "check": "sort_consistency",
+      "label": "sort_consistency s2 (objects out of order)",
+      "threshold": 0,
+      "values": [
+        0,
+        0,
+        0
+      ],
+      "status": [
+        "pass",
+        "pass",
+        "pass"
+      ],
+      "delta": [
+        null,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "s3",
+      "check": "sort_consistency",
+      "label": "sort_consistency s3 (objects out of order)",
+      "threshold": 0,
+      "values": [
+        2,
+        2,
+        2
+      ],
+      "status": [
+        "fail",
+        "fail",
+        "fail"
+      ],
+      "delta": [
+        null,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "s4",
+      "check": "sort_consistency",
+      "label": "sort_consistency s4 (objects out of order)",
+      "threshold": 0,
+      "values": [
+        2,
+        1,
+        2
+      ],
+      "status": [
+        "fail",
+        "fail",
+        "fail"
+      ],
+      "delta": [
+        null,
+        -1,
+        0
+      ]
+    },
+    {
+      "id": "s5",
+      "check": "sort_consistency",
+      "label": "sort_consistency s5 (objects out of order)",
+      "threshold": 0,
+      "values": [
+        2,
+        1,
+        2
+      ],
+      "status": [
+        "fail",
+        "fail",
+        "fail"
+      ],
+      "delta": [
+        null,
+        -1,
+        0
+      ]
+    },
+    {
+      "id": "s6",
+      "check": "sort_consistency",
+      "label": "sort_consistency s6 (objects out of order)",
+      "threshold": null,
+      "values": [
+        null,
+        null,
+        null
+      ],
+      "status": [
+        "skip",
+        "skip",
+        "skip"
+      ],
+      "delta": [
+        null,
+        null,
+        null
+      ]
+    },
+    {
+      "id": "s7",
+      "check": "sort_consistency",
+      "label": "sort_consistency s7 (objects out of order)",
+      "threshold": 0,
+      "values": [
+        1,
+        0,
+        1
+      ],
+      "status": [
+        "fail",
+        "pass",
+        "fail"
+      ],
+      "delta": [
+        null,
+        -1,
+        0
+      ]
+    },
+    {
+      "id": "s8",
+      "check": "sort_consistency",
+      "label": "sort_consistency s8 (objects out of order)",
+      "threshold": 0,
+      "values": [
+        3,
+        3,
+        3
+      ],
+      "status": [
+        "fail",
+        "fail",
+        "fail"
+      ],
+      "delta": [
+        null,
+        0,
+        0
+      ]
+    }
+  ],
+  "tolerance": {
+    "value": 0.01,
+    "valuePx": 1.0
+  }
+}

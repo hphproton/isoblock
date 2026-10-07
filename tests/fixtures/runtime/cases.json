@@ -1,0 +1,47 @@
+{
+  "tolerance": {
+    "world": 0.00001
+  },
+  "cases": [
+    {
+      "name": "yard",
+      "scene": "tests/fixtures/yard.scene.json",
+      "runtime": "yard.runtime.json"
+    },
+    {
+      "name": "lane",
+      "scene": "tests/fixtures/lane.scene.json",
+      "runtime": "lane.runtime.json"
+    },
+    {
+      "name": "overlap",
+      "scene": "tests/fixtures/overlap.scene.json",
+      "runtime": "overlap.runtime.json"
+    },
+    {
+      "name": "visible",
+      "scene": "tests/fixtures/visible.scene.json",
+      "runtime": "visible.runtime.json"
+    },
+    {
+      "name": "crowd",
+      "scene": "tests/fixtures/crowd.scene.json",
+      "runtime": "crowd.runtime.json"
+    },
+    {
+      "name": "garden",
+      "scene": "tests/fixtures/export/garden.scene.json",
+      "runtime": "garden.runtime.json"
+    },
+    {
+      "name": "walk",
+      "scene": "tests/fixtures/gameplay/walk.scene.json",
+      "runtime": "walk.runtime.json"
+    },
+    {
+      "name": "court",
+      "scene": "tests/fixtures/sort/court.scene.json",
+      "runtime": "court.runtime.json"
+    }
+  ]
+}

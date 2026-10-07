@@ -1,0 +1,356 @@
+{
+  "schema": "isoblock-runtime/2",
+  "scene": "overlap",
+  "meta": {
+    "version": 1,
+    "status": "draft"
+  },
+  "units": {
+    "name": "u",
+    "note": "abstract unit"
+  },
+  "camera": {
+    "angleU": 30,
+    "angleV": 150,
+    "pxPerUnit": 100,
+    "verticalScale": 1,
+    "origin": [
+      540,
+      250
+    ]
+  },
+  "cameraDir": [
+    1,
+    1,
+    1
+  ],
+  "frame": {
+    "w": 1000,
+    "h": 1000,
+    "regions": [
+      {
+        "id": "hud",
+        "rect": [
+          0,
+          0,
+          1000,
+          150
+        ],
+        "blocksScene": true
+      },
+      {
+        "id": "view",
+        "rect": [
+          0,
+          150,
+          1000,
+          1000
+        ],
+        "blocksScene": false
+      }
+    ]
+  },
+  "strips": [],
+  "objects": [
+    {
+      "id": "a",
+      "type": "box",
+      "pos": [
+        2,
+        2
+      ],
+      "rot": 0,
+      "footprint": [
+        2,
+        2,
+        3,
+        3
+      ],
+      "tags": [],
+      "parts": [
+        {
+          "id": "body",
+          "box": [
+            2,
+            2,
+            0,
+            3,
+            3,
+            1
+          ],
+          "order": 0
+        }
+      ],
+      "anchors": [],
+      "sprites": [
+        {
+          "key": 10,
+          "footprint": [
+            2,
+            2,
+            3,
+            3
+          ],
+          "pieces": [
+            {
+              "part": "body",
+              "box": [
+                2,
+                2,
+                0,
+                3,
+                3,
+                1
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "b",
+      "type": "box",
+      "pos": [
+        2.5,
+        2.5
+      ],
+      "rot": 0,
+      "footprint": [
+        2.5,
+        2.5,
+        3.5,
+        3.5
+      ],
+      "tags": [],
+      "parts": [
+        {
+          "id": "body",
+          "box": [
+            2.5,
+            2.5,
+            0,
+            3.5,
+            3.5,
+            1
+          ],
+          "order": 1
+        }
+      ],
+      "anchors": [],
+      "sprites": [
+        {
+          "key": 12,
+          "footprint": [
+            2.5,
+            2.5,
+            3.5,
+            3.5
+          ],
+          "pieces": [
+            {
+              "part": "body",
+              "box": [
+                2.5,
+                2.5,
+                0,
+                3.5,
+                3.5,
+                1
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "c",
+      "type": "box",
+      "pos": [
+        5,
+        2
+      ],
+      "rot": 0,
+      "footprint": [
+        5,
+        2,
+        6,
+        3
+      ],
+      "tags": [],
+      "parts": [
+        {
+          "id": "body",
+          "box": [
+            5,
+            2,
+            0,
+            6,
+            3,
+            1
+          ],
+          "order": 2
+        }
+      ],
+      "anchors": [],
+      "sprites": [
+        {
+          "key": 16,
+          "footprint": [
+            5,
+            2,
+            6,
+            3
+          ],
+          "pieces": [
+            {
+              "part": "body",
+              "box": [
+                5,
+                2,
+                0,
+                6,
+                3,
+                1
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "d",
+      "type": "box",
+      "pos": [
+        12,
+        0
+      ],
+      "rot": 0,
+      "footprint": [
+        12,
+        0,
+        13,
+        1
+      ],
+      "tags": [],
+      "parts": [
+        {
+          "id": "body",
+          "box": [
+            12,
+            0,
+            0,
+            13,
+            1,
+            1
+          ],
+          "order": 4
+        }
+      ],
+      "anchors": [],
+      "sprites": [
+        {
+          "key": 26,
+          "footprint": [
+            12,
+            0,
+            13,
+            1
+          ],
+          "pieces": [
+            {
+              "part": "body",
+              "box": [
+                12,
+                0,
+                0,
+                13,
+                1,
+                1
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "r",
+      "type": "long",
+      "pos": [
+        2,
+        6
+      ],
+      "rot": 90,
+      "footprint": [
+        2,
+        6,
+        3,
+        8
+      ],
+      "tags": [],
+      "parts": [
+        {
+          "id": "body",
+          "box": [
+            2,
+            6,
+            0,
+            3,
+            8,
+            1
+          ],
+          "order": 3
+        }
+      ],
+      "anchors": [],
+      "sprites": [
+        {
+          "key": 18,
+          "footprint": [
+            2,
+            6,
+            3,
+            7
+          ],
+          "pieces": [
+            {
+              "part": "body",
+              "box": [
+                2,
+                6,
+                0,
+                3,
+                7,
+                1
+              ]
+            }
+          ]
+        },
+        {
+          "key": 20,
+          "footprint": [
+            2,
+            7,
+            3,
+            8
+          ],
+          "pieces": [
+            {
+              "part": "body",
+              "box": [
+                2,
+                7,
+                0,
+                3,
+                8,
+                1
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "zones": [],
+  "lanes": [],
+  "states": {}
+}

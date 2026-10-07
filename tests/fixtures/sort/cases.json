@@ -1,0 +1,40 @@
+{
+  "cases": [
+    {
+      "scene": "tests/fixtures/sort/court.scene.json",
+      "state": null,
+      "checks": "court.expected.json"
+    },
+    {
+      "scene": "tests/fixtures/sort/court.scene.json",
+      "state": "closed",
+      "checks": "court.closed.expected.json"
+    },
+    {
+      "scene": "tests/fixtures/sort/court.scene.json",
+      "state": "cleared",
+      "checks": "court.cleared.expected.json"
+    }
+  ],
+  "compare": [
+    {
+      "scene": "tests/fixtures/sort/court.scene.json",
+      "state": null,
+      "variants": [
+        {
+          "name": "A",
+          "file": "compare/court.A.patch"
+        },
+        {
+          "name": "B",
+          "file": "compare/court.B.patch"
+        }
+      ],
+      "expected": {
+        "json": "compare/court.expected.json",
+        "text": "compare/court.expected.txt",
+        "md": "compare/court.expected.md"
+      }
+    }
+  ]
+}

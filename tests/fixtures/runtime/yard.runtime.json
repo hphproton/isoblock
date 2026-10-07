@@ -1,0 +1,471 @@
+{
+  "schema": "isoblock-runtime/2",
+  "scene": "yard",
+  "meta": {
+    "version": 1,
+    "status": "draft"
+  },
+  "units": {
+    "name": "u",
+    "note": "abstract unit"
+  },
+  "camera": {
+    "angleU": 30,
+    "angleV": 150,
+    "pxPerUnit": 80,
+    "verticalScale": 1,
+    "origin": [
+      300,
+      300
+    ]
+  },
+  "cameraDir": [
+    1,
+    1,
+    1
+  ],
+  "frame": {
+    "w": 1000,
+    "h": 1000,
+    "regions": [
+      {
+        "id": "hud",
+        "rect": [
+          0,
+          0,
+          1000,
+          150
+        ],
+        "blocksScene": true
+      },
+      {
+        "id": "view",
+        "rect": [
+          0,
+          150,
+          1000,
+          1000
+        ],
+        "blocksScene": false
+      }
+    ]
+  },
+  "strips": [
+    {
+      "id": "back",
+      "v": [
+        -1.5,
+        0
+      ],
+      "kind": "decor",
+      "scale": "art-directed"
+    },
+    {
+      "id": "floor",
+      "v": [
+        0,
+        4
+      ],
+      "kind": "walkable"
+    }
+  ],
+  "objects": [
+    {
+      "id": "tree",
+      "type": "tree",
+      "pos": [
+        3,
+        0.2
+      ],
+      "rot": 0,
+      "footprint": [
+        3,
+        0.2,
+        4.2,
+        1.4
+      ],
+      "tags": [
+        "static"
+      ],
+      "parts": [
+        {
+          "id": "trunk",
+          "box": [
+            3.45,
+            0.65,
+            0,
+            3.75,
+            0.95,
+            1.4
+          ],
+          "order": 1
+        },
+        {
+          "id": "canopy",
+          "box": [
+            2.8,
+            0,
+            1.4,
+            4.4,
+            1.6,
+            2.4
+          ],
+          "order": 2
+        }
+      ],
+      "anchors": [],
+      "sprites": [
+        {
+          "key": 8.8,
+          "footprint": [
+            3,
+            0.2,
+            4.2,
+            1.4
+          ],
+          "pieces": [
+            {
+              "part": "trunk",
+              "box": [
+                3.45,
+                0.65,
+                0,
+                3.75,
+                0.95,
+                1.4
+              ]
+            },
+            {
+              "part": "canopy",
+              "box": [
+                2.8,
+                0,
+                1.4,
+                4.4,
+                1.6,
+                2.4
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "actor",
+      "type": "actor",
+      "pos": [
+        2.3,
+        0.97
+      ],
+      "rot": 0,
+      "footprint": [
+        2.3,
+        0.97,
+        2.7,
+        1.37
+      ],
+      "tags": [],
+      "parts": [
+        {
+          "id": "body",
+          "box": [
+            2.3,
+            0.97,
+            0,
+            2.7,
+            1.37,
+            1.2
+          ],
+          "order": 0
+        }
+      ],
+      "anchors": [],
+      "sprites": [
+        {
+          "key": 7.34,
+          "footprint": [
+            2.3,
+            0.97,
+            2.7,
+            1.37
+          ],
+          "pieces": [
+            {
+              "part": "body",
+              "box": [
+                2.3,
+                0.97,
+                0,
+                2.7,
+                1.37,
+                1.2
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "crate1",
+      "type": "crate",
+      "pos": [
+        6,
+        0.5
+      ],
+      "rot": 0,
+      "footprint": [
+        6,
+        0.5,
+        6.6,
+        1.1
+      ],
+      "tags": [],
+      "parts": [
+        {
+          "id": "body",
+          "box": [
+            6,
+            0.5,
+            0,
+            6.6,
+            1.1,
+            0.6
+          ],
+          "order": 4
+        }
+      ],
+      "anchors": [],
+      "sprites": [
+        {
+          "key": 14.2,
+          "footprint": [
+            6,
+            0.5,
+            6.6,
+            1.1
+          ],
+          "pieces": [
+            {
+              "part": "body",
+              "box": [
+                6,
+                0.5,
+                0,
+                6.6,
+                1.1,
+                0.6
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "crate2",
+      "type": "crate",
+      "pos": [
+        6.8,
+        0.5
+      ],
+      "rot": 0,
+      "footprint": [
+        6.8,
+        0.5,
+        7.4,
+        1.1
+      ],
+      "tags": [],
+      "parts": [
+        {
+          "id": "body",
+          "box": [
+            6.8,
+            0.5,
+            0,
+            7.4,
+            1.1,
+            0.6
+          ],
+          "order": 5
+        }
+      ],
+      "anchors": [],
+      "sprites": [
+        {
+          "key": 15.8,
+          "footprint": [
+            6.8,
+            0.5,
+            7.4,
+            1.1
+          ],
+          "pieces": [
+            {
+              "part": "body",
+              "box": [
+                6.8,
+                0.5,
+                0,
+                7.4,
+                1.1,
+                0.6
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "bench",
+      "type": "bench",
+      "pos": [
+        3.4,
+        2.6
+      ],
+      "rot": 0,
+      "footprint": [
+        3.4,
+        2.6,
+        4.6,
+        3
+      ],
+      "tags": [],
+      "parts": [
+        {
+          "id": "body",
+          "box": [
+            3.4,
+            2.6,
+            0,
+            4.6,
+            3,
+            0.5
+          ],
+          "order": 3
+        }
+      ],
+      "anchors": [
+        {
+          "id": "seat1",
+          "at": [
+            3.7,
+            2.8,
+            0.5
+          ],
+          "facing": "back",
+          "kind": "seat"
+        }
+      ],
+      "sprites": [
+        {
+          "key": 12.8,
+          "footprint": [
+            3.4,
+            2.6,
+            3.8,
+            3
+          ],
+          "pieces": [
+            {
+              "part": "body",
+              "box": [
+                3.4,
+                2.6,
+                0,
+                3.8,
+                3,
+                0.5
+              ]
+            }
+          ]
+        },
+        {
+          "key": 13.6,
+          "footprint": [
+            3.8,
+            2.6,
+            4.2,
+            3
+          ],
+          "pieces": [
+            {
+              "part": "body",
+              "box": [
+                3.8,
+                2.6,
+                0,
+                4.2,
+                3,
+                0.5
+              ]
+            }
+          ]
+        },
+        {
+          "key": 14.4,
+          "footprint": [
+            4.2,
+            2.6,
+            4.6,
+            3
+          ],
+          "pieces": [
+            {
+              "part": "body",
+              "box": [
+                4.2,
+                2.6,
+                0,
+                4.6,
+                3,
+                0.5
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "zones": [],
+  "lanes": [
+    {
+      "id": "path",
+      "kind": "walk",
+      "width": 0.6,
+      "dir": "both",
+      "points": [
+        [
+          0,
+          2.0
+        ],
+        [
+          9,
+          2.0
+        ]
+      ]
+    },
+    {
+      "id": "haul",
+      "kind": "vehicle",
+      "width": 0.8,
+      "dir": "to_screen_right",
+      "points": [
+        [
+          5,
+          4.6
+        ],
+        [
+          16,
+          4.6
+        ]
+      ]
+    }
+  ],
+  "states": {
+    "closed": {
+      "hide": [
+        "bench"
+      ]
+    }
+  }
+}

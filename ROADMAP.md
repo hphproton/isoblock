@@ -124,5 +124,26 @@ Not in stage 6: states in the runtime file and the Godot adapter, `sort_consiste
 
 **Done when:** all tests pass, earlier fixtures still match, and the stage 6 criteria in SPEC section 17 hold.
 
-## Stage 7 · not open
-`sort_consistency` and slicing, the runtime file with states and slices, and the Godot adapter's states, `instantiate` by type and sorting of moving objects (SPEC sections 13, 17). Before it opens: the maintainer specifies them and adds the fixtures.
+## Stage 7 · open
+
+Sprites, slices and sort keys, `sort_consistency`, and the runtime file `isoblock-runtime/2` with sprites and states (SPEC sections 4, 9.3, 11.1, 13.4, 13.7, 13.8, 17, 18). Core and CLI; the Godot adapter only switches to the new runtime file. Fixtures: `tests/golden/sort.json`, `tests/fixtures/sort/` (scene `court.scene.json`, check results by state, one `compare` case) and `tests/fixtures/runtime/` (a runtime file 2 for every export case, `walk` and `court`).
+
+- [ ] Sort keys, slices, pieces and the sprite list exactly as SPEC section 13.4; `tests/golden/sort.json` passes
+- [ ] `sort_consistency` (SPEC section 9.3): actor positions, actor and static mismatches, wrong areas from outlines, `maxPixels`, `area` and blocked zones, `ids`, `worst`, `positions`, both `skip` rules, states
+- [ ] Schema and reference rules for its parameters
+- [ ] `compare` label and cells for `sort_consistency`
+- [ ] `export --target runtime` writes `isoblock-runtime/2` with `sprites` and `states` (SPEC section 13.7)
+- [ ] Godot adapter reads `isoblock-runtime/2` (SPEC section 13.8); `npm run test:godot` passes on every export case
+- [ ] Tests load `tests/golden/sort.json`, `tests/fixtures/sort/cases.json` and `tests/fixtures/runtime/cases.json` and compare every expected file
+- [ ] Tests no longer read the `runtime` entries of `tests/fixtures/export/cases.json` (the release removes them); tests that used `sort_consistency` as an example of a check not implemented use `state_stable`
+- [ ] `CHANGELOG.md` lists the runtime file change with upgrade steps from `isoblock-runtime/1`
+- [ ] `docs/AGENT_GUIDE.md` covers sprites and slices, `sort_consistency` and how to read its result, and the runtime file 2
+- [ ] Session log says `branch ready for review`
+
+Not in stage 7: drawing sprites and actors, states and `instantiate` in the Godot adapter (stage 8); sort-point overlay and state switch in the editor, `state_stable`, automatic front and back splits (not scheduled).
+
+**Done when:** all tests pass, `npm run test:godot` passes, earlier fixtures still match (except the stage 5 runtime files), and the stage 7 criteria in SPEC section 17 hold.
+
+## Stage 8 · not open
+
+The Godot adapter: sprites and actors drawn by the engine rule, states, `instantiate` by type with pivots, and cross-checks with actors and states (SPEC sections 13, 17). Before it opens: the maintainer specifies them and adds the fixtures.

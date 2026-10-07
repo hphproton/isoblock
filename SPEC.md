@@ -57,6 +57,8 @@ IsoBlock stores the layout of a 2D isometric scene as **data in world units**. P
 | Type | Shared template: size, parts, anchors, generation hint |
 | Object | Instance of a type: position, rotation in 90° steps, locks, tags |
 | Part | Sub-box of a type (trunk, canopy, roof). Needed for correct occlusion and draw order |
+| Sprite | What an engine draws and sorts as one item: a whole object, or one slice of a long object (section 13.4) |
+| Actor | A moving object the game adds at runtime (a character, a cart). Not in the scene file |
 | Anchor | Meaningful point with a facing: ground contact, seat, queue point, hang point, speech bubble |
 | Zone | Ground polygon with a purpose: walkable, blocked, interaction, queue |
 | Strip | Band along one axis, defined by a v range. Useful for scenes built in layers |
@@ -162,7 +164,7 @@ Conventions:
 Schema rules (`schema/isoblock-1.json`):
 
 - Required top-level keys: `schema`, `id`, `units`, `camera`, `frame`, `types`, `objects`. Optional: `strips`, `zones`, `lanes`, `relations`, `checks`, `states`, `assumptions`, `meta`.
-- Required fields inside: `units.name`; `camera.angleU`, `angleV`, `pxPerUnit`, `origin` (`verticalScale` defaults to 1); `frame.w`, `h`, `regions`; region `id`, `rect` (`blocksScene` optional); strip `id`, `v`; type `size`; part `id`, `box`; anchor `id`, `at`; object `id`, `type`, `pos` (`rot` defaults to 0); zone `id` (`kind` and `points`, a ground polygon of at least 3 `[u, v]` points, are optional); lane `id`, `width`, `points` (at least 2); relation `id`, `rel`; check `id`, `check` plus the parameters 9.1 requires; assumption `path`, `value`. Everything else shown in the example is optional.
+- Required fields inside: `units.name`; `camera.angleU`, `angleV`, `pxPerUnit`, `origin` (`verticalScale` defaults to 1); `frame.w`, `h`, `regions`; region `id`, `rect` (`blocksScene` optional); strip `id`, `v`; type `size`; part `id`, `box`; anchor `id`, `at`; object `id`, `type`, `pos` (`rot` defaults to 0); zone `id` (`kind` and `points`, a ground polygon of at least 3 `[u, v]` points, are optional); lane `id`, `width`, `points` (at least 2); relation `id`, `rel`; check `id`, `check` plus the parameters sections 9.1 to 9.3 require; assumption `path`, `value`. Everything else shown in the example is optional.
 - Strict where this spec defines a shape: unknown keys are errors (catches typos). Keys starting with `x-` are always allowed, for extensions.
 - `zones[]` requires `id`. `states.<name>` is an object whose only key is `hide` (plus `x-` keys); `hide`, when present, is an array of object ids. A state only hides objects; moving objects in a state is not scheduled. `relations[]` requires `rel` from section 7; `order_along` needs `ids`, every other `rel` needs `a`.
 - `kind`, `dir` and `facing` are free strings. Vocabulary checks belong to a project profile.
@@ -245,7 +247,7 @@ Definitions (footprints, corners and centers as in 9.1; `EPS` and the lane shape
 | `capacity` | N anchors of kind X are usable at once, counting seated bodies |
 | `visible` | The required part of an object (for example its upper 45%) is occluded no more than a threshold. Uses rays toward the camera through parts |
 | `min_screen_size` | On-screen height of an object is at least a pixel value (legibility) |
-| `sort_consistency` | The engine's draw-order rule agrees with geometric order; reports objects that need slicing (section 13.4) |
+| `sort_consistency` | An engine that sorts one key per sprite (section 13.4) draws a test actor and the objects in their geometric order; reports objects where it does not, with the area drawn wrong |
 | `state_stable` | Static objects keep their position across states |
 
 Result shape: `{ id, check, status: pass|fail|warn|skip, value, threshold, ids[], message }`. `message` is one line.
@@ -308,6 +310,30 @@ Threshold, ids and extra fields:
 - Lists (`ids`, `allow`, `ignore`) lose the hidden objects; a list that loses all of them names no object (it does not mean all objects). Hidden objects do not overlap, block, occlude or count anywhere.
 - Without `--state` every object is present.
 
+### 9.3 Exact definition for stage 7
+
+Tolerance and EPS as in 9.1. Areas are in frame pixels squared (px²); `worst` compares within the pixel tolerance.
+
+| `check` | Parameters | `value` |
+|---|---|---|
+| `sort_consistency` | `actor` (`[w, d, h]`, required), `step` (default 0.1), `reach` (default 1), `maxPixels` (default 0), `area` (optional zone id), `ids` (optional object ids) | Number of examined objects whose worst area exceeds `maxPixels + EPS` |
+
+Computation:
+
+1. **Sprites:** every object's sprites and keys and the sprite list, as in section 13.4.
+2. **Examined objects:** the objects in `ids` (default: all objects).
+3. **Actor positions** of an examined object X: for all integers i and j, the point p = ((i + 0.5)·step, (j + 0.5)·step) and the actor footprint `[p.u − w/2, p.v − d/2, p.u + w/2, p.v + d/2]`. A position is used when the `clearance` distance (9.1) between that footprint and X's footprint is at most `reach + EPS`, the footprint overlaps (as in `no_overlap`) no object's footprint, and, with `area`, p is inside that zone and not inside a zone with `kind: "blocked"` and 3 or more points (inside as in `reachable`, 9.2). The actor box is the actor footprint from h = 0 to h = `actor[2]`; the actor key is the key of the actor footprint.
+4. **Actor mismatches:** for each used position and each piece of each sprite of X: skip the piece when its box intersects the actor box (the two overlap by more than EPS along u, along v and along h). Otherwise, when the actor box and the piece need an order (section 13.4, painter's order steps 3 and 4, with the actor box as a part), the engine draws the actor after the sprite when the actor key ≥ the sprite key, else before. A mismatch is a pair where the engine's order differs from the needed order.
+5. **Static mismatches:** for each piece P of a sprite S of X and each piece Q of a sprite T of another object, skipping pairs whose boxes intersect: when P and Q need an order, the engine draws S before T when key(S) < key(T), or when the keys are equal and S comes earlier in the sprite list. A mismatch is a pair where that order differs from the needed order.
+6. **Wrong area** of a mismatch: the area of the intersection of the two outlines, where the outline of a box is the convex hull of its 8 projected corners. An object's worst area is the largest wrong area of its mismatches (actor and static), 0 without any.
+7. **Status:** `fail` when an examined object's worst area exceeds `maxPixels + EPS`, else `pass`.
+
+Threshold, ids and extra fields:
+- `threshold = 0`; `ids` = the examined objects whose worst area exceeds `maxPixels + EPS`, in the order of `objects`; `worst` = the largest worst area of the examined objects, rounded to 2 decimals (0 when there is none); `positions` = the number of used actor positions, summed over the examined objects.
+- A zone named by `area` with fewer than 3 points: `skip`. When `(u1 − u0 + 2·reach + w) · (v1 − v0 + 2·reach + d) / step²` exceeds 4,000,000 for an examined object with footprint `[u0, v0, u1, v1]`: `skip`, with a message that asks for a larger `step`.
+- Under a state (9.2), hidden objects have no sprites, block no actor position and are not examined.
+- The wrong area is the size of the region that the engine draws in the wrong order when nothing else covers it. Bounding rectangles that overlap while the outlines only touch give an area of 0, so they never fail.
+
 ## 10. Editor (web page)
 
 - **Two views:** isometric with the scene camera, and a top-down plan (more precise dragging, nothing hidden).
@@ -315,7 +341,7 @@ Threshold, ids and extra fields:
 - **Plan view:** u to the right, v down; objects drawn by their top faces.
 - **Property panel:** numbers with units; a lock toggle per property; provisional mark for assumptions.
 - **Check panel:** pass/fail updates live; tapping a row highlights the objects involved.
-- **Toggleable overlays:** strips, lanes, zones, anchors, frame regions, occlusion rays, sort points.
+- **Toggleable overlays:** strips, lanes, zones, anchors, frame regions; occlusion rays and sort points (not scheduled).
 - **State switch:** day, night, events (not scheduled).
 - **History:** undo, redo; saved versions with notes; compare two versions.
 - **Export:** frame image, scene file, engine package, generation boxes.
@@ -343,7 +369,7 @@ Commands and flags arrive in the stages listed in section 17. A command, flag, e
 
 `render` requires `-o`; the file extension selects the format: `.svg`, or `.png` from stage 5 (section 14).
 
-`--state NAME` (stage 6) applies to `check`, `render`, `compare` and `export --target gen-bbox`: the command works on the scene in that state (section 9.2); hidden objects are not drawn and get no generation box. An unknown state name is a usage error, `default` included unless the scene defines it. `check --json --state` prints `{ "scene", "results" }` as without a state. With `export --target runtime` it is a usage error: the runtime file carries all states from stage 7.
+`--state NAME` (stage 6) applies to `check`, `render`, `compare` and `export --target gen-bbox`: the command works on the scene in that state (section 9.2); hidden objects are not drawn and get no generation box. An unknown state name is a usage error, `default` included unless the scene defines it. `check --json --state` prints `{ "scene", "results" }` as without a state. With `export --target runtime` it is a usage error: the runtime file carries all states (section 13.7).
 
 `export` writes to `-o`, else to stdout, in the saved format of section 10. `--target` is required; `-o` naming the input file is a usage error. `--bbox-units` and `--bbox-order` belong to `gen-bbox`; with `runtime` they are a usage error.
 
@@ -372,9 +398,9 @@ Exit codes:
   - `locksTouched`: labels `<object id>.<lock>` of the base locks the variant touches (section 12); any entry marks the variant invalid;
   - `checks`: every check with its label, threshold, `values` (one per column), `status` (one per column) and `delta` (value minus the base value, rounded to 6 decimals; `null` for the base and for values that are `null` or not numbers);
   - `moved`: objects present in both scenes whose `pos` moved more than 1e-9, as `count` and total `distance` (sum of ground distances, rounded to 6 decimals); `null` for the base.
-- **Check labels:** `in_region <region>[/<strip>] (objects outside)`, `no_overlap (pairs)`, `clearance <a>×<b> (<unit>)` with the ids in the order of the result's `ids`, `lane_clear <lane> (blocking objects)`, `lane_reaches <lane> (y px)`, `visible <target> (% occluded)`, `reachable <check id> (<unit>)`, `capacity <check id> (usable <kind>)`, `min_screen_size <target> (px)`.
+- **Check labels:** `in_region <region>[/<strip>] (objects outside)`, `no_overlap (pairs)`, `clearance <a>×<b> (<unit>)` with the ids in the order of the result's `ids`, `lane_clear <lane> (blocking objects)`, `lane_reaches <lane> (y px)`, `visible <target> (% occluded)`, `reachable <check id> (<unit>)`, `capacity <check id> (usable <kind>)`, `min_screen_size <target> (px)`, `sort_consistency <check id> (objects out of order)`.
 - **Variant labels:** the first comment line of the patch (section 12), else the variant name.
-- **`text` format** (Appendix D is the contract): line 1 `compare <scene id> · state <state> · base vs <names>`; line 2 `<name> = <label>` for each variant, joined with ` · `; then a table. Rows: `failing checks`; `locks touched` (count, then ` ✗ (<labels>)` when not zero); one row per check that is `fail` or `skip` in some column, or whose value differs from the base in some column (a non-zero delta, or `null` against a number), in `checks` order; `objects moved / total (<unit>)` (`-` for the base, else `<count> / <distance>`). Cells: counts as integers; clearance values and distances with 2 decimals; `lane_reaches` whole pixels (`none` when `null`); `visible` whole percent; `reachable` with 2 decimals (`none` when `null`); `capacity` as an integer; `min_screen_size` whole pixels, halves up; `skip` for skipped checks; ` ✗` after a value whose status is `fail` or `skip`. Columns are left-aligned; each column is as wide as its widest cell (header included, counted in Unicode code points) plus 2 spaces; trailing spaces are removed.
+- **`text` format** (Appendix D is the contract): line 1 `compare <scene id> · state <state> · base vs <names>`; line 2 `<name> = <label>` for each variant, joined with ` · `; then a table. Rows: `failing checks`; `locks touched` (count, then ` ✗ (<labels>)` when not zero); one row per check that is `fail` or `skip` in some column, or whose value differs from the base in some column (a non-zero delta, or `null` against a number), in `checks` order; `objects moved / total (<unit>)` (`-` for the base, else `<count> / <distance>`). Cells: counts as integers; clearance values and distances with 2 decimals; `lane_reaches` whole pixels (`none` when `null`); `visible` whole percent; `reachable` with 2 decimals (`none` when `null`); `capacity` and `sort_consistency` as integers; `min_screen_size` whole pixels, halves up; `skip` for skipped checks; ` ✗` after a value whose status is `fail` or `skip`. Columns are left-aligned; each column is as wide as its widest cell (header included, counted in Unicode code points) plus 2 spaces; trailing spaces are removed.
 - **`md` format:** the same rows as a Markdown table with the header `| metric | base | <names> |`.
 - **`json` format:** `{ "scene", "state", "variants": [{ "name", "label" }], "failing", "locksTouched", "moved", "checks": [{ "id", "check", "label", "threshold", "values", "status", "delta" }] }`; every list has one entry per column, base first (`label` is `null` for the base).
 - **Not scheduled:** layout indicators (occupied share of the view per third of the frame, largest empty area, on-screen size of key objects) and `--render`.
@@ -450,10 +476,10 @@ The engine never edits what the scene file owns. To change the layout, edit the 
 ### 13.3 Adapter contract (every engine)
 
 - `project(u, v, h) → (x, y)`, matching the golden vectors.
-- Draw order from the runtime file: a part with a smaller `order` is drawn earlier. Adapters do not sort static objects themselves. Moving objects: stage 6 (section 13.4).
+- Draw order from the runtime file: a part with a smaller `order` is drawn earlier. Adapters do not sort static objects themselves. From stage 8, adapters draw the sprites of the runtime file and actors by the engine rule of section 13.4.
 - Zones become areas, lanes become paths, anchors become oriented points (`seat`, `queue_point`, `spawn`, `exit`, `wait`) that keep their `kind` and `facing`.
 - Validate on load: the `schema` value and duplicate ids. Report errors; never ignore them silently.
-- From stage 7: `instantiate(type) → node` through the type → prefab/scene/sprite map, with the image pivot at the type's ground-contact anchor from the asset contract, together with slicing (section 13.4); types without a mapping are reported; on a state change, apply that state's overrides (hide/show, reposition). Stage 5 adapters draw parts as debug boxes.
+- From stage 8: `instantiate(type) → node` through the type → prefab/scene/sprite map, with the image pivot at the type's ground-contact anchor from the asset contract, together with slicing (section 13.4); types without a mapping are reported; on a state change, apply that state's overrides (hide and show). Stage 5 to 7 adapters draw parts as debug boxes.
 
 ### 13.4 Draw order: the main isometric trap
 
@@ -462,7 +488,7 @@ The engine never edits what the scene file owns. To change the layout, edit the 
   1. Slice long objects along their long axis; each slice is a sprite with its own sort point.
   2. Split an object into a front part and a back part.
   3. Static objects: precomputed topological order. Moving objects: sort by foot depth.
-- **Tool support:** `sort_consistency` walks a test actor through points around each object, compares the engine rule with geometric order, and reports objects that need slicing. Export includes `slices` for them (stage 7).
+- **Tool support:** the runtime file splits long objects into slices (below). `sort_consistency` (section 9.3) walks a test actor around each object, compares the engine rule with the geometric order, and reports the objects that still need a fix by hand: a front part and a back part as separate objects, other parts, or a footprint closer to a square.
 - **Painter's order of parts** (from stage 5 the rule for `render`, the editor and the runtime file):
   1. List every part of every object: objects in file order, parts in type order (a type without parts has one part, `body`). A part's position in this list is its index.
   2. For each part: its world box (section 6); `c` = the camera direction of section 5 with each component rounded to 9 decimals; `depth` = `c · center` of the box, rounded to 6 decimals; its screen bounds = the smallest and largest x and y of its 8 projected corners.
@@ -470,6 +496,14 @@ The engine never edits what the scene file owns. To change the layout, edit the 
   4. Each axis (u, v, h) along which the two boxes are apart (the upper end of one is at most the lower end of the other plus EPS) votes: when `|c|` on that axis is at most EPS, the pair needs no order; otherwise the vote puts first the box on the side away from the camera (the lower box when `c` is positive on that axis). Votes that disagree: no order. No axis apart: the box with the smaller depth goes first; equal depths need no order.
   5. Place parts one at a time: among the unplaced parts whose required predecessors are all placed, take the one with the smallest depth, then the smallest index. When there is none (a cycle), take the unplaced part with the smallest depth, then the smallest index.
   - The rounding in step 2 keeps exact ties exact, so every implementation gives the same order. Ground, outlines and labels of the display list keep their place.
+- **Sprites and sort keys** (from stage 7; used by the runtime file and `sort_consistency`):
+  1. The key of a footprint `[u0, v0, u1, v1]` is `cu·(u0 + u1) + cv·(v0 + v1)` with `c` as in step 2 of the painter's order, rounded to 6 decimals. It is twice the ground depth of the footprint's center; the doubling keeps footprints with 6-decimal corners clear of rounding ties.
+  2. Each object becomes one or more sprites. Start from its footprint and its part boxes in world units, rounded to 6 decimals as in the runtime file; w = u1 − u0 and d = v1 − v0. When |w − d| ≤ EPS, or w or d is at most EPS, the object is one sprite. Otherwise the long axis is u when w > d, else v. With L the longer and S the shorter of w and d, the number of slices n is the integer n ≥ 1 that makes |L/n − S| smallest (a tie within EPS goes to the smaller n), and at most 64.
+  3. Along the long axis, from a0 to a1, the slice boundaries are t0 = a0, tn = a1, and tk = a0 + k·(a1 − a0)/n rounded to 6 decimals for 0 < k < n. Slice k (counted from 0) has the object's footprint with the long-axis range [tk, tk+1]; its key is the key of that footprint.
+  4. The pieces of slice k are the part boxes with their long-axis range cut to [tk, tk+1], except that the first slice reaches to −∞ and the last to +∞, so parts that stick out of the footprint stay with the end slices. A piece no longer than EPS along the axis is left out. An object of one sprite has its footprint as sprite footprint and its whole part boxes as pieces. Pieces are listed in ascending painter's order of their parts.
+  5. **Sprite list:** objects in file order; the sprites of an object in ascending order along its long axis.
+  6. **Engine rule:** sprites are drawn in ascending key. On equal keys, scene sprites are drawn in the order of the sprite list, and actors after them. An actor's key is the key of its footprint. The pieces of a sprite are drawn in their list order.
+  - When `cu = cv` (true isometric and 2:1 cameras), one key per sprite gives the geometric order next to every actor position only when the sprite's footprint is square. Slicing brings sprites close to square; `sort_consistency` measures the rest.
 
 ### 13.5 Flow and versions
 
@@ -490,29 +524,33 @@ scene.json (git) → isoblock export --target runtime → <game>/data/scenes/<id
   - Two runs give identical PNG bytes.
 - Each object is also measured alone because an edge that another object hides cannot be measured in the whole frame.
 
-### 13.7 Runtime file (`isoblock-runtime/1`)
+### 13.7 Runtime file (`isoblock-runtime/2`)
 
 `export --target runtime` writes the layout an engine needs: a reduced copy of the scene without relations, checks, locks, assumptions or generation hints.
 
 ```json
-{ "schema": "isoblock-runtime/1", "scene": "yard", "meta": { "version": 1, "status": "draft" },
-  "units": {}, "camera": {}, "cameraDir": [1, 1, 1], "frame": {}, "strips": [], "objects": [], "zones": [], "lanes": [] }
+{ "schema": "isoblock-runtime/2", "scene": "yard", "meta": { "version": 1, "status": "draft" },
+  "units": {}, "camera": {}, "cameraDir": [1, 1, 1], "frame": {}, "strips": [], "objects": [], "zones": [], "lanes": [],
+  "states": {} }
 ```
 
 - Top-level keys in that order. `scene` is the scene `id`; `meta.version` and `meta.status` come from the scene's `meta`, `null` when absent.
 - `units` and every entry of `strips`, `zones` and `lanes` are copied from the scene file without their `x-` keys, keys in file order. An absent list is `[]`.
 - `camera`: `angleU`, `angleV`, `pxPerUnit`, `verticalScale` (default 1), `origin`. `cameraDir`: the `c` of section 13.4, with its 9 decimals.
 - `frame`: `w`, `h` and `regions`, each `{ "id", "rect", "blocksScene" }` (`blocksScene` default `false`).
-- `objects` in file order, each `{ "id", "type", "pos", "rot", "footprint", "tags", "parts", "anchors" }`:
+- `objects` in file order, each `{ "id", "type", "pos", "rot", "footprint", "tags", "parts", "anchors", "sprites" }`:
   - `rot` defaults to 0; `footprint` is `[u0, v0, u1, v1]` after rotation (section 6); `tags` is `[]` when the object has none.
   - `parts` in type order, each `{ "id", "box", "order" }`: `box` is `[u0, v0, h0, u1, v1, h1]` in world units after rotation; `order` is the part's position in the painter's order of section 13.4 (0 is drawn first).
   - `anchors`: the type's anchors as `{ "id", "at", "facing", "kind" }`, `at` = `[u, v, h]` in world units after rotation; `facing` and `kind` only when the type gives them. `[]` when the type has none.
-- Numbers the tool computes (footprints, part boxes, anchor positions) are rounded to 6 decimals; `pos` and copied values are written as they are in the scene. The file uses the saved format of section 10. Same input, same bytes.
-- Not in stages 5 and 6: states and slices (stage 7).
+  - `sprites`: the object's sprites of section 13.4 in their order, each `{ "key", "footprint", "pieces" }`; `pieces` in their order, each `{ "part", "box" }` with the part's id and the piece's box in world units.
+- `states`: one entry per state of the scene, in file order, each `{ "hide": [...] }` with the ids as the scene lists them (`[]` when the state has no `hide`; `x-` keys are left out). `{}` when the scene has no states.
+- Numbers the tool computes (footprints, part boxes, anchor positions, keys, sprite footprints, piece boxes) are rounded to 6 decimals; `pos` and copied values are written as they are in the scene. The file uses the saved format of section 10. Same input, same bytes.
+- Stages 5 and 6 wrote `isoblock-runtime/1`: the same file without `sprites` and `states`. `CHANGELOG.md` gives the upgrade steps.
 
 ### 13.8 Godot adapter
 
 - Lives in `adapters/godot/`: GDScript for Godot 4.7 with the Compatibility renderer, 150–300 lines without its tests. It is not npm code and imports nothing from `src/`.
+- From stage 7 it reads `isoblock-runtime/2` and reports any other `schema` value as `E_SCHEMA`. Until stage 8 it keeps drawing parts by `order` and does not use `sprites` and `states`.
 - Loads a runtime file and builds a `Node2D` tree: one node per object; one child per part with `z_index` = `order` (absolute). A scene with more parts than the `z_index` range holds is an error.
 - **Debug drawing:** each part draws the faces of its box that point toward the camera (as the display list does) as `Polygon2D` with antialiasing off, in one flat color per object that the caller chooses.
 - Each anchor becomes a `Marker2D` named by its id at its projected point, with `kind` and `facing` as metadata. Each zone becomes a `Polygon2D` of its projected ground points and each lane a `Line2D` through its projected points; both are hidden by default and keep their data as metadata.
@@ -554,7 +592,7 @@ adapters/
   godot/     from stage 5: GDScript adapter for Godot 4.7 and its test project (section 13.8)
 scripts/     build and test scripts (test-godot.mjs from stage 5)
 tests/
-  golden/    projection.json (stage 7 adds sort.json)
+  golden/    projection.json; sort.json (from stage 7)
   fixtures/  *.scene.json + *.expected.json (synthetic scenes, maintained by the maintainer)
 docs/        AGENT_GUIDE.md
 dist/        build output, not committed
@@ -583,15 +621,22 @@ dist/        build output, not committed
 | 4 | Relations (section 7), `relations`, solver and minimal conflict set (section 8) | `relations` on `tests/fixtures/relations/relations.scene.json` gives its expected results; every scene in `tests/fixtures/solver/` meets its expected file; the solve of `perf` meets the performance rule of section 8 |
 | 5 | Painter's order of parts (section 13.4); `export --target runtime` (section 13.7) and `gen-bbox` (section 14); PNG render (section 14); Godot adapter and its cross-checks (sections 13.6, 13.8) | Every case in `tests/fixtures/export/cases.json` meets its expected files: the runtime file, and the `gen-bbox` file for each listed flag set, equal their expected files as JSON (same keys in the same order, numbers within the case file's tolerances) and are byte-identical over two runs; for each case with a `png`, `render -o out.png` decodes to the same size as that PNG and each RGBA channel of each pixel is within 1 of it; `dist/isoblock.mjs`, copied alone into an empty directory, writes a PNG; `npm run test:godot` passes section 13.6 on every case |
 | 6 | States (hiding objects) and `--state` for `check`, `render`, `compare` and `export --target gen-bbox`; checks `reachable`, `capacity` and `min_screen_size` (section 9.2) | `check --json` on `tests/fixtures/gameplay/walk.scene.json` gives `walk.expected.json`; every case of `tests/fixtures/states/cases.json` meets its expected files; earlier fixtures still match |
-| 7 | `sort_consistency` and slicing (section 13.4); runtime file with states and slices; Godot adapter: states, `instantiate` by type with pivots, sorting of moving objects | Criteria and fixtures are written when the stage opens |
+| 7 | Sprites, slices and sort keys (section 13.4); `sort_consistency` (section 9.3); runtime file `isoblock-runtime/2` with sprites and states (section 13.7); the Godot adapter reads it | `tests/golden/sort.json` matches; every case of `tests/fixtures/sort/cases.json` meets its expected files; every case of `tests/fixtures/runtime/cases.json` equals its runtime file as JSON (same keys in the same order, numbers within its `world` tolerance) and is byte-identical over two runs; `npm run test:godot` passes on every export case; earlier fixtures still match, except the stage 5 runtime files, which the runtime cases replace |
+| 8 | Godot adapter: sprites and actors drawn by the engine rule (section 13.4), states, `instantiate` by type with pivots; cross-checks with actors and states | Criteria and fixtures are written when the stage opens |
 
 Export targets `godot`, `phaser` and `tiled`, the check `state_stable` and states that move objects are not scheduled.
+
+Golden sort vectors: `tests/golden/sort.json` = `{ tolerance, keys, slices }`. Each entry of `keys` `{ camera, footprint, key }`: the key of that footprint under that camera. Each entry of `slices` `{ name, camera, footprint, parts: [{ id, box, order }], sprites }`: the sprites (as in the runtime file) of an object with that footprint and those part boxes in world units and painter's orders. Numbers match within `tolerance`.
+
+Sort fixtures: `tests/fixtures/sort/cases.json` = `{ cases, compare }`. Each case `{ scene, state, checks }`: `check --json`, with `--state <state>` unless `state` is `null`, matches `checks` in the format of the check fixtures (`sort_consistency`: `status`, `value` and `ids` exactly, `worst` within `tolerance.valuePx`, `positions` exactly). Each `compare` entry is as in the state fixtures, with `state` `null` for `default`. Paths in `scene` are from the repository root; the others are in `tests/fixtures/sort/`.
+
+Runtime fixtures: `tests/fixtures/runtime/cases.json` = `{ tolerance: { world }, cases: [{ name, scene, runtime }] }`: `export --target runtime` of `scene` (a path from the repository root) equals `runtime` (in `tests/fixtures/runtime/`) as JSON, numbers within `world`.
 
 Gameplay fixture: `tests/fixtures/gameplay/walk.scene.json` with `walk.expected.json`, in the format of the stage 1 check fixtures; messages are compared only where 9.1 or 9.2 fixes them.
 
 State fixtures: `tests/fixtures/states/cases.json` = `{ cases, compare }`. Each case `{ scene, state, checks, genBbox, png }`: `check --json --state <state>` matches `checks` (format and tolerance of the check fixtures; the file also names its `state`); `export --target gen-bbox --state <state>` matches `genBbox` (as the stage 5 `gen-bbox` files, `px` tolerance 0.02) unless it is `null`; `render --state <state> -o out.png` matches `png` (each RGBA channel within 1) unless it is `null`. Each `compare` entry `{ scene, state, variants: [{ name, file }], expected: { json, text, md } }`: `compare --state <state>` with the variants in that order gives `text` and `md` byte for byte and `json` as the stage 3 compare fixture. Paths in `scene` are from the repository root; the others are in `tests/fixtures/states/`.
 
-Export fixtures: `tests/fixtures/export/cases.json` = `{ tolerance, cases }`, each case `{ name, scene, runtime, genBbox: [{ args, file }], png }`. `scene` is a path from the repository root; `runtime`, `file` and `png` are file names in `tests/fixtures/export/`; `args` are the flags added to `export --target gen-bbox`; `png` is `null` when the case has none. Tolerances: `world` for runtime numbers, `px` and `norm1000` for `gen-bbox` numbers by unit, `pngChannel` for PNG channels. The expected PNGs come from resvg 2.6.2 with no fonts loaded.
+Export fixtures: `tests/fixtures/export/cases.json` = `{ tolerance, cases }`, each case `{ name, scene, runtime, genBbox: [{ args, file }], png }`. `scene` is a path from the repository root; `runtime`, `file` and `png` are file names in `tests/fixtures/export/`; `args` are the flags added to `export --target gen-bbox`; `png` is `null` when the case has none. `runtime` names a stage 5 file (`isoblock-runtime/1`): from stage 7 tests read runtime files from the runtime fixtures instead, and the release of stage 7 removes these entries and files. Tolerances: `world` for runtime numbers, `px` and `norm1000` for `gen-bbox` numbers by unit, `pngChannel` for PNG channels. The expected PNGs come from resvg 2.6.2 with no fonts loaded.
 
 Patch fixtures: `tests/fixtures/patches/<name>.patch` with `<name>.expected.json` = `{ base, tolerance, exit, status, error, locks, diff, checks, failing }`. `base` names `tests/fixtures/<base>.scene.json`; `exit` is the exit code of `isoblock patch` on a copy of that scene; `error` is the error code or `null`; `locks`, `diff`, `checks` and `failing` are the fields of the `--json` report (`failing` is `null` unless the patch is applied). Check values compare within `tolerance.value` (pixels `tolerance.valuePx`), diff numbers within `tolerance.coordinate`; messages are not compared.
 
@@ -611,6 +656,8 @@ Versions: the maintainer sets `version` in `package.json` in the release commit 
 - **Each engine sorts draw order its own way.** Golden tests and `sort_consistency` are mandatory. The runtime file carries the order of static parts so that adapters do not sort them.
 - **The block image has no text** (section 14).
 - **`reachable` works on a grid.** A gap close to `step + 2 · radius` wide may open or close as the grid shifts; use a smaller `step` where it matters.
+- **One sort key per sprite is never exact next to a footprint that is not square** (section 13.4). Slices shrink the error to thin strips at sprite corners; `maxPixels` sets how much of it a scene accepts.
+- **`sort_consistency` samples actor positions on a grid.** An error strip narrower than `step` may fall between samples and change as objects move by less than `step`.
 
 ## 19. Open questions
 

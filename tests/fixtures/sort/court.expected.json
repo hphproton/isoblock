@@ -1,0 +1,107 @@
+{
+  "scene": "court",
+  "tolerance": {
+    "value": 0.01,
+    "valuePx": 1.0
+  },
+  "results": [
+    {
+      "id": "s1",
+      "check": "sort_consistency",
+      "status": "fail",
+      "value": 4,
+      "threshold": 0,
+      "ids": [
+        "shed",
+        "box",
+        "counter",
+        "kiosk"
+      ],
+      "worst": 545.6,
+      "positions": 9031
+    },
+    {
+      "id": "s2",
+      "check": "sort_consistency",
+      "status": "pass",
+      "value": 0,
+      "threshold": 0,
+      "ids": [],
+      "worst": 0,
+      "positions": 5180
+    },
+    {
+      "id": "s3",
+      "check": "sort_consistency",
+      "status": "fail",
+      "value": 2,
+      "threshold": 0,
+      "ids": [
+        "shed",
+        "kiosk"
+      ],
+      "worst": 545.6,
+      "positions": 9031
+    },
+    {
+      "id": "s4",
+      "check": "sort_consistency",
+      "status": "fail",
+      "value": 2,
+      "threshold": 0,
+      "ids": [
+        "shed",
+        "box"
+      ],
+      "worst": 545.6,
+      "positions": 4572
+    },
+    {
+      "id": "s5",
+      "check": "sort_consistency",
+      "status": "fail",
+      "value": 2,
+      "threshold": 0,
+      "ids": [
+        "shed",
+        "box"
+      ],
+      "worst": 685.89,
+      "positions": 1230
+    },
+    {
+      "id": "s6",
+      "check": "sort_consistency",
+      "status": "skip",
+      "value": null,
+      "threshold": null,
+      "ids": []
+    },
+    {
+      "id": "s7",
+      "check": "sort_consistency",
+      "status": "fail",
+      "value": 1,
+      "threshold": 0,
+      "ids": [
+        "box"
+      ],
+      "worst": 155.88,
+      "positions": 467
+    },
+    {
+      "id": "s8",
+      "check": "sort_consistency",
+      "status": "fail",
+      "value": 3,
+      "threshold": 0,
+      "ids": [
+        "shed",
+        "counter",
+        "kiosk"
+      ],
+      "worst": 545.6,
+      "positions": 245
+    }
+  ]
+}
