@@ -20,7 +20,7 @@ Read `ROADMAP.md`, `QUESTIONS.md` and the newest files in `log/`.
 - Work on a maintainer branch. Write the answer under the question in `QUESTIONS.md`.
 - If the answer changes behavior, update `SPEC.md` in the same commit.
 - If expected results change, recompute them with an implementation independent of the builder's code, and commit the updated `tests/fixtures/*.expected.json` or `tests/golden/` files with the spec change.
-- Push the branch, open a pull request against `main`, and put a squash commit message in its description.
+- Push the branch and give the owner a link that opens the pull request with its title and description filled in (`https://github.com/hphproton/isoblock/compare/main...<branch>?expand=1&title=<title>&body=<description>`, URL-encoded), the description holding a squash commit message. Do not open pull requests through the API: the environment adds a session link to the description, and GitHub keeps the first version in the edit history even after a fix.
 
 ## Review a builder branch
 
@@ -59,23 +59,23 @@ The squash commit on `main` is the release, identified by `version` and commit h
 
 ## Reference implementation
 
-The maintainer computes expected results with its own implementation, kept on branch `maintainer/reference` and never merged. Recompute with it whenever a check, patch, `compare` or export definition changes.
+The maintainer computes expected results with its own implementation, kept on branch `maintainer/reference` of the private development repository and never merged. Recompute with it whenever a check, patch, `compare` or export definition changes.
 
 ## Start the next builder session
 
 Give the builder this prompt, unchanged:
 
-`Role: builder. Follow AGENTS.md and build only the stage open in ROADMAP.md, including its end-of-session steps: push your branch and open its pull request.`
+`Role: builder. Follow AGENTS.md and build only the stage open in ROADMAP.md, including its end-of-session steps: push your branch and end your log with the pull request's title and description.`
 
-The words after the colon are the owner's request for the pull request; some agent environments wait for such a request before they open one.
+The words after the colon ask for the pushed branch, not for a pull request. The owner opens the pull request from the title and description at the end of the builder's log, then the maintainer reviews it.
 
 Do not give builders material from any specific game or client project.
 
-## Before making the repository public
+## Publication
 
-- `LICENSE` (MIT) is on `main`.
-- Confirm the whole history, commit messages included, follows the content rules in SPEC section 20. If it does not, publish a new repository from a clean snapshot instead of the existing history. Commits up to release 0.1.0 contain session links, so a clean snapshot is expected.
-- A public repository also shows every branch, the commits of every pull request (GitHub keeps them under `refs/pull/` after a branch is deleted) and the earlier versions of edited pull request descriptions and comments. Check them with the same rules.
+The repository was published on 2026-10-08 as a new repository with the history of the private development repository's `main`, rewritten: the same 18 commits, authors, committers, dates and messages, without the two `Claude-Session:` lines of the first squash commit, and with one quoted example phrase in a maintainer log described instead. The rewrite dropped the commit signatures. Pull requests #1 to #17, the builder branches and the reviews stay in the development repository; the numbers in commit messages and logs refer to it.
+
+Every later change follows the content rules of SPEC section 20 from the start: a public repository also shows every branch, the commits of every pull request (GitHub keeps them under `refs/pull/` after a branch is deleted) and the earlier versions of edited pull request descriptions and comments.
 
 ## Before distributing a build
 
