@@ -341,13 +341,13 @@ Threshold, ids and extra fields:
 - **Drag:** screen to ground, grid snap, keep h. Locked objects cannot be dragged and show a lock icon. A drag changes `pos` only; snap applies to `pos` (default step 0.1). A press becomes a drag after the pointer moves 3 px (mouse), 4 px (pen) or 8 px (touch).
 - **Plan view:** u to the right, v down; objects drawn by their top faces.
 - **Property panel:** numbers with units; a lock toggle per property; provisional mark for assumptions.
-- **Check panel:** pass/fail updates live; tapping a row highlights the objects involved.
+- **Check panel:** pass/fail updates live; tapping a row highlights the objects involved. From stage 8, during a drag the rows of `reachable` and `sort_consistency` keep their last result and show that it is out of date; the drop re-runs them.
 - **Toggleable overlays:** strips, lanes, zones, anchors, frame regions; occlusion rays and sort points (not scheduled).
 - **State switch:** day, night, events (not scheduled).
 - **History:** undo, redo; saved versions with notes; compare two versions.
 - **Export:** frame image, scene file, engine package, generation boxes.
 - **Touch:** one-finger drag, two-finger zoom, large hit targets.
-- **Performance:** 60 fps with 200 objects on a mid-range phone. Canvas 2D; redraw only on change. From stage 8, checks that search a grid (`reachable`, `sort_consistency`) re-run when a drag ends, not on every pointer move, so that dragging keeps the frame rate on scenes that use them.
+- **Performance:** 60 fps with 200 objects on a mid-range phone. Canvas 2D; redraw only on change. From stage 8, checks that search a grid (`reachable`, `sort_consistency`) re-run when a drag ends, not on every pointer move, so that dragging keeps the frame rate on scenes that use them. Other edits (a property, undo, redo, a loaded file) re-run every check they involve at once.
 - **Storage:** reads and writes scene files; no hidden state outside the file. Saved files are JSON with 2-space indentation and a final newline; keys keep their order, keys added by an edit come last, an empty `locks` list is removed, and numbers are written as JSON numbers (`2.0` becomes `2`).
 - **Assumptions:** editing a provisional number updates its `assumptions[].value`; the entry stays until a person removes it.
 
@@ -470,17 +470,17 @@ The engine never edits what the scene file owns. To change the layout, edit the 
 ### 13.2 Loading at runtime
 
 - The game ships the runtime file of an approved scene (section 13.7). A thin engine adapter reads it, places nodes with the same projection, applies the file's draw order, and turns zones, lanes and anchors into gameplay objects.
-- **Pros:** one source; hot reload during development; switching engines means rewriting only the adapter (about 150–300 lines).
+- **Pros:** one source; hot reload during development; switching engines means rewriting only the adapter (about 150–400 lines).
 - **Cons:** the engine's editor does not show the layout unless the adapter runs in the editor (for example a Godot `@tool` script). That is not scheduled.
 - Generating engine scenes at build time (`.tscn` for Godot, scene JSON for Phaser, TMX/JSON for Tiled) is not scheduled: a second loading path would double the upkeep and drift from the first.
 
 ### 13.3 Adapter contract (every engine)
 
 - `project(u, v, h) → (x, y)`, matching the golden vectors.
-- Draw order from the runtime file: a part with a smaller `order` is drawn earlier. Adapters do not sort static objects themselves. From stage 8, adapters draw the sprites of the runtime file and actors by the engine rule of section 13.4.
+- Draw order from the runtime file: adapters draw its `sprites` by the engine rule of section 13.4 (from stage 8; stage 5 to 7 adapters draw parts by `order`). Adapters do not sort static objects by any other rule. Actors, the moving objects the game adds, take their place by the same rule.
 - Zones become areas, lanes become paths, anchors become oriented points (`seat`, `queue_point`, `spawn`, `exit`, `wait`) that keep their `kind` and `facing`.
 - Validate on load: the `schema` value and duplicate ids. Report errors; never ignore them silently.
-- From stage 8: `instantiate(type) → node` through the type → prefab/scene/sprite map, with the image pivot at the type's ground-contact anchor from the asset contract, together with slicing (section 13.4); types without a mapping are reported; on a state change, apply that state's overrides (hide and show). Stage 5 to 7 adapters draw parts as debug boxes.
+- From stage 8: `instantiate(type) → node` through a type → prefab/scene/sprite map from the game. The image's pivot (the origin of the game's scene) sits on the projected center of the object's footprint at h = 0. A sliced object shows one copy of the image per slice, each cut to that slice (section 13.8). Types without a mapping are reported and drawn as debug boxes. On a state change, apply that state's overrides (hide and show).
 
 ### 13.4 Draw order: the main isometric trap
 
@@ -519,11 +519,12 @@ scene.json (git) → isoblock export --target runtime → <game>/data/scenes/<id
 
 - Core and every adapter run the golden vectors of `tests/golden/projection.json`, within 0.001.
 - An engine screenshot of the adapter's debug drawing (section 13.8) and the tool's render agree:
-  - **Each object alone** (every other object hidden): the box of the object's pixels lies within 1 px of the box of its polygons in the SVG of `render`, on every edge. Pixel boxes run from the first to one past the last pixel. Both boxes are clipped to the frame; an object outside the frame draws nothing in either.
+  - **Each object alone** (every other object hidden): the box of the object's pixels lies within 1 px of the box of its polygons in the SVG of `render`, on every edge. Pixel boxes run from the first to one past the last pixel. The polygons are clipped to the frame before their box is taken (from stage 8; stage 5 to 7 clipped the box, which differs for a polygon that the frame cuts along a slanted edge); an object outside the frame draws nothing in either.
   - **Whole frame:** compared with a painter's raster of the SVG object polygons (each pixel center takes the last polygon that contains it, in document order, else the background), at most 100 pixels per 1,000,000 differ in which object they show.
   - A pixel center exactly on a polygon edge belongs to the polygon by the top-left rule, as GPUs fill. An object whose clipped SVG box is less than 1 px wide or high may cover no pixel center; it then has no pixel box, and that is not a failure.
   - Two runs give identical PNG bytes.
 - Each object is also measured alone because an edge that another object hides cannot be measured in the whole frame.
+- From stage 8 the adapter draws sprites by the engine rule, so these checks hold for scenes where `sort_consistency` finds no static mismatch. In a state, the SVG is the one of `render --state`. With an actor, the reference is the SVG of the scene with the actor added as its last object (type and id `isoblock-actor`, size `[w, d, h]`, footprint centered on the actor's position), at positions where the actor has no mismatch (section 9.3) with any sprite; there the whole frame may differ in at most `actorLimit` more pixels than the same frame without the actor (section 17).
 
 ### 13.7 Runtime file (`isoblock-runtime/2`)
 
@@ -550,13 +551,19 @@ scene.json (git) → isoblock export --target runtime → <game>/data/scenes/<id
 
 ### 13.8 Godot adapter
 
-- Lives in `adapters/godot/`: GDScript for Godot 4.7 with the Compatibility renderer, 150–300 lines without its tests. It is not npm code and imports nothing from `src/`.
-- From stage 7 it reads `isoblock-runtime/2` and reports any other `schema` value as `E_SCHEMA`. Until stage 8 it keeps drawing parts by `order` and does not use `sprites` and `states`.
-- Loads a runtime file and builds a `Node2D` tree: one node per object; one child per part with `z_index` = `order` (absolute). A scene with more parts than the `z_index` range holds is an error.
-- **Debug drawing:** each part draws the faces of its box that point toward the camera (as the display list does) as `Polygon2D` with antialiasing off, in one flat color per object that the caller chooses.
-- Each anchor becomes a `Marker2D` named by its id at its projected point, with `kind` and `facing` as metadata. Each zone becomes a `Polygon2D` of its projected ground points and each lane a `Line2D` through its projected points; both are hidden by default and keep their data as metadata.
-- A wrong `schema` value or a duplicate id is reported with its code, and nothing is built. Codes: `E_SCHEMA`, `E_DUPLICATE_ID`, `E_Z_RANGE` (more parts than the `z_index` range), `E_IO`, `E_JSON_PARSE`.
-- **Tests:** `npm run test:godot` runs the golden vectors and the cross-checks of section 13.6 for every case in `tests/fixtures/export/cases.json`, at frame size, 1 px per frame unit, under Xvfb with Godot 4.7.1 (`GODOT` names the binary). It is not part of `npm test`, because Godot is not an npm package; the maintainer runs it at review.
+- Lives in `adapters/godot/`: GDScript for Godot 4.7 with the Compatibility renderer, 150–400 lines without its tests. It is not npm code and imports nothing from `src/`.
+- Reads `isoblock-runtime/2` and reports any other `schema` value as `E_SCHEMA` (from stage 7).
+- **`build(data, color_of, scenes)`** (from stage 8; `color_of` and `scenes` optional) returns `{ root, code, message, unmapped }` and builds a `Node2D` tree:
+  - `Objects`: one `Node2D` per object, named by its id, with metadata `id`, `type`, `rot`, `tags`, `footprint`. Each anchor becomes a `Marker2D` child named by its id at its projected point, with `kind` and `facing` as metadata.
+  - `Sprites`: one `Node2D` per sprite of the runtime file, with metadata `object` (the object id), `key` and `slice` (its position in the object's `sprites`). Their child order is the draw order of the engine rule (section 13.4); every `z_index` stays 0 and relative. Godot's y-sort is not used: it treats close keys as equal.
+  - `Zones` and `Lanes`: each zone a `Polygon2D` of its projected ground points and each lane a `Line2D` through its projected points; hidden, with their data as metadata.
+- **Debug drawing:** a sprite of an unmapped type draws, piece by piece in list order, the faces of the piece's box that point toward the camera (as the display list does) as `Polygon2D` with antialiasing off, in one flat color per object that `color_of(object)` returns.
+- **Instancing:** `scenes` maps type names to `PackedScene`s. A sprite of a mapped type holds an instance of that scene positioned at the object's pivot: the projection of the center of the object's footprint at h = 0. Instances carry metadata `object`, `type`, `rot` and `slice`. An object of one sprite holds the instance directly. Each sprite of a sliced object holds a `Polygon2D` mask (the convex hull of the projected corners of the sprite's pieces, `clip_children` = `CLIP_CHILDREN_ONLY`) with its own instance as child, so each slice shows the part of the image inside its pieces; art outside the parts' boxes of a sliced object is not drawn. `unmapped` lists the types of the file's objects that `scenes` lacks, each once, in the order of their first object; it is `[]` when `scenes` is empty.
+- **`apply_state(root, name)`**: shows every object and hides, with their sprites and anchors, the objects in `states.<name>.hide`; `""` shows every object. An unknown name is `E_STATE` and changes nothing. Actors are not affected.
+- **Actors:** `add_actor(root, id, size, at, node, color)` adds a moving object of `size` = `[w, d, h]` with its footprint centered on `at` = `(u, v)`; `move_actor(root, id, at)` and `remove_actor(root, id)` follow it. An actor is a child of `Sprites` with metadata `actor` (its id) and `key` (the key of its footprint, section 13.4), placed by the engine rule: after every scene sprite whose key is at most its key, before every scene sprite with a larger key; among actors with equal keys, in the order they were added. `node`, when given, is the game's node for the actor, placed at the projection of `at` at h = 0; else the actor draws its box like a debug part in `color`. A duplicate id on `add_actor` and an unknown id on `move_actor` or `remove_actor` are `E_ACTOR`.
+- **`sort_key(dir, footprint)`** returns the key of section 13.4 for a camera direction with 9 decimals and a footprint; the adapter uses it for actors.
+- Errors are returned as `{ code, message }` and also printed; `build` builds nothing on an error. Codes: `E_SCHEMA`, `E_DUPLICATE_ID`, `E_IO`, `E_JSON_PARSE`, `E_STATE`, `E_ACTOR`. `E_Z_RANGE` (stage 5 to 7) is gone with `z_index`.
+- **Tests:** `npm run test:godot` runs the golden vectors (`tests/golden/projection.json`, and the keys of `tests/golden/sort.json` through `sort_key` from stage 8), the adapter's own tests, the cross-checks of section 13.6 for every case of `tests/fixtures/export/cases.json`, and from stage 8 every case of `tests/fixtures/godot/cases.json` (section 17), at frame size, 1 px per frame unit, under Xvfb with Godot 4.7.1 (`GODOT` names the binary). It is not part of `npm test`, because Godot is not an npm package; the maintainer runs it at review.
 
 ## 14. Image-generation integration
 
@@ -609,7 +616,7 @@ dist/        build output, not committed
   - fixed seeds;
   - coded errors;
   - TypeScript strict mode.
-- **Size budget (guide):** core about 7,000 lines (6,155 after stage 7); editor 1,500–2,000; each adapter 150–300.
+- **Size budget (guide):** core about 7,000 lines (6,155 after stage 7); editor 1,500–2,000; each adapter 150–400.
 - Engine adapters live in `adapters/<engine>/`. They are not npm code, import nothing from `src/`, and read only the runtime file.
 
 ## 17. Roadmap and acceptance criteria
@@ -623,9 +630,11 @@ dist/        build output, not committed
 | 5 | Painter's order of parts (section 13.4); `export --target runtime` (section 13.7) and `gen-bbox` (section 14); PNG render (section 14); Godot adapter and its cross-checks (sections 13.6, 13.8) | Every case in `tests/fixtures/export/cases.json` meets its expected files: the runtime file, and the `gen-bbox` file for each listed flag set, equal their expected files as JSON (same keys in the same order, numbers within the case file's tolerances) and are byte-identical over two runs; for each case with a `png`, `render -o out.png` decodes to the same size as that PNG and each RGBA channel of each pixel is within 1 of it; `dist/isoblock.mjs`, copied alone into an empty directory, writes a PNG; `npm run test:godot` passes section 13.6 on every case |
 | 6 | States (hiding objects) and `--state` for `check`, `render`, `compare` and `export --target gen-bbox`; checks `reachable`, `capacity` and `min_screen_size` (section 9.2) | `check --json` on `tests/fixtures/gameplay/walk.scene.json` gives `walk.expected.json`; every case of `tests/fixtures/states/cases.json` meets its expected files; earlier fixtures still match |
 | 7 | Sprites, slices and sort keys (section 13.4); `sort_consistency` (section 9.3); runtime file `isoblock-runtime/2` with sprites and states (section 13.7); the Godot adapter reads it | `tests/golden/sort.json` matches; every case of `tests/fixtures/sort/cases.json` meets its expected files; every case of `tests/fixtures/runtime/cases.json` equals its runtime file as JSON (same keys in the same order, numbers within its `world` tolerance) and is byte-identical over two runs; `npm run test:godot` passes on every export case; earlier fixtures still match, except the stage 5 runtime files, which the runtime cases replace |
-| 8 | Godot adapter: sprites and actors drawn by the engine rule (section 13.4), states, `instantiate` by type with pivots; cross-checks with actors and states. Editor: grid checks re-run when a drag ends (section 10) | Criteria and fixtures are written when the stage opens |
+| 8 | Godot adapter: sprites and actors drawn by the engine rule (section 13.4), states, `instantiate` by type with pivots and clipped slices (section 13.8); cross-checks with states and actors (section 13.6). Editor: grid checks re-run when a drag ends (section 10) | `npm run test:godot` passes: the keys of `tests/golden/sort.json` through `sort_key`; every case of `tests/fixtures/export/cases.json`, and every case of `tests/fixtures/godot/cases.json` in each of its states, meets section 13.6 (each object alone within 1 px with clipped polygons, whole frame within 100 pixels per 1,000,000, two runs identical); `build` returns each case's `unmapped`; at each actor position the whole frame differs in at most `actorLimit` more pixels than the same frame without the actor. In the editor, dragging an object of `tests/fixtures/gameplay/walk.scene.json` and of `tests/fixtures/sort/court.scene.json` meets the stage 2 frame-time criterion, and after the drop the check panel equals `check --json` on the saved file. All tests pass; earlier fixtures still match |
 
 Export targets `godot`, `phaser` and `tiled`, the check `state_stable` and states that move objects are not scheduled.
+
+Godot fixtures: `tests/fixtures/godot/cases.json` = `{ actorLimit, cases }`, each case `{ name, scene, states, instantiate, unmapped, actor }`; `scene` is a path from the repository root. The harness exports the runtime file of the scene and builds it. When `instantiate` lists types, it maps each to a scene that draws, in white and relative to the object's pivot, the faces of the parts of the first object of that type (a case lists only types whose objects share one rotation), and gives each instance its object's color through `modulate`; `build` must return `unmapped` (otherwise `null` and the map is empty). It then applies the states of `states` in order (`null` = `""`, the default) and checks section 13.6 after each, against `render --state <state>` (or `render`). With `actor` = `{ size, path }`, it adds an actor of `size` at the first point of `path` in the last state, in a color of its own, and moves it to each next point: at each point the whole frame differs from the reference of section 13.6 in at most `actorLimit` more pixels than the frame of that state without the actor. The maintainer checked every actor position with the reference implementation: free, and without mismatch against any sprite.
 
 Golden sort vectors: `tests/golden/sort.json` = `{ tolerance, keys, slices }`. Each entry of `keys` `{ camera, footprint, key }`: the key of that footprint under that camera. Each entry of `slices` `{ name, camera, footprint, parts: [{ id, box, order }], sprites }`: the sprites (as in the runtime file) of an object with that footprint and those part boxes in world units and painter's orders. Numbers match within `tolerance`.
 

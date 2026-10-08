@@ -44,6 +44,8 @@ Review by behavior. Read code only when a step below fails.
 
 14. From stage 7, with your own script: run `check --json` (with `--state` where given) and `compare` for every case of `tests/fixtures/sort/cases.json`, and `export --target runtime` twice for every case of `tests/fixtures/runtime/cases.json`, and compare with the expected files; run random scenes (rotations, overhanging parts, long and thin footprints, zones, states, cameras other than true isometric) through `check --json` and `export --target runtime`, and compare `sort_consistency` and the sprites with the reference implementation; draw the sprites of a few runtime files in key order with your own Godot driver and compare with the SVG (SPEC section 13.6), where scenes without mismatches show no more differing pixels than the part order does.
 
+15. From stage 8, with your own script and your own Godot driver: for every case of `tests/fixtures/godot/cases.json`, build the adapter's tree, apply the states in order, add and move the actor, and measure each frame against the SVG (SPEC section 13.6, polygons clipped to the frame); repeat the actor cases with the actor always on top and with actors before scene sprites on equal keys, and the instanced case without clipping, and check that those frames fail; drag an object of `walk` and of `court` in the editor on the phone profile at 4x and compare the check panel after the drop with `check --json`.
+
 Write the result in `log/<yyyy-mm-dd>-maintainer-<n>.md`: steps run, outcomes, decision.
 
 ## Release

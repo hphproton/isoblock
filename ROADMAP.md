@@ -144,6 +144,23 @@ Not in stage 7: drawing sprites and actors, states and `instantiate` in the Godo
 
 **Done when:** all tests pass, `npm run test:godot` passes, earlier fixtures still match (except the stage 5 runtime files), and the stage 7 criteria in SPEC section 17 hold.
 
-## Stage 8 · not open
+## Stage 8 · open
 
-The Godot adapter: sprites and actors drawn by the engine rule, states, `instantiate` by type with pivots, and cross-checks with actors and states; in the editor, grid checks re-run when a drag ends (SPEC sections 10, 13, 17, 18). Before it opens: the maintainer specifies them and adds the fixtures.
+The Godot adapter draws sprites and actors by the engine rule, applies states and instantiates types with pivots and clipped slices; the cross-checks cover states and actors; the editor re-runs grid checks when a drag ends (SPEC sections 10, 13.3, 13.6, 13.8, 17). Fixture: `tests/fixtures/godot/cases.json` (five cases on `walk`, `yard`, `garden` and `court`: states in sequence, actor paths checked by the maintainer, one case with instanced types).
+
+- [ ] `build` builds `Objects` (anchors), `Sprites` in the draw order of the engine rule (child order, no `z_index`, no y-sort), `Zones` and `Lanes` (SPEC section 13.8)
+- [ ] Instancing: `scenes` map, pivot at the projected footprint center, one clipped instance per slice (hull mask with `clip_children`), metadata, `unmapped`
+- [ ] `apply_state` with `""` for the default and `E_STATE`
+- [ ] Actors: `add_actor`, `move_actor`, `remove_actor`, keys by `sort_key`, the tie rules, the game's node or a debug box, `E_ACTOR`
+- [ ] `E_Z_RANGE` removed; adapter within 400 lines without its tests
+- [ ] Adapter tests: the keys of `tests/golden/sort.json`, the node tree, `unmapped`, state and actor errors, actor order on equal keys
+- [ ] SPEC section 13.6 measures each object alone with polygons clipped to the frame
+- [ ] `npm run test:godot` runs every case of `tests/fixtures/export/cases.json` and of `tests/fixtures/godot/cases.json` (states in order, instanced types with white art colored through `modulate`, actor paths within `actorLimit`)
+- [ ] Editor: `reachable` and `sort_consistency` re-run when a drag ends, their rows marked out of date during the drag; frame-time test on `walk` and `court` (stage 2 criterion); after the drop the check panel equals `check --json` on the saved file
+- [ ] `CHANGELOG.md` lists the adapter's new tree and API with upgrade steps from 0.7.0
+- [ ] `docs/AGENT_GUIDE.md` covers the adapter's sprites, states, actors and instancing, and the editor's grid checks
+- [ ] Session log says `branch ready for review`
+
+Not in stage 8: generated engine scenes, Phaser and Tiled adapters, a `@tool` script that shows the layout in Godot's editor, art outside the parts' boxes of a sliced object, sort-point overlay and state switch in the editor (not scheduled).
+
+**Done when:** all tests pass, `npm run test:godot` passes, earlier fixtures still match, and the stage 8 criteria in SPEC section 17 hold.
