@@ -2,7 +2,7 @@
 
 How an AI agent uses IsoBlock. The builder fills each section as commands ship.
 
-Commands in this guide are available now (stage 6): `validate`, `check`, `render`, `describe`, `relations`, `solve`, `patch`, `diff`, `compare`, `export`, and the editor page `dist/editor.html`. Commands from later stages are listed at the end of the Commands section.
+Everything in this guide is available in version 0.8.0 (stage 8): the commands `validate`, `check`, `render`, `describe`, `relations`, `solve`, `patch`, `diff`, `compare` and `export`, the editor page `dist/editor.html`, and the Godot adapter in `adapters/godot/`. What is not scheduled is listed under [Not available yet](#not-available-yet).
 
 ## Install and build
 

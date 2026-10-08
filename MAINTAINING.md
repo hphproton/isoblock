@@ -73,5 +73,13 @@ Do not give builders material from any specific game or client project.
 
 ## Before making the repository public
 
-- Choose a license and add `LICENSE`.
+- `LICENSE` (MIT) is on `main`.
 - Confirm the whole history, commit messages included, follows the content rules in SPEC section 20. If it does not, publish a new repository from a clean snapshot instead of the existing history. Commits up to release 0.1.0 contain session links, so a clean snapshot is expected.
+- A public repository also shows every branch, the commits of every pull request (GitHub keeps them under `refs/pull/` after a branch is deleted) and the earlier versions of edited pull request descriptions and comments. Check them with the same rules.
+
+## Before distributing a build
+
+`THIRD_PARTY_NOTICES.md` lists the third-party code that `npm run build` bundles into `dist/`. Before a build is distributed in any form:
+
+- The notices of the Rust crates inside the WebAssembly module of `@resvg/resvg-wasm` are complete, with their license texts.
+- The build carries the notices: a builder task writes `THIRD_PARTY_NOTICES.md` next to the built files and a one-line header in each built file that points to it, and a test fails when the packages in the bundles differ from the list.

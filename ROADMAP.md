@@ -168,3 +168,5 @@ Not in stage 8: generated engine scenes, Phaser and Tiled adapters, a `@tool` sc
 ## After stage 8
 
 No further stage is scheduled. Candidates are the items SPEC section 17 lists as not scheduled and the open questions of SPEC section 19; the owner decides what comes next, and the maintainer specifies it as a new stage.
+
+One builder task is waiting for a session before a build is distributed: the build carries the third-party notices (`MAINTAINING.md`, Before distributing a build).
