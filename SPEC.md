@@ -698,8 +698,8 @@ Three roles work with this repository:
 
 **Branches and releases**
 - Only the repository owner writes to `main`, in two ways: commits made and signed on the owner's machine, or squash-merges of pull requests, done by the owner on GitHub or locally. Every commit on `main` therefore carries the owner's identity.
-- Builders push only to their own branch. The maintainer pushes to its own branches and adds the release commit to a reviewed builder branch. Both open pull requests against `main`; neither merges, tags, or writes to `main`.
-- At the end of a stage the builder records "branch ready for review" in its session log, pushes the branch and opens a pull request.
+- Builders push only to their own branch. The maintainer pushes to its own branches and adds the release commit to a reviewed builder branch. Neither opens pull requests, merges, tags, or writes to `main`: an agent's environment adds a link to the agent's session to any pull request the agent opens, so the agent writes the title and description and the owner opens the pull request.
+- At the end of a stage the builder records "branch ready for review" in its session log, pushes the branch and ends the log with the pull request's title and description; the owner opens the pull request.
 - The maintainer reviews the branch, pushes a release commit to it (version, roadmap, changelog, next-stage fixtures), and posts the review result and a squash commit message as a pull request comment. The review is a comment, not a formal approval.
 - The owner squash-merges the pull request. That squash commit on `main` is the release, identified by `version` and commit hash. No tags or GitHub Releases are required.
 - The maintainer's own changes (spec, answers, test data) follow the same path from a maintainer branch.
@@ -708,7 +708,7 @@ Three roles work with this repository:
 **Content rules**
 - Everything under version control is written in plain technical English: code, comments, messages, tests, docs, logs, commit messages.
 - This repository is project-neutral. It never contains names, scenes, measurements or criteria taken from a specific game or client project. Fixtures and examples are synthetic.
-- Commit messages, pull request descriptions and comments contain no links to agent sessions or chats (for example `Claude-Session` lines).
+- Commit messages, pull request descriptions and comments contain no links to agent sessions or chats (for example `Claude-Session` lines), even when an agent's environment adds them. The repository is public: every pushed commit, branch and edit of a description is visible.
 - A stage's checklist is ticked only for work that was done and verified in that session.
 
 ---

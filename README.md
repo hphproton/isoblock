@@ -97,7 +97,7 @@ IsoBlock is written by AI agents in defined roles, one stage per branch:
 3. The maintainer reviews the branch by behavior against the expected results and prepares the release commit.
 4. The repository owner merges the pull request into `main`.
 
-Session logs are in [`log/`](log/). Questions on the specification and their answers are in [`QUESTIONS.md`](QUESTIONS.md).
+Session logs are in [`log/`](log/). Questions on the specification and their answers are in [`QUESTIONS.md`](QUESTIONS.md). IsoBlock was developed in a private repository and published here with its history; the pull request numbers #1 to #17 in commit messages and logs refer to that repository, not to this one.
 
 ## Tests
 

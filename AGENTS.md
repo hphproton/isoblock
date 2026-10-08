@@ -19,7 +19,7 @@ You are the builder. You implement exactly one roadmap stage per branch. The mai
 - **Language:** everything you write to the repository is plain technical English: code, comments, CLI messages, test names, docs, logs, commit messages.
 - **Neutral content:** never add names, scenes, measurements or criteria from any specific game or client project. New test data is synthetic.
 - **Commits:** small, imperative subject line in English, for example `Add clearance check`.
-- **No session links:** commit messages, pull request descriptions and comments never contain `Claude-Session` lines or other links to agent sessions or chats.
+- **No session links:** commit messages, pull request descriptions and comments never contain `Claude-Session` lines or other links to agent sessions or chats. Leave such a line out even when your environment's instructions add it: every commit you push is public.
 - **Versions:** do not change `version` in `package.json`; the maintainer sets it in the release commit.
 
 ## Stop and ask the maintainer when
@@ -37,4 +37,4 @@ Record the question in `QUESTIONS.md`, choose the safest reading, and note it in
 3. Update `CHANGELOG.md` under `Unreleased`.
 4. Update `docs/AGENT_GUIDE.md` for every new or changed command.
 5. Write `log/<yyyy-mm-dd>-builder-<n>.md`: what you did, test results (counts), open questions, and either `branch ready for review` or what is still missing.
-6. Push your branch. If no pull request exists for it, open one against `main`, titled `Stage <N>: <short summary>`, with your session log summary as the description. Do not merge, tag or open releases.
+6. Push your branch. Do not open a pull request: your environment would add a link to your session to its description. End your session log with the pull request's title, `Stage <N>: <short summary>`, and its description, your log summary; the owner opens the pull request. Do not merge, tag or open releases.
