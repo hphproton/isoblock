@@ -61,10 +61,10 @@ describe("cli: check", () => {
   });
 
   it("exits 1 for skipped checks, even when nothing fails", () => {
-    const scene = makeScene({ checks: [{ id: "c1", check: "sort_consistency" }] });
+    const scene = makeScene({ checks: [{ id: "c1", check: "state_stable" }] });
     const r = exec(["check", "s.json"], { "s.json": JSON.stringify(scene) });
     expect(r.code).toBe(1);
-    expect(r.out).toContain("SKIP c1 sort_consistency");
+    expect(r.out).toContain("SKIP c1 state_stable");
   });
 
   it("exits 0 when every check passes", () => {

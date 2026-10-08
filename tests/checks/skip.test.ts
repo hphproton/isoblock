@@ -12,7 +12,7 @@ describe("catalog checks the stage does not evaluate", () => {
 
   it("returns skip, never pass, for every check that is not implemented", () => {
     const base = loadScene("yard");
-    const names = ["sort_consistency", "state_stable"];
+    const names = ["state_stable"];
     const scene = { ...base, checks: names.map((check, i) => ({ id: `s${i}`, check })) };
     const results = runChecks(scene);
     expect(results.map((r) => r.status)).toEqual(names.map(() => "skip"));

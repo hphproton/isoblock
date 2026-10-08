@@ -1,6 +1,5 @@
 {
   "tolerance": {
-    "world": 0.00001,
     "px": 0.02,
     "norm1000": 1,
     "pngChannel": 1
@@ -9,7 +8,6 @@
     {
       "name": "yard",
       "scene": "tests/fixtures/yard.scene.json",
-      "runtime": "yard.runtime.json",
       "genBbox": [
         {
           "args": [],
@@ -30,7 +28,6 @@
     {
       "name": "lane",
       "scene": "tests/fixtures/lane.scene.json",
-      "runtime": "lane.runtime.json",
       "genBbox": [
         {
           "args": [],
@@ -42,7 +39,6 @@
     {
       "name": "overlap",
       "scene": "tests/fixtures/overlap.scene.json",
-      "runtime": "overlap.runtime.json",
       "genBbox": [
         {
           "args": [],
@@ -54,7 +50,6 @@
     {
       "name": "visible",
       "scene": "tests/fixtures/visible.scene.json",
-      "runtime": "visible.runtime.json",
       "genBbox": [
         {
           "args": [],
@@ -66,7 +61,6 @@
     {
       "name": "crowd",
       "scene": "tests/fixtures/crowd.scene.json",
-      "runtime": "crowd.runtime.json",
       "genBbox": [
         {
           "args": [],
@@ -78,7 +72,6 @@
     {
       "name": "garden",
       "scene": "tests/fixtures/export/garden.scene.json",
-      "runtime": "garden.runtime.json",
       "genBbox": [
         {
           "args": [],

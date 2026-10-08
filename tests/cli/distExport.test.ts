@@ -7,10 +7,12 @@ import {
   bboxOptions, caseScenePath, exportFilePath, expectSameJson, loadExportCases, readExportJson,
 } from "../helpers/exportCases";
 import { fixturePath, repoRoot } from "../helpers/fixtures";
+import { loadRuntimeCases, readRuntimeJson, runtimeScenePath } from "../helpers/runtimeCases";
 import { decodePng, maxChannelDifference } from "../helpers/png";
 
 const dist = join(repoRoot, "dist", "isoblock.mjs");
 const { tolerance, cases } = loadExportCases();
+const runtime = loadRuntimeCases();
 let work = "";
 
 function node(args: string[], cwd?: string, script = dist) {
@@ -26,15 +28,17 @@ afterAll(() => {
 });
 
 describe("dist/isoblock.mjs: export", () => {
-  for (const c of cases) {
+  for (const c of runtime.cases) {
     it(`${c.name}: runtime file equals ${c.runtime} and two runs give the same bytes`, () => {
-      const a = node(["export", caseScenePath(c), "--target", "runtime"]);
-      const b = node(["export", caseScenePath(c), "--target", "runtime"]);
+      const a = node(["export", runtimeScenePath(c), "--target", "runtime"]);
+      const b = node(["export", runtimeScenePath(c), "--target", "runtime"]);
       expect(a.status).toBe(0);
-      expectSameJson(JSON.parse(a.stdout), readExportJson(c.runtime), tolerance.world, c.name);
+      expectSameJson(JSON.parse(a.stdout), readRuntimeJson(c.runtime), runtime.tolerance.world, c.name);
       expect(b.stdout).toBe(a.stdout);
     });
+  }
 
+  for (const c of cases) {
     for (const g of c.genBbox) {
       const tol = bboxOptions(g.args).units === "px" ? tolerance.px : tolerance.norm1000;
       it(`${c.name} ${g.args.join(" ") || "(defaults)"}: equals ${g.file} and two runs give the same bytes`, () => {

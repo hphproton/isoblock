@@ -1,8 +1,9 @@
 ## IsoBlock adapter for Godot 4.7 (SPEC 13.3, 13.8).
 ##
-## Reads a runtime file (`isoblock-runtime/1`, written by `isoblock export --target runtime`) and
+## Reads a runtime file (`isoblock-runtime/2`, written by `isoblock export --target runtime`) and
 ## builds a Node2D tree with debug boxes. The adapter never edits the layout and never sorts:
-## the draw order is the `order` of each part, used as an absolute `z_index`.
+## the draw order is the `order` of each part, used as an absolute `z_index`. The `sprites` of
+## the objects and the `states` of the file are read but not used yet.
 ##
 ## Tree: root > Objects > object > part > face polygons; object > anchor markers;
 ## root > Zones > zone polygons (hidden); root > Lanes > lane lines (hidden).
@@ -12,7 +13,7 @@
 class_name IsoblockRuntime
 extends RefCounted
 
-const SCHEMA := "isoblock-runtime/1"
+const SCHEMA := "isoblock-runtime/2"
 const EPS := 1e-9
 const DEFAULT_COLOR := Color(0.6, 0.6, 0.6)
 

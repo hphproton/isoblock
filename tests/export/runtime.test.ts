@@ -2,26 +2,27 @@ import { describe, expect, it } from "vitest";
 import { runtimeFile } from "../../src/core/export/runtime";
 import { buildDisplayList } from "../../src/core/displayList";
 import { serializeJson } from "../../src/core/serialize";
-import { expectSameJson, loadCaseScene, loadExportCases, readExportJson, withoutRules } from "../helpers/exportCases";
+import { expectSameJson, withoutRules } from "../helpers/exportCases";
 import { loadScene, rawFixture } from "../helpers/fixtures";
 import { orderDirection } from "../../src/core/projection";
 import { parseScene } from "../../src/core/validate";
+import { loadRuntimeCases, loadRuntimeScene, readRuntimeJson } from "../helpers/runtimeCases";
 
-const { tolerance, cases } = loadExportCases();
+const { tolerance, cases } = loadRuntimeCases();
 
 function runtimeOf(raw: Record<string, any>): any {
   return JSON.parse(serializeJson(runtimeFile(parseScene(JSON.stringify(raw)))));
 }
 
-describe("runtime file: every case of tests/fixtures/export/cases.json", () => {
+describe("runtime file: every case of tests/fixtures/runtime/cases.json", () => {
   for (const c of cases) {
     it(`${c.name} equals ${c.runtime} (keys in order, numbers within ${tolerance.world})`, () => {
-      const text = serializeJson(runtimeFile(loadCaseScene(c)));
-      expectSameJson(JSON.parse(text), readExportJson(c.runtime), tolerance.world, c.name);
+      const text = serializeJson(runtimeFile(loadRuntimeScene(c)));
+      expectSameJson(JSON.parse(text), readRuntimeJson(c.runtime), tolerance.world, c.name);
     });
 
     it(`${c.name} uses the saved format and gives the same bytes twice`, () => {
-      const scene = loadCaseScene(c);
+      const scene = loadRuntimeScene(c);
       const text = serializeJson(runtimeFile(scene));
       expect(text).toBe(serializeJson(runtimeFile(scene)));
       expect(text.endsWith("}\n")).toBe(true);
@@ -29,7 +30,7 @@ describe("runtime file: every case of tests/fixtures/export/cases.json", () => {
     });
 
     it(`${c.name}: parts carry the painter's order of the display list`, () => {
-      const scene = loadCaseScene(c);
+      const scene = loadRuntimeScene(c);
       const file = runtimeFile(scene);
       const byOrder = file.objects.flatMap((o) => o.parts.map((p) => ({ id: o.id, order: p.order }))).sort((x, y) => x.order - y.order);
       // Orders are a permutation of 0..n-1, one per part.
@@ -47,13 +48,16 @@ describe("runtime file: rules of SPEC 13.7", () => {
 
   it("has the top-level keys in order", () => {
     expect(Object.keys(runtimeFile(yard))).toEqual([
-      "schema", "scene", "meta", "units", "camera", "cameraDir", "frame", "strips", "objects", "zones", "lanes",
+      "schema", "scene", "meta", "units", "camera", "cameraDir", "frame", "strips", "objects", "zones", "lanes", "states",
+    ]);
+    expect(Object.keys(runtimeFile(yard).objects[0] as object)).toEqual([
+      "id", "type", "pos", "rot", "footprint", "tags", "parts", "anchors", "sprites",
     ]);
   });
 
   it("takes scene, version and status from the scene, null when there is no meta", () => {
     const file = runtimeFile(yard);
-    expect(file.schema).toBe("isoblock-runtime/1");
+    expect(file.schema).toBe("isoblock-runtime/2");
     expect(file.scene).toBe("yard");
     expect(file.meta).toEqual({ version: 1, status: "draft" });
     const raw = rawFixture("yard");
@@ -142,9 +146,9 @@ describe("runtime file: rules of SPEC 13.7", () => {
     expect(dir[1]).toBeCloseTo(1.118, 2);
   });
 
-  it("does not carry relations, checks, locks, assumptions, states or generation hints", () => {
+  it("does not carry relations, checks, locks, assumptions or generation hints", () => {
     const text = serializeJson(runtimeFile(yard));
-    for (const word of ["relations", "checks", "locks", "assumptions", "states", "genHint", "maxOccluded"]) {
+    for (const word of ["relations", "checks", "locks", "assumptions", "genHint", "maxOccluded"]) {
       expect(text, word).not.toContain(`"${word}"`);
     }
   });
@@ -187,5 +191,82 @@ describe("runtime file: part order", () => {
       Object.fromEntries(runtimeOf(raw).objects.map((o: any) => [o.id, o.parts[0].order]));
     expect(orders(tie(["a", "b"]))).toEqual({ a: 0, b: 1 });
     expect(orders(tie(["b", "a"]))).toEqual({ a: 1, b: 0 });
+  });
+});
+
+describe("runtime file: sprites (SPEC 13.4, 13.7)", () => {
+  it("writes one sprite for a square object, with its footprint, its key and a piece per part", () => {
+    const file = runtimeFile(loadScene("yard"));
+    const tree = file.objects.find((o) => o.id === "tree")!;
+    expect(tree.sprites).toHaveLength(1);
+    const sprite = tree.sprites[0]!;
+    expect(sprite.footprint).toEqual(tree.footprint);
+    // Key of the footprint (3, 0.2)-(4.2, 1.4) with c = (1, 1, 1): 3 + 4.2 + 0.2 + 1.4.
+    expect(sprite.key).toBe(8.8);
+    expect(sprite.pieces.map((p) => p.part)).toEqual(["trunk", "canopy"]);
+    expect(sprite.pieces.map((p) => p.box)).toEqual(tree.parts.map((p) => p.box));
+  });
+
+  it("lists the pieces of a sprite in ascending painter's order, not in type order", () => {
+    const raw = withoutRules(rawFixture("yard"));
+    // The top is listed before the base but sits above it: the base is drawn first.
+    raw.types = { desk: { size: [1, 1, 1], parts: [{ id: "top", box: [0, 0, 0.9, 1, 1, 1] }, { id: "base", box: [0, 0, 0, 1, 1, 0.9] }] } };
+    raw.objects = [{ id: "d", type: "desk", pos: [0, 0] }];
+    const desk = runtimeOf(raw).objects[0];
+    expect(desk.parts.map((p: any) => p.id)).toEqual(["top", "base"]);
+    expect(desk.sprites[0].pieces.map((p: any) => p.part)).toEqual(["base", "top"]);
+  });
+
+  it("cuts a long object into slices that are close to square and keeps the sprite list in order", () => {
+    const raw = withoutRules(rawFixture("yard"));
+    raw.types = { wall: { size: [4, 0.8, 1] } };
+    raw.objects = [{ id: "w", type: "wall", pos: [1, 2] }];
+    const wall = runtimeOf(raw).objects[0];
+    // 4 / n is closest to 0.8 at n = 5.
+    expect(wall.sprites).toHaveLength(5);
+    expect(wall.sprites.map((s: any) => s.footprint)).toEqual([
+      [1, 2, 1.8, 2.8], [1.8, 2, 2.6, 2.8], [2.6, 2, 3.4, 2.8], [3.4, 2, 4.2, 2.8], [4.2, 2, 5, 2.8],
+    ]);
+    const keys = wall.sprites.map((s: any) => s.key);
+    expect(keys).toEqual([...keys].sort((a, b) => a - b));
+    expect(wall.sprites.map((s: any) => s.pieces[0].box)).toEqual([
+      [1, 2, 0, 1.8, 2.8, 1], [1.8, 2, 0, 2.6, 2.8, 1], [2.6, 2, 0, 3.4, 2.8, 1], [3.4, 2, 0, 4.2, 2.8, 1], [4.2, 2, 0, 5, 2.8, 1],
+    ]);
+  });
+
+  it("slices a rotated object along the axis that is long after the rotation", () => {
+    const raw = withoutRules(rawFixture("yard"));
+    raw.types = { wall: { size: [4, 0.8, 1] } };
+    raw.objects = [{ id: "w", type: "wall", pos: [1, 2], rot: 90 }];
+    const wall = runtimeOf(raw).objects[0];
+    expect(wall.footprint).toEqual([1, 2, 1.8, 6]);
+    expect(wall.sprites).toHaveLength(5);
+    expect(wall.sprites[0].footprint).toEqual([1, 2, 1.8, 2.8]);
+    expect(wall.sprites[4].footprint).toEqual([1, 5.2, 1.8, 6]);
+  });
+
+  it("gives every sprite the rounded numbers of the runtime file", () => {
+    const raw = withoutRules(rawFixture("yard"));
+    raw.types = { wall: { size: [1, 0.3, 1] } };
+    raw.objects = [{ id: "w", type: "wall", pos: [0.1234567891, 0.2] }];
+    for (const sprite of runtimeOf(raw).objects[0].sprites) {
+      for (const x of [sprite.key, ...sprite.footprint, ...sprite.pieces.flatMap((p: any) => p.box)]) expect(Number(x.toFixed(6))).toBe(x);
+    }
+  });
+});
+
+describe("runtime file: states (SPEC 13.7)", () => {
+  it("writes an empty object when the scene has no states", () => {
+    const raw = rawFixture("yard");
+    delete raw.states;
+    expect(runtimeOf(raw).states).toEqual({});
+  });
+
+  it("copies each state in file order with its hide list, without x- keys", () => {
+    const raw = rawFixture("yard");
+    raw.states = { night: { hide: ["crate1"], "x-note": "dark" }, empty: {}, day: { hide: ["bench", "crate2"] } };
+    const states = runtimeOf(raw).states;
+    expect(Object.keys(states)).toEqual(["night", "empty", "day"]);
+    expect(states).toEqual({ night: { hide: ["crate1"] }, empty: { hide: [] }, day: { hide: ["bench", "crate2"] } });
   });
 });

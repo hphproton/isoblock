@@ -76,6 +76,7 @@ export function involves(spec: CheckSpec, changed: ReadonlySet<string>): boolean
     case "visible":
     case "reachable":
     case "capacity":
+    case "sort_consistency":
       return changed.size > 0;
     case "min_screen_size":
       return changed.has(check.target);

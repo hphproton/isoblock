@@ -8,6 +8,7 @@ import { checkMinScreenSize } from "./minScreenSize";
 import { checkNoOverlap, updateNoOverlap } from "./noOverlap";
 import { checkReachable } from "./reachable";
 import { canonical, skipResult } from "./result";
+import { checkSortConsistency } from "./sortConsistency";
 import { checkVisible } from "./visible";
 
 /** Run one check. Catalog checks the current stage does not evaluate return `skip`. */
@@ -36,6 +37,8 @@ function evaluate(scene: Scene, spec: CheckSpec): CheckResult {
       return checkCapacity(scene, implemented);
     case "min_screen_size":
       return checkMinScreenSize(scene, implemented);
+    case "sort_consistency":
+      return checkSortConsistency(scene, implemented);
     default:
       return skipResult(spec, `check "${spec.check}" is not implemented in this stage`);
   }

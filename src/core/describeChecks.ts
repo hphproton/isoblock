@@ -53,6 +53,8 @@ function body(spec: CheckSpec, r: CheckResult): string {
       const s = spec as MinScreenSizeCheck;
       return `${s.target}: ${Math.round(r.value ?? 0)} px < ${plain(s.min)} px`;
     }
+    case "sort_consistency":
+      return `${join(r.ids)}: drawn out of order, worst ${(r.worst ?? 0).toFixed(2)} px2`;
     default:
       return r.message;
   }

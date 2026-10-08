@@ -1,6 +1,39 @@
 # Changelog
 
-## Unreleased
+## 0.7.0
+
+Stage 7: sprites, slices and sort keys, `sort_consistency`, and the runtime file `isoblock-runtime/2`.
+
+### Breaking: runtime file `isoblock-runtime/2`
+
+`isoblock export --target runtime` now writes `isoblock-runtime/2` (SPEC 13.7). It is the version 1 file plus two additions, so a reader of version 1 finds every key it knew:
+
+- every object has `sprites`: `[{ "key", "footprint", "pieces": [{ "part", "box" }] }]` (see below);
+- the file has a top-level `states` after `lanes`: `{ "<state>": { "hide": [object ids] } }`, one entry per state of the scene in file order, `{}` when there are none.
+
+Upgrade from `isoblock-runtime/1`:
+
+1. Export every scene again: `isoblock export <scene> --target runtime -o <game>/data/scenes/<id>.json`. The `schema` value in the new file is `isoblock-runtime/2`; no other key changed its meaning.
+2. In a loader of your own, accept the new `schema` value (`isoblock-runtime/2`) and reject `isoblock-runtime/1`, so that an old file is never read as a new one. Ignore `sprites` and `states` if you do not use them yet.
+3. The Godot adapter in `adapters/godot/` is updated: it reads `isoblock-runtime/2` and reports every other `schema` value, `isoblock-runtime/1` included, as `E_SCHEMA`. It keeps drawing parts by `order` and does not use `sprites` and `states` until stage 8. Copy the new `isoblock_runtime.gd` into the game project.
+
+### Added
+
+- Sprites, slices and sort keys (SPEC 13.4). The sort key of a footprint is `cu * (u0 + u1) + cv * (v0 + v1)` with the camera direction `c` of the painter's order, rounded to 6 decimals. An object becomes one sprite, or, when its footprint is not square, the number of slices (at most 64) that brings the slice length closest to the short side; slice boundaries are rounded to 6 decimals, the part boxes are cut to the slice (the end slices reach to infinity along the long axis), and pieces are listed in the painter's order of their parts. The engine rule is: draw sprites in ascending key, equal keys in the order of the sprite list, actors after scene sprites.
+- Check `sort_consistency` (SPEC 9.3): walks a test actor (`actor`, `step`, `reach`, optional `area` and `ids`) around each object, compares the one-key-per-sprite order with the geometric order against the actor and against every other object, and reports the objects whose largest area drawn in the wrong order (the intersection of the two outlines on the screen) is over `maxPixels`. Results carry `worst` (px squared, 2 decimals) and `positions`. A zone `area` with fewer than 3 points, and a search of more than 4,000,000 cells, give `skip`. In a state, hidden objects have no sprites, block no position and are not examined.
+- Schema and reference rules for the parameters of `sort_consistency` (`area` names a zone, `ids` name objects; `actor` is three numbers of 0 or more; `step` above 0).
+- `compare`: the label `sort_consistency <check id> (objects out of order)` and integer cells.
+- `describe`: `FAIL s1 sort_consistency shed, box, counter, kiosk: drawn out of order, worst 545.60 px2`.
+- `isoblock-runtime/2` with `sprites` and `states` (see above).
+- Core: `src/core/sort/` (`sprites`, `outline`, `mismatch`) and `src/core/checks/{sortConsistency,sortPositions}.ts`.
+- Tests that load `tests/golden/sort.json`, every case of `tests/fixtures/sort/cases.json` (check results by state, the `compare` case in all three formats) and every case of `tests/fixtures/runtime/cases.json`, in the core, through the CLI with in-memory files and through `dist/isoblock.mjs`; unit tests for the outline geometry, the sprite rules and the check, with areas worked out by hand.
+- `docs/AGENT_GUIDE.md` covers sprites and slices, `sort_consistency` and how to read its result, and the runtime file 2.
+
+### Changed
+
+- The Godot adapter reads `isoblock-runtime/2` (see above). `npm run test:godot` passes on every case of `tests/fixtures/export/cases.json`.
+- Tests no longer read the `runtime` entries of `tests/fixtures/export/cases.json` (the release removes them with the stage 5 files); runtime files come from `tests/fixtures/runtime/`.
+- `sort_consistency` is no longer `skip` as "not implemented": a scene file that lists it without `actor` is now invalid (`E_SCHEMA`). `state_stable` is the one check that returns `skip` for that reason, so the tests that used `sort_consistency` as the example of a check that is not implemented now use `state_stable`.
 
 ## 0.6.0
 

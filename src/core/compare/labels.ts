@@ -38,6 +38,8 @@ export function checkLabel(spec: CheckSpec, base: CheckResult, unit: string): st
       return `capacity ${spec.id} (usable ${(spec as CapacityCheck).kind})`;
     case "min_screen_size":
       return `min_screen_size ${(spec as MinScreenSizeCheck).target} (px)`;
+    case "sort_consistency":
+      return `sort_consistency ${spec.id} (objects out of order)`;
     default:
       return `${spec.check} ${spec.id}`;
   }

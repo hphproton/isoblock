@@ -13,6 +13,8 @@ export function canonical(r: CheckResult): CheckResult {
     ...(r.occluders === undefined ? {} : { occluders: r.occluders }),
     ...(r.accepted === undefined ? {} : { accepted: r.accepted }),
     ...(r.rejected === undefined ? {} : { rejected: r.rejected }),
+    ...(r.worst === undefined ? {} : { worst: r.worst }),
+    ...(r.positions === undefined ? {} : { positions: r.positions }),
     message: r.message,
   };
 }

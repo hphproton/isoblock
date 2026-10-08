@@ -79,7 +79,7 @@ SKIP c6 lane_clear: lane "L4" has 3 points; only 2-point lanes are supported
 SKIP c7 reachable: the scene has no zone with kind "walkable"
 ```
 
-`--json` prints `{ "scene": "<id>", "results": [...] }` instead. Each result has `id`, `check`, `status` (`pass`, `fail`, `warn` or `skip`), `value`, `threshold`, `ids` and `message`; `no_overlap` adds `pairs`, `visible` adds `occluders`, `capacity` adds `accepted` and `rejected`. Keys are always in this order. `message` is one line meant for people; read `status`, `value` and `ids` instead of parsing it.
+`--json` prints `{ "scene": "<id>", "results": [...] }` instead. Each result has `id`, `check`, `status` (`pass`, `fail`, `warn` or `skip`), `value`, `threshold`, `ids` and `message`; `no_overlap` adds `pairs`, `visible` adds `occluders`, `capacity` adds `accepted` and `rejected`; `sort_consistency` adds `worst` and `positions`. Keys are always in this order. `message` is one line meant for people; read `status`, `value` and `ids` instead of parsing it.
 
 `--state NAME` checks the scene as it is in one of its states, with the objects that state hides taken out (see [States](#states)). The summary line then reads `scene walk (state open): ...`; `--json` keeps the same shape. An unknown state name exits 2 (`E_USAGE`) and lists the states the scene has.
 
@@ -141,9 +141,9 @@ Described in [Export](#export) below.
 
 ### Not available yet
 
-`--state` belongs to `check`, `render`, `compare` and `export --target gen-bbox`. On any other command it is a usage error (`flag '--state' does not apply to '<command>'`), and so it is with `export --target runtime`: the runtime file carries no states until stage 7.
+`--state` belongs to `check`, `render`, `compare` and `export --target gen-bbox`. On any other command it is a usage error (`flag '--state' does not apply to '<command>'`), and so it is with `export --target runtime`: the runtime file carries all states.
 
-Export targets `godot`, `phaser` and `tiled` are not scheduled (the Godot adapter reads the `runtime` file instead). `compare --render` is not scheduled either. The checks `sort_consistency` and `state_stable` are not implemented: they return `skip`.
+Export targets `godot`, `phaser` and `tiled` are not scheduled (the Godot adapter reads the `runtime` file instead). `compare --render` is not scheduled either. The check `state_stable` is not implemented: it returns `skip`.
 
 ## Editor
 
@@ -212,7 +212,7 @@ assumptions: tree.size.h=2.40
 - **Header:** scene id, version and status from `meta`, unit, camera (`iso30`, `dimetric21`, or `u<angleU>/v<angleV>`), pixels per unit, frame size, and the first region that does not block the scene.
 - **Object table:** one row per object. `pos` is the footprint's minimum (u, v) corner after rotation. `size` is the type's size `w,d,h` before rotation. `rot` is 0, 90, 180 or 270. `locks` lists locked properties, comma-separated, or `-`.
 - **`*`:** a number that has an entry in `assumptions`. It is provisional: ask before relying on it.
-- **Check lines:** one per `fail`, `warn` or `skip` check, in `checks` order, with the ids involved. The gameplay checks read `FAIL k3 reachable bench2: path of 3.10 u (max 1.00)`, `FAIL s1 capacity seat: 4 usable < 6 (blocked: ...)` and `FAIL m1 min_screen_size walker1: 126 px < 200 px`. With none, the output says `checks: all N pass` (or `checks: none`).
+- **Check lines:** one per `fail`, `warn` or `skip` check, in `checks` order, with the ids involved. The gameplay checks read `FAIL k3 reachable bench2: path of 3.10 u (max 1.00)`, `FAIL s1 capacity seat: 4 usable < 6 (blocked: ...)`, `FAIL m1 min_screen_size walker1: 126 px < 200 px` and `FAIL s1 sort_consistency shed, box, counter, kiosk: drawn out of order, worst 545.60 px2`. With none, the output says `checks: all N pass` (or `checks: none`).
 - **Numbers:** 2 decimals (up to 4 when 2 would lose information), whole pixels after `≈`, whole percentages.
 - **Assumptions:** `<type>.size.<w|d|h>`, `<type>.<part>.<u0|v0|h0|u1|v1|h1>`, or the JSON Pointer for other paths. `-` when there are none.
 
@@ -231,6 +231,7 @@ Parameters marked optional can be left out. A check with a wrong or unknown para
 | `reachable` | `from`, `to` (points); optional `area`, `radius` (0.2), `step` (0.1), `ignore`, `max` | A walkable path exists from `from` to `to` on a grid of free cells, and with `max` it is at most that long | Path length in units (moves times `step`). `null` and `fail` when there is no path |
 | `capacity` | `kind`, `min`; optional `body` (`[0.5, 0.5]`), `ids`, `allow` (object ids) | At least `min` anchors of `kind` can be used at once | Number of usable anchors |
 | `min_screen_size` | `target`, `min` (pixels); optional `screenWidth` (default: the frame width) | The target is at least `min` pixels tall on screen | Pixels |
+| `sort_consistency` | `actor` (`[w, d, h]`); optional `step` (0.1), `reach` (1), `maxPixels` (0), `area` (zone id), `ids` | An engine that sorts one key per sprite draws a test actor and the objects in their geometric order, to within `maxPixels` of wrong area for every examined object | Number of examined objects over `maxPixels`. Also `worst` (px squared) and `positions` |
 
 Notes:
 
@@ -238,7 +239,7 @@ Notes:
 - `visible` samples the top face and the side faces from `from` times the height up to the full height, 64 points per face, and casts a ray toward the camera from each point through the parts of every other object. `occluders` lists the objects that hide at least one point.
 - Footprints always use the type's `size` rectangle, even when parts stick out. Parts matter for `visible` and for drawing.
 - **`lane_clear` and `lane_reaches` support one lane shape:** exactly 2 points, parallel to u or v. Other shapes return `skip`. `lane_reaches` also returns `skip` for the `top` and `bottom` edges.
-- **`skip` is not a pass.** It means the tool could not evaluate the check: the check is not implemented in this stage (`sort_consistency`, `state_stable`), or its input has an unsupported shape (for example `reachable` in a scene with no walkable zone), or the check names an object that the chosen state hides. A skipped check has `value: null` and `threshold: null`, and `check` exits 1.
+- **`skip` is not a pass.** It means the tool could not evaluate the check: the check is not implemented in this stage (`state_stable`), or its input has an unsupported shape (for example `reachable` in a scene with no walkable zone), or the check names an object that the chosen state hides. A skipped check has `value: null` and `threshold: null`, and `check` exits 1.
 
 ### The gameplay checks
 
@@ -256,6 +257,43 @@ A point in `reachable` is `[u, v]`, `lane:<id>` (the first point of the lane for
 
 **`min_screen_size`** projects the 8 corners of every part of the target and takes the height of their screen bounds, times `screenWidth / frame.w` (so a scene drawn at 1000 px wide can be checked as if the screen were 1920 px wide).
 
+### `sort_consistency` and sprites
+
+Engines usually sort what they draw by one point per sprite. That is exact only for a sprite whose footprint is square. A long object (a wall, a bench, a counter) sorts wrong when a character walks around it. IsoBlock does two things about it:
+
+1. **It cuts long objects into slices** in the runtime file (see [Sprites and slices](#sprites-and-slices)), so that every sprite is close to square.
+2. **`sort_consistency` measures what is left.** It walks a test actor around each object, compares the order the engine rule gives with the geometric order, and reports the area of the screen that is drawn in the wrong order.
+
+Parameters: `actor` is the size `[w, d, h]` of the character or vehicle that walks around; `step` is the grid of actor positions (cell centers at `((i + 0.5) * step, (j + 0.5) * step)`); `reach` is how far from an object the actor may stand (edge to edge); `maxPixels` is the wrong area in px squared that the scene accepts; `area` limits the positions to a zone, minus the zones with `kind: "blocked"`; `ids` limits which objects are examined (the others still count as obstacles and as the other side of a pair).
+
+For each examined object the check looks at:
+
+- **actor mismatches:** every position where the actor stands within `reach` of the object, on no object, and (with `area`) on the zone. The engine draws the actor after a sprite when the actor's key is at least the sprite's key. That is wrong when the actor must be drawn first (or the other way round);
+- **static mismatches:** every piece of the object against every piece of every other object, with the keys and the sprite list order as the engine has them.
+
+The *wrong area* of a mismatch is the intersection of the two outlines on the screen (the outline of a box is the hull of its 8 projected corners), so a bounding rectangle that overlaps while the outlines only touch counts 0. Pieces whose boxes intersect are not compared. An object's `worst` is the largest wrong area of its mismatches; the check's `value` is the number of examined objects whose worst is over `maxPixels`, and `ids` lists them.
+
+**Reading a result** (`court`, check `s1`, an actor of 0.4 x 0.4 x 1.7, `maxPixels` 0):
+
+```
+{ "id": "s1", "check": "sort_consistency", "status": "fail", "value": 4, "threshold": 0,
+  "ids": ["shed", "box", "counter", "kiosk"], "worst": 545.6, "positions": 9031 }
+```
+
+- `ids` are the objects that need a fix, in file order. Both objects of a pair are listed when the pair is wrong (`shed` and `box`).
+- `worst` is the largest wrong area over the examined objects, 545.6 px squared here (the `shed`, which is one sprite of 2 x 1.5).
+- `positions` is the number of actor positions used, summed over the examined objects. It shows whether the actor could walk around the object at all (a count of 0 means no position was free: look at `reach`, `area` and `step`).
+- `maxPixels` sets what the scene accepts. Raise it for small errors: with `maxPixels: 300` (check `s3`) the `box` (155.88) and the `counter` (19.49) are accepted, and the `shed` and the `kiosk` (409.2) are still reported.
+
+What to do about a failing object, in order:
+
+1. Make its footprint closer to a square: the tool cuts only long footprints into slices, and a footprint such as 2 x 1.5 stays one sprite.
+2. Split it into a front part and a back part as separate objects, or make the part that sticks out (the roof of a kiosk, the top of a counter) an object of its own.
+3. Move the neighbor that it cannot be sorted against: in `court`, the `box` stands against the front corner of the `shed`, and moving it 0.4 along -u (variant `A` in `tests/fixtures/sort/compare/`) clears that pair.
+4. Accept it with `maxPixels` when the error is small and the art hides it.
+
+`skip` results: `area` names a zone with fewer than 3 points (`zone "mark" has 0 points; an area needs 3 or more`), and a search of more than 4,000,000 grid cells around an examined object (use a larger `step`). `sort_consistency` samples a grid, so an error strip narrower than `step` may fall between samples; use a smaller `step` where it matters. In a state, hidden objects have no sprites, block no position and are not examined.
+
 ## States
 
 A state is a named set of hidden objects (tents put up for an event, a closed gate):
@@ -268,9 +306,10 @@ A state only hides objects (and may carry `x-` keys); states that move objects a
 
 - hidden objects are not drawn, get no generation box, and do not overlap, block, occlude or count anywhere (lanes, paths, seats, rays);
 - a check that names a hidden object by itself is `skip` (`clearance` `a` or `b`, the `target` of `visible` and `min_screen_size`, an anchor in `reachable` `from` or `to`), with a message that says which object and which state;
-- the lists `ids`, `allow` and `ignore` of a check lose the hidden objects; a list that loses all of them checks no object (it does not fall back to all objects).
+- the lists `ids`, `allow` and `ignore` of a check lose the hidden objects; a list that loses all of them checks no object (it does not fall back to all objects);
+- `sort_consistency` gives hidden objects no sprites and no positions, and does not examine them.
 
-Usage errors (exit 2, `E_USAGE`): a state name the scene does not define (the message lists the states it has), and `--state` with `export --target runtime`.
+Usage errors (exit 2, `E_USAGE`): a state name the scene does not define (the message lists the states it has), and `--state` with `export --target runtime`: the runtime file carries all states.
 
 `compare --state NAME` evaluates every column in the state and names it in the header (`compare walk · state open · base vs A, B`). The hidden objects are those the **base** scene's state lists, in every column, as every column runs the base's checks; hidden objects are not counted as moved.
 
@@ -434,9 +473,27 @@ objects moved / total (u)    -       1 / 0.60  1 / 0.40  1 / 1.00
 How to read the table:
 
 - `failing checks`: checks with status `fail` or `skip`. `locks touched`: how many base locks the variant touches, then their labels; any entry marks the variant invalid (variant C above moves the locked tree).
-- One row per check that fails or is skipped in some column, or whose value differs from the base in some column, in the order of `checks`. The label names the check and its unit: `in_region <region>[/<strip>] (objects outside)`, `no_overlap (pairs)`, `clearance <a>×<b> (<unit>)`, `lane_clear <lane> (blocking objects)`, `lane_reaches <lane> (y px)`, `visible <target> (% occluded)`, `reachable <check id> (<unit>)`, `capacity <check id> (usable <kind>)`, `min_screen_size <target> (px)`; other checks show as `<check> <id>`.
-- Cells: counts as integers, clearance with 2 decimals, `lane_reaches` in whole pixels (`none` when the lane does not reach the edge), `visible` in whole percent, `reachable` with 2 decimals (`none` when there is no path), `capacity` as an integer, `min_screen_size` in whole pixels (halves up), `skip` for a skipped check. A trailing ` ✗` marks a value whose status is `fail` or `skip`.
+- One row per check that fails or is skipped in some column, or whose value differs from the base in some column, in the order of `checks`. The label names the check and its unit: `in_region <region>[/<strip>] (objects outside)`, `no_overlap (pairs)`, `clearance <a>×<b> (<unit>)`, `lane_clear <lane> (blocking objects)`, `lane_reaches <lane> (y px)`, `visible <target> (% occluded)`, `reachable <check id> (<unit>)`, `capacity <check id> (usable <kind>)`, `min_screen_size <target> (px)`, `sort_consistency <check id> (objects out of order)`; other checks show as `<check> <id>`.
+- Cells: counts as integers, clearance with 2 decimals, `lane_reaches` in whole pixels (`none` when the lane does not reach the edge), `visible` in whole percent, `reachable` with 2 decimals (`none` when there is no path), `capacity` and `sort_consistency` as integers, `min_screen_size` in whole pixels (halves up), `skip` for a skipped check. A trailing ` ✗` marks a value whose status is `fail` or `skip`.
 - `objects moved / total`: objects present in both scenes whose `pos` differs, and the sum of their ground distances.
+
+A `sort_consistency` row counts the examined objects drawn out of order, so a variant that moves the `box` clear of the `shed` shows `3 ✗` against the base `4 ✗` in check `s1` (`isoblock compare tests/fixtures/sort/court.scene.json --variant A=tests/fixtures/sort/compare/court.A.patch --variant B=tests/fixtures/sort/compare/court.B.patch`):
+
+```
+compare court · state default · base vs A, B
+A = move the box clear of the shed · B = turn the counter
+metric                                      base    A         B
+failing checks                              7       6         7
+locks touched                               0       0         0
+sort_consistency s1 (objects out of order)  4 ✗     3 ✗       4 ✗
+sort_consistency s3 (objects out of order)  2 ✗     2 ✗       2 ✗
+sort_consistency s4 (objects out of order)  2 ✗     1 ✗       2 ✗
+sort_consistency s5 (objects out of order)  2 ✗     1 ✗       2 ✗
+sort_consistency s6 (objects out of order)  skip ✗  skip ✗    skip ✗
+sort_consistency s7 (objects out of order)  1 ✗     0         1 ✗
+sort_consistency s8 (objects out of order)  3 ✗     3 ✗       3 ✗
+objects moved / total (u)                   -       1 / 0.40  1 / 1.56
+```
 
 Formats: `text` (default, shown above, columns left-aligned and padded), `md` (the same rows as a Markdown table with the header `| metric | base | A | B | C |`) and `json`:
 
@@ -603,26 +660,43 @@ Use `--only` to move a few objects and keep the rest of a settled layout: `isobl
 
 ### `--target runtime`
 
-The layout an engine needs, as `isoblock-runtime/1`: a reduced copy of the scene with no relations, checks, locks, assumptions, states or generation hints.
+The layout an engine needs, as `isoblock-runtime/2`: a reduced copy of the scene with no relations, checks, locks, assumptions or generation hints, plus the sprites of every object and the states of the scene.
 
 ```
 $ isoblock export yard.scene.json --target runtime -o yard.runtime.json
 wrote yard.runtime.json
 ```
 
-Top-level keys, in this order: `schema`, `scene` (the scene id), `meta` (`version` and `status`, `null` when the scene has no `meta`), `units`, `camera` (`verticalScale` always present), `cameraDir`, `frame` (`w`, `h`, `regions` with `blocksScene` always present), `strips`, `objects`, `zones`, `lanes`. Entries of `units`, `strips`, `zones` and `lanes` are copied without their `x-` keys; an absent list is `[]`.
+Top-level keys, in this order: `schema`, `scene` (the scene id), `meta` (`version` and `status`, `null` when the scene has no `meta`), `units`, `camera` (`verticalScale` always present), `cameraDir`, `frame` (`w`, `h`, `regions` with `blocksScene` always present), `strips`, `objects`, `zones`, `lanes`, `states`. Entries of `units`, `strips`, `zones` and `lanes` are copied without their `x-` keys; an absent list is `[]`.
 
 Each object, in file order (output of `yard`, one line each):
 
 ```
-{"id":"tree","type":"tree","pos":[3,0.2],"rot":0,"footprint":[3,0.2,4.2,1.4],"tags":["static"],"parts":[{"id":"trunk","box":[3.45,0.65,0,3.75,0.95,1.4],"order":1},{"id":"canopy","box":[2.8,0,1.4,4.4,1.6,2.4],"order":2}],"anchors":[]}
-{"id":"bench","type":"bench","pos":[3.4,2.6],"rot":0,"footprint":[3.4,2.6,4.6,3],"tags":[],"parts":[{"id":"body","box":[3.4,2.6,0,4.6,3,0.5],"order":3}],"anchors":[{"id":"seat1","at":[3.7,2.8,0.5],"facing":"back","kind":"seat"}]}
+{"id":"tree","type":"tree","pos":[3,0.2],"rot":0,"footprint":[3,0.2,4.2,1.4],"tags":["static"],"parts":[{"id":"trunk","box":[3.45,0.65,0,3.75,0.95,1.4],"order":1},{"id":"canopy","box":[2.8,0,1.4,4.4,1.6,2.4],"order":2}],"anchors":[],"sprites":[{"key":8.8,"footprint":[3,0.2,4.2,1.4],"pieces":[{"part":"trunk","box":[3.45,0.65,0,3.75,0.95,1.4]},{"part":"canopy","box":[2.8,0,1.4,4.4,1.6,2.4]}]}]}
+{"id":"bench","type":"bench","pos":[3.4,2.6],"rot":0,"footprint":[3.4,2.6,4.6,3],"tags":[],"parts":[{"id":"body","box":[3.4,2.6,0,4.6,3,0.5],"order":3}],"anchors":[{"id":"seat1","at":[3.7,2.8,0.5],"facing":"back","kind":"seat"}],"sprites":[{"key":12.8,"footprint":[3.4,2.6,3.8,3],"pieces":[{"part":"body","box":[3.4,2.6,0,3.8,3,0.5]}]},{"key":13.6,"footprint":[3.8,2.6,4.2,3],"pieces":[{"part":"body","box":[3.8,2.6,0,4.2,3,0.5]}]},{"key":14.4,"footprint":[4.2,2.6,4.6,3],"pieces":[{"part":"body","box":[4.2,2.6,0,4.6,3,0.5]}]}]}
 ```
 
 - `footprint` is `[u0, v0, u1, v1]` after rotation. `parts[].box` is `[u0, v0, h0, u1, v1, h1]` in world units after rotation; a type without parts has one part, `body`. `anchors[].at` is `[u, v, h]` in world units after rotation; `facing` and `kind` appear only when the type gives them.
 - `order` is the part's place in the painter's order (SPEC section 13.4): 0 is drawn first. It is computed for all parts of all objects together, so a part of one object can sit between two parts of another (the canopy of a tree in front of an actor, the actor in front of the trunk). Adapters use it as the draw order and do not sort static objects. `render` and the editor draw in the same order.
 - Numbers the tool computes (footprints, boxes, anchors) are rounded to 6 decimals; `pos` is copied. `cameraDir` is the camera direction of SPEC section 5 with each component rounded to 9 decimals (`[1, 1, 1]` for true isometric).
-- Objects hold no state or slice data yet (stage 7).
+- `sprites` are the items an engine sorts and draws (see [Sprites and slices](#sprites-and-slices)); the bench above is cut into 3.
+- `states` has one entry per state of the scene, in file order, as `{ "hide": [ids] }` (`{ "closed": { "hide": ["bench"] } }`); it is `{}` when the scene has none. The file carries every state, so `export --target runtime` takes no `--state`.
+
+#### Upgrade from `isoblock-runtime/1`
+
+Stages 5 and 6 wrote `isoblock-runtime/1`: the same file without `sprites` and `states`. Export again with `isoblock export <scene> --target runtime` and ship the new file; an adapter that reads `isoblock-runtime/2` rejects the old one (`E_SCHEMA`). A loader that reads the version 1 keys keeps working on the new keys it knows, but must accept the new `schema` value. See `CHANGELOG.md`.
+
+### Sprites and slices
+
+A **sprite** is what an engine draws and sorts as one item: a whole object, or one slice of a long object. Every object has at least one sprite in `sprites`, listed in ascending order along the object's long axis; the sprite list of the file is the objects in file order with their sprites in that order.
+
+- **Key.** The sort key of a footprint `[u0, v0, u1, v1]` is `cu * (u0 + u1) + cv * (v0 + v1)` with `c` the `cameraDir` of the file, rounded to 6 decimals. It is twice the ground depth of the footprint's center. A larger key is closer to the camera.
+- **Slices.** An object whose footprint is not square is cut along its long side into the number of slices that brings the slice length closest to the short side (at most 64; a tie keeps the smaller number). The `bench` above is 1.2 x 0.4, so it has 3 slices of 0.4 x 0.4. A square footprint, or one with no width or no depth, is one sprite.
+- **Pieces.** `pieces` are the part boxes cut to the slice, listed in the painter's order of their parts (`order`), so drawing them in list order gives the right result within a sprite. The first slice reaches to minus infinity and the last to plus infinity along the long axis, so a part that sticks out of the footprint (an awning) stays with the end slices. A piece no longer than 1e-9 along the long axis is left out.
+
+**The engine rule:** draw sprites in ascending `key`. On equal keys, draw scene sprites in the order of the sprite list, and actors (characters and vehicles that the game adds) after them. An actor's key is the key of its footprint. Draw the pieces of a sprite in list order. Static parts keep their `order` for adapters that do not sort sprites (the Godot adapter of this stage).
+
+One key per sprite is exact next to a square footprint only. Where it is not, `sort_consistency` measures the error (see above).
 
 ### `--target gen-bbox`
 
@@ -695,9 +769,10 @@ func _ready() -> void:
 The same script is available as the global class `IsoblockRuntime` once Godot has scanned the project. This example ran with Godot 4.7.1: the `yard` file gives 5 objects, 2 lanes, and `Objects/bench/seat1` at (362.35, 520) with `kind` `seat` and `facing` `back`.
 
 - `load_file(path)` returns `{ data, code, message }`. `build(data, color_of)` returns `{ root, code, message }`; `color_of` takes the object's dictionary and returns the flat `Color` of its boxes (optional). `check(data)` validates without building. `project(camera, u, v, h)`, `unproject(camera, point, h)` and `camera_direction(camera)` match `tests/golden/projection.json` within 0.001.
-- Errors are returned with a code (and also printed): `E_SCHEMA` (a `schema` other than `isoblock-runtime/1`, or a missing key), `E_DUPLICATE_ID` (object, zone or lane ids, or the part or anchor ids of one object), `E_Z_RANGE` (more parts than `z_index` holds: 4097), `E_IO`, `E_JSON_PARSE`. On an error nothing is built and `root` is null.
+- Errors are returned with a code (and also printed): `E_SCHEMA` (a `schema` other than `isoblock-runtime/2`, or a missing key), `E_DUPLICATE_ID` (object, zone or lane ids, or the part or anchor ids of one object), `E_Z_RANGE` (more parts than `z_index` holds: 4097), `E_IO`, `E_JSON_PARSE`. On an error nothing is built and `root` is null.
 - The tree: root (named by the scene id) with three containers. `Objects` has one `Node2D` per object, named by its id, with meta `id`, `type`, `rot`, `tags` and `footprint`; each part is a child `Node2D` with an absolute `z_index` equal to its `order` and the faces of its box that point toward the camera as `Polygon2D` (antialiasing off, one flat color per object); each anchor is a `Marker2D` named by its id at its projected point, with meta `kind` and `facing`. `Zones` has one hidden `Polygon2D` per zone and `Lanes` one hidden `Line2D` per lane, each with its data as meta (`kind`, `points`, and for lanes `dir` and `width` in world units).
-- Gameplay reads zones, lanes and anchors from the meta; the adapter does not move anything. Moving objects and sorting them against static parts arrive in stage 7.
+- The adapter reads `isoblock-runtime/2`. It draws the parts by `order`, as before, and does not use `sprites` and `states` yet. Drawing sprites and actors by the engine rule, applying states and `instantiate` by type arrive in stage 8.
+- Gameplay reads zones, lanes and anchors from the meta; the adapter does not move anything.
 
 ### Test
 

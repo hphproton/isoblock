@@ -76,7 +76,7 @@ describe("involves", () => {
 
   it("never re-runs lane_reaches or unimplemented checks for object changes", () => {
     expect(involves({ id: "x", check: "lane_reaches", lane: "l", edge: "right", region: "view" }, only("a"))).toBe(false);
-    expect(involves({ id: "x", check: "sort_consistency" }, only("a"))).toBe(false);
+    expect(involves({ id: "x", check: "state_stable" }, only("a"))).toBe(false);
   });
 
   it("re-runs reachable and capacity for any changed object, and min_screen_size for its target", () => {
@@ -84,6 +84,12 @@ describe("involves", () => {
     expect(involves({ id: "x", check: "capacity", kind: "seat", min: 1 }, only("c"))).toBe(true);
     expect(involves({ id: "x", check: "min_screen_size", target: "a", min: 10 }, only("a"))).toBe(true);
     expect(involves({ id: "x", check: "min_screen_size", target: "a", min: 10 }, only("c"))).toBe(false);
+  });
+
+  it("re-runs sort_consistency for any changed object: it measures pairs and actors around every object", () => {
+    const spec = { id: "x", check: "sort_consistency", actor: [0.4, 0.4, 1.7] } as const;
+    expect(involves(spec, only("c"))).toBe(true);
+    expect(involves(spec, new Set())).toBe(false);
   });
 
   it("re-runs visible for any changed object", () => {

@@ -330,8 +330,9 @@ Computation:
 
 Threshold, ids and extra fields:
 - `threshold = 0`; `ids` = the examined objects whose worst area exceeds `maxPixels + EPS`, in the order of `objects`; `worst` = the largest worst area of the examined objects, rounded to 2 decimals (0 when there is none); `positions` = the number of used actor positions, summed over the examined objects.
-- A zone named by `area` with fewer than 3 points: `skip`. When `(u1 − u0 + 2·reach + w) · (v1 − v0 + 2·reach + d) / step²` exceeds 4,000,000 for an examined object with footprint `[u0, v0, u1, v1]`: `skip`, with a message that asks for a larger `step`.
-- Under a state (9.2), hidden objects have no sprites, block no actor position and are not examined.
+- Two `skip` rules, tried in this order: a zone named by `area` with fewer than 3 points; then `(u1 − u0 + 2·reach + w) · (v1 − v0 + 2·reach + d) / step²` above 4,000,000 for an examined object with footprint `[u0, v0, u1, v1]`, with a message that asks for a larger `step`.
+- `positions` counts a position once for each examined object it is used for.
+- Under a state (9.2), the sprites, keys and the painter's order that orders their pieces come from the scene without the hidden objects. Hidden objects have no sprites, block no actor position and are not examined; an `ids` list that loses all its objects examines none (`pass`, `value` 0).
 - The wrong area is the size of the region that the engine draws in the wrong order when nothing else covers it. Bounding rectangles that overlap while the outlines only touch give an area of 0, so they never fail.
 
 ## 10. Editor (web page)
@@ -346,7 +347,7 @@ Threshold, ids and extra fields:
 - **History:** undo, redo; saved versions with notes; compare two versions.
 - **Export:** frame image, scene file, engine package, generation boxes.
 - **Touch:** one-finger drag, two-finger zoom, large hit targets.
-- **Performance:** 60 fps with 200 objects on a mid-range phone. Canvas 2D; redraw only on change.
+- **Performance:** 60 fps with 200 objects on a mid-range phone. Canvas 2D; redraw only on change. From stage 8, checks that search a grid (`reachable`, `sort_consistency`) re-run when a drag ends, not on every pointer move, so that dragging keeps the frame rate on scenes that use them.
 - **Storage:** reads and writes scene files; no hidden state outside the file. Saved files are JSON with 2-space indentation and a final newline; keys keep their order, keys added by an edit come last, an empty `locks` list is removed, and numbers are written as JSON numbers (`2.0` becomes `2`).
 - **Assumptions:** editing a provisional number updates its `assumptions[].value`; the entry stays until a person removes it.
 
@@ -608,7 +609,7 @@ dist/        build output, not committed
   - fixed seeds;
   - coded errors;
   - TypeScript strict mode.
-- **Size budget (guide):** core about 7,000 lines after stage 7 (5,694 after stage 6); editor 1,500–2,000; each adapter 150–300.
+- **Size budget (guide):** core about 7,000 lines (6,155 after stage 7); editor 1,500–2,000; each adapter 150–300.
 - Engine adapters live in `adapters/<engine>/`. They are not npm code, import nothing from `src/`, and read only the runtime file.
 
 ## 17. Roadmap and acceptance criteria
@@ -622,7 +623,7 @@ dist/        build output, not committed
 | 5 | Painter's order of parts (section 13.4); `export --target runtime` (section 13.7) and `gen-bbox` (section 14); PNG render (section 14); Godot adapter and its cross-checks (sections 13.6, 13.8) | Every case in `tests/fixtures/export/cases.json` meets its expected files: the runtime file, and the `gen-bbox` file for each listed flag set, equal their expected files as JSON (same keys in the same order, numbers within the case file's tolerances) and are byte-identical over two runs; for each case with a `png`, `render -o out.png` decodes to the same size as that PNG and each RGBA channel of each pixel is within 1 of it; `dist/isoblock.mjs`, copied alone into an empty directory, writes a PNG; `npm run test:godot` passes section 13.6 on every case |
 | 6 | States (hiding objects) and `--state` for `check`, `render`, `compare` and `export --target gen-bbox`; checks `reachable`, `capacity` and `min_screen_size` (section 9.2) | `check --json` on `tests/fixtures/gameplay/walk.scene.json` gives `walk.expected.json`; every case of `tests/fixtures/states/cases.json` meets its expected files; earlier fixtures still match |
 | 7 | Sprites, slices and sort keys (section 13.4); `sort_consistency` (section 9.3); runtime file `isoblock-runtime/2` with sprites and states (section 13.7); the Godot adapter reads it | `tests/golden/sort.json` matches; every case of `tests/fixtures/sort/cases.json` meets its expected files; every case of `tests/fixtures/runtime/cases.json` equals its runtime file as JSON (same keys in the same order, numbers within its `world` tolerance) and is byte-identical over two runs; `npm run test:godot` passes on every export case; earlier fixtures still match, except the stage 5 runtime files, which the runtime cases replace |
-| 8 | Godot adapter: sprites and actors drawn by the engine rule (section 13.4), states, `instantiate` by type with pivots; cross-checks with actors and states | Criteria and fixtures are written when the stage opens |
+| 8 | Godot adapter: sprites and actors drawn by the engine rule (section 13.4), states, `instantiate` by type with pivots; cross-checks with actors and states. Editor: grid checks re-run when a drag ends (section 10) | Criteria and fixtures are written when the stage opens |
 
 Export targets `godot`, `phaser` and `tiled`, the check `state_stable` and states that move objects are not scheduled.
 
@@ -636,7 +637,7 @@ Gameplay fixture: `tests/fixtures/gameplay/walk.scene.json` with `walk.expected.
 
 State fixtures: `tests/fixtures/states/cases.json` = `{ cases, compare }`. Each case `{ scene, state, checks, genBbox, png }`: `check --json --state <state>` matches `checks` (format and tolerance of the check fixtures; the file also names its `state`); `export --target gen-bbox --state <state>` matches `genBbox` (as the stage 5 `gen-bbox` files, `px` tolerance 0.02) unless it is `null`; `render --state <state> -o out.png` matches `png` (each RGBA channel within 1) unless it is `null`. Each `compare` entry `{ scene, state, variants: [{ name, file }], expected: { json, text, md } }`: `compare --state <state>` with the variants in that order gives `text` and `md` byte for byte and `json` as the stage 3 compare fixture. Paths in `scene` are from the repository root; the others are in `tests/fixtures/states/`.
 
-Export fixtures: `tests/fixtures/export/cases.json` = `{ tolerance, cases }`, each case `{ name, scene, runtime, genBbox: [{ args, file }], png }`. `scene` is a path from the repository root; `runtime`, `file` and `png` are file names in `tests/fixtures/export/`; `args` are the flags added to `export --target gen-bbox`; `png` is `null` when the case has none. `runtime` names a stage 5 file (`isoblock-runtime/1`): from stage 7 tests read runtime files from the runtime fixtures instead, and the release of stage 7 removes these entries and files. Tolerances: `world` for runtime numbers, `px` and `norm1000` for `gen-bbox` numbers by unit, `pngChannel` for PNG channels. The expected PNGs come from resvg 2.6.2 with no fonts loaded.
+Export fixtures: `tests/fixtures/export/cases.json` = `{ tolerance, cases }`, each case `{ name, scene, genBbox: [{ args, file }], png }`. `scene` is a path from the repository root; `file` and `png` are file names in `tests/fixtures/export/`; `args` are the flags added to `export --target gen-bbox`; `png` is `null` when the case has none. Tolerances: `px` and `norm1000` for `gen-bbox` numbers by unit, `pngChannel` for PNG channels. Runtime files are in the runtime fixtures; the stage 5 runtime files (`isoblock-runtime/1`) were removed with release 0.7.0. The expected PNGs come from resvg 2.6.2 with no fonts loaded.
 
 Patch fixtures: `tests/fixtures/patches/<name>.patch` with `<name>.expected.json` = `{ base, tolerance, exit, status, error, locks, diff, checks, failing }`. `base` names `tests/fixtures/<base>.scene.json`; `exit` is the exit code of `isoblock patch` on a copy of that scene; `error` is the error code or `null`; `locks`, `diff`, `checks` and `failing` are the fields of the `--json` report (`failing` is `null` unless the patch is applied). Check values compare within `tolerance.value` (pixels `tolerance.valuePx`), diff numbers within `tolerance.coordinate`; messages are not compared.
 
@@ -657,6 +658,7 @@ Versions: the maintainer sets `version` in `package.json` in the release commit 
 - **The block image has no text** (section 14).
 - **`reachable` works on a grid.** A gap close to `step + 2 · radius` wide may open or close as the grid shifts; use a smaller `step` where it matters.
 - **One sort key per sprite is never exact next to a footprint that is not square** (section 13.4). Slices shrink the error to thin strips at sprite corners; `maxPixels` sets how much of it a scene accepts.
+- **Grid checks are slow for a live editor.** Up to release 0.7.0 the editor re-runs `reachable` and `sort_consistency` on every pointer move of a drag: on `walk` and `court` dragging falls to about 12 frames per second. Stage 8 moves them to the end of a drag (section 10).
 - **`sort_consistency` samples actor positions on a grid.** An error strip narrower than `step` may fall between samples and change as objects move by less than `step`.
 
 ## 19. Open questions

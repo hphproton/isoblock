@@ -47,7 +47,8 @@ describe("Godot adapter (SPEC 13.8)", () => {
   });
 
   it("reads the schema value of the runtime file the tool writes", () => {
-    expect(adapter).toContain('SCHEMA := "isoblock-runtime/1"');
+    expect(adapter).toContain('SCHEMA := "isoblock-runtime/2"');
+    expect(adapter).not.toContain("isoblock-runtime/1");
   });
 });
 

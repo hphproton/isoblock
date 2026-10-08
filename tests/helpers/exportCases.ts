@@ -11,13 +11,12 @@ export interface ExportCase {
   readonly name: string;
   /** Path of the scene file from the repository root. */
   readonly scene: string;
-  readonly runtime: string;
   readonly genBbox: readonly { readonly args: readonly string[]; readonly file: string }[];
   readonly png: string | null;
 }
 
 export interface ExportCases {
-  readonly tolerance: { readonly world: number; readonly px: number; readonly norm1000: number; readonly pngChannel: number };
+  readonly tolerance: { readonly px: number; readonly norm1000: number; readonly pngChannel: number };
   readonly cases: readonly ExportCase[];
 }
 

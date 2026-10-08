@@ -39,6 +39,8 @@ function restrict(scene: Scene, spec: CheckSpec, hidden: ReadonlySet<string>): I
         ...(check.ids === undefined ? {} : { ids: keep(check.ids) }),
         ...(check.allow === undefined ? {} : { allow: keep(check.allow) }),
       };
+    case "sort_consistency":
+      return check.ids === undefined ? check : { ...check, ids: keep(check.ids) };
     default:
       return check;
   }

@@ -223,6 +223,7 @@
           { "$ref": "#/definitions/checkReachable" },
           { "$ref": "#/definitions/checkCapacity" },
           { "$ref": "#/definitions/checkMinScreenSize" },
+          { "$ref": "#/definitions/checkSortConsistency" },
           { "$ref": "#/definitions/checkNotImplemented" }
         ],
         "discriminator": { "propertyName": "check" }
@@ -412,12 +413,28 @@
         "screenWidth": { "type": "number", "exclusiveMinimum": 0 }
       }
     },
+    "checkSortConsistency": {
+      "type": "object",
+      "required": ["id", "check", "actor"],
+      "additionalProperties": false,
+      "patternProperties": { "^x-": {} },
+      "properties": {
+        "id": { "type": "string" },
+        "check": { "const": "sort_consistency" },
+        "actor": { "$ref": "#/definitions/size3" },
+        "step": { "type": "number", "exclusiveMinimum": 0, "default": 0.1 },
+        "reach": { "type": "number", "minimum": 0, "default": 1 },
+        "maxPixels": { "type": "number", "minimum": 0, "default": 0 },
+        "area": { "type": "string", "minLength": 1 },
+        "ids": { "$ref": "#/definitions/idList" }
+      }
+    },
     "checkNotImplemented": {
       "type": "object",
       "required": ["id", "check"],
       "properties": {
         "id": { "type": "string" },
-        "check": { "enum": ["sort_consistency", "state_stable"] }
+        "check": { "enum": ["state_stable"] }
       }
     }
   }

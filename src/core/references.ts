@@ -112,6 +112,10 @@ function checkErrors(scene: Scene, check: CheckSpec, names: Names): string[] {
       const c = check as Extract<CheckSpec, { check: "min_screen_size" }>;
       return objects([c.target]);
     }
+    case "sort_consistency": {
+      const c = check as Extract<CheckSpec, { check: "sort_consistency" }>;
+      return [...(c.area === undefined ? [] : need(names.zones, "zone", c.area, owner)), ...objects(c.ids)];
+    }
     default:
       return [];
   }

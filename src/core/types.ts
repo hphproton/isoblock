@@ -172,6 +172,17 @@ export interface MinScreenSizeCheck {
   readonly screenWidth?: number;
 }
 
+export interface SortConsistencyCheck {
+  readonly id: string;
+  readonly check: "sort_consistency";
+  readonly actor: Vec3;
+  readonly step?: number;
+  readonly reach?: number;
+  readonly maxPixels?: number;
+  readonly area?: string;
+  readonly ids?: readonly string[];
+}
+
 export type ImplementedCheck =
   | InRegionCheck
   | NoOverlapCheck
@@ -181,7 +192,8 @@ export type ImplementedCheck =
   | VisibleCheck
   | ReachableCheck
   | CapacityCheck
-  | MinScreenSizeCheck;
+  | MinScreenSizeCheck
+  | SortConsistencyCheck;
 
 /** A check from the catalog that the current stage does not evaluate. */
 export interface OtherCheck {
@@ -238,5 +250,8 @@ export interface CheckResult {
   /** `capacity`: labels `<object id>/<anchor id>` of the usable and of the blocked anchors. */
   readonly accepted?: readonly string[];
   readonly rejected?: readonly string[];
+  /** `sort_consistency`: the largest area (px squared, 2 decimals) drawn in the wrong order, and the number of actor positions used. */
+  readonly worst?: number;
+  readonly positions?: number;
   readonly message: string;
 }

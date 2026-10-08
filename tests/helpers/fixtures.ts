@@ -80,6 +80,12 @@ export function expectMatchesExpected(
     for (const key of ["pairs", "occluders", "accepted", "rejected"]) {
       if (key in exp) expect(act[key], `${tag} ${key}`).toEqual(exp[key]);
     }
+    if (exp.check === "sort_consistency") {
+      // SPEC 17: `status`, `value` and `ids` exactly, `worst` within the pixel tolerance, `positions` exactly.
+      expect(act.value, `${tag} value is exact`).toBe(exp.value);
+      if ("worst" in exp) near(act.worst, exp.worst, expected.tolerance.valuePx, `${tag} worst`);
+      if ("positions" in exp) expect(act.positions, `${tag} positions`).toBe(exp.positions);
+    }
     if ("message" in exp) expect(act.message, `${tag} message`).toBe(exp.message);
   });
 }

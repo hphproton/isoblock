@@ -15,7 +15,7 @@ const base = (): Scene =>
     checks: [
       { id: "k1", check: "clearance", a: "a", b: "b", min: 1 },
       { id: "k2", check: "no_overlap" },
-      { id: "k3", check: "sort_consistency" },
+      { id: "k3", check: "state_stable" },
     ],
   });
 

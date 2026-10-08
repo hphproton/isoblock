@@ -6,7 +6,9 @@ import { serializeJson } from "../../src/core/serialize";
 import { bboxOptions, caseScenePath, expectSameJson, loadCaseScene, loadExportCases, readExportJson } from "../helpers/exportCases";
 import { fixturePath, loadScene } from "../helpers/fixtures";
 import { memoryIo } from "../helpers/cli";
+import { loadRuntimeCases, loadRuntimeScene, readRuntimeJson, runtimeScenePath } from "../helpers/runtimeCases";
 
+const runtime = loadRuntimeCases();
 const { tolerance, cases } = loadExportCases();
 const yard = fixturePath("yard");
 
@@ -17,14 +19,14 @@ function exec(argv: string[], files: Record<string, string> = {}) {
 }
 
 describe("cli: export --target runtime", () => {
-  for (const c of cases) {
+  for (const c of runtime.cases) {
     it(`${c.name}: stdout equals the expected runtime file and is the same twice`, () => {
-      const first = exec(["export", caseScenePath(c), "--target", "runtime"]);
+      const first = exec(["export", runtimeScenePath(c), "--target", "runtime"]);
       expect(first.code).toBe(0);
       expect(first.err).toBe("");
-      expectSameJson(JSON.parse(first.out), readExportJson(c.runtime), tolerance.world, c.name);
-      expect(first.out).toBe(serializeJson(runtimeFile(loadCaseScene(c))));
-      expect(exec(["export", caseScenePath(c), "--target", "runtime"]).out).toBe(first.out);
+      expectSameJson(JSON.parse(first.out), readRuntimeJson(c.runtime), runtime.tolerance.world, c.name);
+      expect(first.out).toBe(serializeJson(runtimeFile(loadRuntimeScene(c))));
+      expect(exec(["export", runtimeScenePath(c), "--target", "runtime"]).out).toBe(first.out);
     });
   }
 

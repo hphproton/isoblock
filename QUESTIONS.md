@@ -226,3 +226,18 @@ Template:
 - Question: Q-005 says the criterion is the p95 interval on the phone profile, and that the work time and the desktop profiles are information. The four tests in `tests/editor/frameTime.test.ts` still assert more: p95 work at most 16.7 ms on all four profiles, the median interval on two, and the p95 interval on the phone profile at the display rate. The roadmap asks for "up to 3 runs, pass when one run meets the criterion".
 - Reading chosen for now: Each test keeps the conditions it had and gets up to 3 runs, each on a fresh page; it passes when one run meets all of its conditions, and every run prints its numbers. Nothing was loosened. If only the phone interval should decide, the other conditions would become output only.
 - Answer (maintainer): Approved as written: every condition each test had stays, and a test passes when one of up to 3 runs meets all of them. SPEC 17 now says so.
+
+## Q-023 · Details of `sort_consistency` and the runtime file 2 where SPEC 9.3, 13.4 and 13.7 are silent
+- Spec section: 9.3, 13.4, 13.7, 13.8
+- Question: A few cases are not stated.
+- Reading chosen for now:
+  - Under a state, the sprites (and so the painter's order of the parts, which orders the pieces of a sprite) are those of the scene without the hidden objects. The runtime file has all objects, so its piece order is the one of the full scene; the two differ only if removing an object changes the relative order of two parts of another object, which needs a tie or a cycle.
+  - A list `ids` that loses all its objects in a state examines no object: `pass`, `value` 0, `worst` 0, `positions` 0 (as for the other checks).
+  - The two `skip` rules are tried in the order of section 9.3: the `area` zone first, then the size of the search.
+  - `worst` is the largest unrounded area, written with 2 decimals; `maxPixels` is compared with the unrounded areas (`> maxPixels + EPS`).
+  - `positions` is counted per examined object even when an actor position lies near two examined objects (section 9.3 says "summed over the examined objects").
+  - The Godot adapter checks the `schema` value and the keys it checked before; it does not require `states` or `sprites`, because it does not use them yet.
+  - `message` and the `describe` line are free wording (section 9.1): `objects drawn out of order: 4 of 10, worst 545.60 px2 (max 0), 9031 actor positions` and `FAIL s1 sort_consistency shed, box, counter, kiosk: drawn out of order, worst 545.60 px2`.
+  - `README.md` still says "Status: pre-release, stage 1 in progress"; I did not touch it, as no stage task covers it.
+- Answer (maintainer): Approved as written; every reading agrees with the maintainer's reference. SPEC 9.3 now states the state rule (sprites and piece order from the scene without the hidden objects, an `ids` list that loses all objects examines none), the order of the two `skip` rules and how `positions` counts. Message and `describe` wording stay free. The release commit points `README.md` to `ROADMAP.md` for the status.
+

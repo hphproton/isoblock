@@ -18,6 +18,7 @@ func _initialize() -> void:
 	var data: Dictionary = loaded["data"]
 	_tree(data)
 	_faces(data)
+	_sprites_and_states(data)
 	_errors(data)
 	print("godot adapter: %d checks, %d failed" % [checks, failures])
 	quit(1 if failures > 0 else 0)
@@ -109,11 +110,39 @@ func _faces_of(data: Dictionary, dir: Array, box: Array) -> Array:
 	return faces
 
 
+## The sprites of the objects and the states of the file are read but not used: the tree is the same without them.
+func _sprites_and_states(data: Dictionary) -> void:
+	_expect(data["schema"] == "isoblock-runtime/2" and data.has("states"), "the file is a runtime file 2 with states")
+	var bare := data.duplicate(true)
+	bare.erase("states")
+	var sprites := 0
+	for object in bare["objects"]:
+		sprites += object["sprites"].size()
+		object.erase("sprites")
+	_expect(sprites >= data["objects"].size(), "every object has at least one sprite")
+	var full := Runtime.build(data)
+	var stripped := Runtime.build(bare)
+	_expect(full["code"] == "" and stripped["code"] == "", "a file without sprites and states builds as well")
+	_expect(_shape(full["root"]) == _shape(stripped["root"]), "sprites and states do not change the tree")
+	full["root"].free()
+	stripped["root"].free()
+
+
+## The shape of a tree: the class of every node and its name, unless the engine named it itself.
+func _shape(node: Node) -> Array:
+	var shape := [[node.get_class(), "" if str(node.name).begins_with("@") else str(node.name)]]
+	for child in node.get_children():
+		shape.append_array(_shape(child))
+	return shape
+
+
 func _errors(data: Dictionary) -> void:
-	var wrong := data.duplicate(true)
-	wrong["schema"] = "isoblock-runtime/2"
-	var r := Runtime.build(wrong)
-	_expect(r["code"] == "E_SCHEMA" and r["root"] == null, "a wrong schema value is E_SCHEMA and builds nothing")
+	for old in ["isoblock-runtime/1", "isoblock-runtime/3", ""]:
+		var wrong := data.duplicate(true)
+		wrong["schema"] = old
+		var built := Runtime.build(wrong)
+		_expect(built["code"] == "E_SCHEMA" and built["root"] == null, "the schema value '%s' is E_SCHEMA and builds nothing" % old)
+	var r: Dictionary
 	var twice := data.duplicate(true)
 	twice["objects"].append(twice["objects"][0].duplicate(true))
 	r = Runtime.build(twice)

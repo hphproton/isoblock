@@ -51,7 +51,7 @@ describe("repository rules", () => {
   });
 
   it("has one test file per check", () => {
-    const names = ["inRegion", "noOverlap", "clearance", "laneClear", "laneReaches", "visible", "reachable", "capacity", "minScreenSize"];
+    const names = ["inRegion", "noOverlap", "clearance", "laneClear", "laneReaches", "visible", "reachable", "capacity", "minScreenSize", "sortConsistency"];
     const tests = new Set(readdirSync(join(repoRoot, "tests", "checks")));
     for (const name of names) expect(tests.has(`${name}.test.ts`), name).toBe(true);
   });
