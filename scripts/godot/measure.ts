@@ -6,9 +6,39 @@ export type Box = readonly [number, number, number, number];
 /** Pixels per 1,000,000 that may differ in which object they show (SPEC 13.6). */
 export const FRAME_LIMIT_PER_MILLION = 100;
 
+type Point = readonly [number, number];
+
+/** The part of a polygon on the inner side of one edge line of the frame (one Sutherland-Hodgman step). */
+function clipEdge(points: readonly Point[], inside: (p: Point) => boolean, cross: (a: Point, b: Point) => Point): Point[] {
+  const out: Point[] = [];
+  points.forEach((b, i) => {
+    const a = points[(i + points.length - 1) % points.length] as Point;
+    if (inside(b)) {
+      if (!inside(a)) out.push(cross(a, b));
+      out.push(b);
+    } else if (inside(a)) {
+      out.push(cross(a, b));
+    }
+  });
+  return out;
+}
+
+/** A polygon clipped to the frame `[0, 0, width, height]`; empty when nothing of it is inside. */
+export function clipToFrame(points: readonly Point[], width: number, height: number): Point[] {
+  const atX = (x: number) => (a: Point, b: Point): Point => [x, a[1] + ((b[1] - a[1]) * (x - a[0])) / (b[0] - a[0])];
+  const atY = (y: number) => (a: Point, b: Point): Point => [a[0] + ((b[0] - a[0]) * (y - a[1])) / (b[1] - a[1]), y];
+  let out: Point[] = [...points];
+  out = clipEdge(out, (p) => p[0] >= 0, atX(0));
+  out = clipEdge(out, (p) => p[0] <= width, atX(width));
+  out = clipEdge(out, (p) => p[1] >= 0, atY(0));
+  out = clipEdge(out, (p) => p[1] <= height, atY(height));
+  return out;
+}
+
 /**
- * Per object, in the order of `ids`: the bounds of its polygons clipped to the frame, or null when
- * nothing of it is inside the frame (no area left).
+ * Per object, in the order of `ids`: the bounds of its polygons, each clipped to the frame first
+ * (SPEC 13.6), or null when nothing of it is inside the frame (no area left). Clipping the polygons,
+ * not their bounds, matters where a frame edge cuts a slanted polygon edge.
  */
 export function polygonBoxes(polygons: readonly ObjectPolygon[], ids: readonly string[], width: number, height: number): (Box | null)[] {
   return ids.map((id) => {
@@ -17,14 +47,14 @@ export function polygonBoxes(polygons: readonly ObjectPolygon[], ids: readonly s
     let x1 = -Infinity;
     let y1 = -Infinity;
     for (const p of polygons.filter((q) => q.ref === id)) {
-      for (const [x, y] of p.points) {
+      for (const [x, y] of clipToFrame(p.points, width, height)) {
         x0 = Math.min(x0, x);
         y0 = Math.min(y0, y);
         x1 = Math.max(x1, x);
         y1 = Math.max(y1, y);
       }
     }
-    const box: Box = [Math.max(x0, 0), Math.max(y0, 0), Math.min(x1, width), Math.min(y1, height)];
+    const box: Box = [x0, y0, x1, y1];
     return box[2] - box[0] > 0 && box[3] - box[1] > 0 ? box : null;
   });
 }

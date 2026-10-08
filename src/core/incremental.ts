@@ -1,4 +1,4 @@
-import { runChecks, updateCheck } from "./checks";
+import { runCheck, runChecks, updateCheck } from "./checks";
 import type { CheckResult, CheckSpec, ImplementedCheck, Scene, SceneObject } from "./types";
 
 /** Ids of the objects that differ between two scenes, or `"all"` when shared inputs changed. */
@@ -85,10 +85,20 @@ export function involves(spec: CheckSpec, changed: ReadonlySet<string>): boolean
   }
 }
 
+/**
+ * Checks that search a grid (`reachable`, `sort_consistency`). They are too slow to re-run on every
+ * pointer move of a drag, so the editor re-runs them when the drag ends (SPEC 10).
+ */
+export function searchesGrid(spec: CheckSpec): boolean {
+  return spec.check === "reachable" || spec.check === "sort_consistency";
+}
+
 export interface ResultUpdate {
   readonly results: readonly CheckResult[];
   /** Ids of the checks that ran again. */
   readonly rerun: readonly string[];
+  /** Ids of the checks that involve a change but kept their previous result, because `defer` said so. */
+  readonly deferred: readonly string[];
 }
 
 function same(a: CheckResult, b: CheckResult): boolean {
@@ -97,20 +107,47 @@ function same(a: CheckResult, b: CheckResult): boolean {
 
 /**
  * Results for `next`, given the results for `prev`. Only checks that involve a changed object run
- * again (SPEC section 9). A result that did not change is the same object as before.
+ * again (SPEC section 9). A check for which `defer` is true keeps its previous result and is listed
+ * in `deferred` instead; when the check list or a shared input changed, every check runs. A result
+ * that did not change is the same object as before.
  */
-export function updateResults(prev: Scene, next: Scene, prevResults: readonly CheckResult[]): ResultUpdate {
+export function updateResults(
+  prev: Scene,
+  next: Scene,
+  prevResults: readonly CheckResult[],
+  defer: (spec: CheckSpec) => boolean = () => false,
+): ResultUpdate {
   const specs = next.checks ?? [];
   const changed = changedObjects(prev, next);
   const aligned = prevResults.length === specs.length && specs.every((s, i) => prevResults[i]?.id === s.id);
-  if (changed === "all" || !aligned) return { results: runChecks(next), rerun: specs.map((s) => s.id) };
+  if (changed === "all" || !aligned) return { results: runChecks(next), rerun: specs.map((s) => s.id), deferred: [] };
   const rerun: string[] = [];
+  const deferred: string[] = [];
   const results = specs.map((spec, i) => {
     const old = prevResults[i] as CheckResult;
     if (!involves(spec, changed)) return old;
+    if (defer(spec)) {
+      deferred.push(spec.id);
+      return old;
+    }
     rerun.push(spec.id);
     const fresh = updateCheck(next, spec, old, changed);
     return same(fresh, old) ? old : fresh;
   });
-  return { results, rerun };
+  return { results, rerun, deferred };
+}
+
+/**
+ * `results` (one per check of `scene`, in order) with the checks named in `ids` run again in full.
+ * A result that did not change is the same object as before.
+ */
+export function rerunResults(scene: Scene, results: readonly CheckResult[], ids: ReadonlySet<string>): readonly CheckResult[] {
+  if (ids.size === 0) return results;
+  const specs = scene.checks ?? [];
+  return results.map((old, i) => {
+    const spec = specs[i];
+    if (spec === undefined || !ids.has(spec.id)) return old;
+    const fresh = runCheck(scene, spec);
+    return same(fresh, old) ? old : fresh;
+  });
 }

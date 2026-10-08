@@ -341,7 +341,7 @@ Threshold, ids and extra fields:
 - **Drag:** screen to ground, grid snap, keep h. Locked objects cannot be dragged and show a lock icon. A drag changes `pos` only; snap applies to `pos` (default step 0.1). A press becomes a drag after the pointer moves 3 px (mouse), 4 px (pen) or 8 px (touch).
 - **Plan view:** u to the right, v down; objects drawn by their top faces.
 - **Property panel:** numbers with units; a lock toggle per property; provisional mark for assumptions.
-- **Check panel:** pass/fail updates live; tapping a row highlights the objects involved. From stage 8, during a drag the rows of `reachable` and `sort_consistency` keep their last result and show that it is out of date; the drop re-runs them.
+- **Check panel:** pass/fail updates live; tapping a row highlights the objects involved. From stage 8, during a drag the rows of `reachable` and `sort_consistency` keep their last result and show that it is out of date; the drop, or a cancelled drag, re-runs them.
 - **Toggleable overlays:** strips, lanes, zones, anchors, frame regions; occlusion rays and sort points (not scheduled).
 - **State switch:** day, night, events (not scheduled).
 - **History:** undo, redo; saved versions with notes; compare two versions.
@@ -560,9 +560,9 @@ scene.json (git) → isoblock export --target runtime → <game>/data/scenes/<id
 - **Debug drawing:** a sprite of an unmapped type draws, piece by piece in list order, the faces of the piece's box that point toward the camera (as the display list does) as `Polygon2D` with antialiasing off, in one flat color per object that `color_of(object)` returns.
 - **Instancing:** `scenes` maps type names to `PackedScene`s. A sprite of a mapped type holds an instance of that scene positioned at the object's pivot: the projection of the center of the object's footprint at h = 0. Instances carry metadata `object`, `type`, `rot` and `slice`. An object of one sprite holds the instance directly. Each sprite of a sliced object holds a `Polygon2D` mask (the convex hull of the projected corners of the sprite's pieces, `clip_children` = `CLIP_CHILDREN_ONLY`) with its own instance as child, so each slice shows the part of the image inside its pieces; art outside the parts' boxes of a sliced object is not drawn. `unmapped` lists the types of the file's objects that `scenes` lacks, each once, in the order of their first object; it is `[]` when `scenes` is empty.
 - **`apply_state(root, name)`**: shows every object and hides, with their sprites and anchors, the objects in `states.<name>.hide`; `""` shows every object. An unknown name is `E_STATE` and changes nothing. Actors are not affected.
-- **Actors:** `add_actor(root, id, size, at, node, color)` adds a moving object of `size` = `[w, d, h]` with its footprint centered on `at` = `(u, v)`; `move_actor(root, id, at)` and `remove_actor(root, id)` follow it. An actor is a child of `Sprites` with metadata `actor` (its id) and `key` (the key of its footprint, section 13.4), placed by the engine rule: after every scene sprite whose key is at most its key, before every scene sprite with a larger key; among actors with equal keys, in the order they were added. `node`, when given, is the game's node for the actor, placed at the projection of `at` at h = 0; else the actor draws its box like a debug part in `color`. A duplicate id on `add_actor` and an unknown id on `move_actor` or `remove_actor` are `E_ACTOR`.
+- **Actors:** `add_actor(root, id, size, at, node, color)` adds a moving object of `size` = `[w, d, h]` with its footprint centered on `at` = `(u, v)`; `move_actor(root, id, at)` and `remove_actor(root, id)` follow it. An actor is a child of `Sprites` with metadata `actor` (its id) and `key` (the key of its footprint, section 13.4), placed by the engine rule: after every scene sprite whose key is at most its key, before every scene sprite with a larger key; among actors with equal keys, in the order they were added (a moved actor keeps its place in that order; one removed and added again comes last). `at` is an array `[u, v]`, or a `Vector2` whose single-precision components are read as the shortest decimals with the same value. `node`, when given, is the game's node for the actor, placed at the projection of `at` at h = 0; else the actor draws its box like a debug part in `color`. A duplicate id on `add_actor` and an unknown id on `move_actor` or `remove_actor` are `E_ACTOR`.
 - **`sort_key(dir, footprint)`** returns the key of section 13.4 for a camera direction with 9 decimals and a footprint; the adapter uses it for actors.
-- Errors are returned as `{ code, message }` and also printed; `build` builds nothing on an error. Codes: `E_SCHEMA`, `E_DUPLICATE_ID`, `E_IO`, `E_JSON_PARSE`, `E_STATE`, `E_ACTOR`. `E_Z_RANGE` (stage 5 to 7) is gone with `z_index`.
+- Errors are returned as `{ code, message }` and also printed; `build` builds nothing on an error. Codes: `E_SCHEMA` (also a file without `states` or an object without `sprites`), `E_DUPLICATE_ID`, `E_IO`, `E_JSON_PARSE`, `E_STATE`, `E_ACTOR`. `E_Z_RANGE` (stage 5 to 7) is gone with `z_index`. Lookups use metadata, not node names, because Godot changes some characters of names.
 - **Tests:** `npm run test:godot` runs the golden vectors (`tests/golden/projection.json`, and the keys of `tests/golden/sort.json` through `sort_key` from stage 8), the adapter's own tests, the cross-checks of section 13.6 for every case of `tests/fixtures/export/cases.json`, and from stage 8 every case of `tests/fixtures/godot/cases.json` (section 17), at frame size, 1 px per frame unit, under Xvfb with Godot 4.7.1 (`GODOT` names the binary). It is not part of `npm test`, because Godot is not an npm package; the maintainer runs it at review.
 
 ## 14. Image-generation integration
@@ -616,7 +616,7 @@ dist/        build output, not committed
   - fixed seeds;
   - coded errors;
   - TypeScript strict mode.
-- **Size budget (guide):** core about 7,000 lines (6,155 after stage 7); editor 1,500–2,000; each adapter 150–400.
+- **Size budget (guide):** core about 7,000 lines (6,192 after stage 8); editor 1,500–2,000; each adapter 150–400.
 - Engine adapters live in `adapters/<engine>/`. They are not npm code, import nothing from `src/`, and read only the runtime file.
 
 ## 17. Roadmap and acceptance criteria
@@ -667,7 +667,7 @@ Versions: the maintainer sets `version` in `package.json` in the release commit 
 - **The block image has no text** (section 14).
 - **`reachable` works on a grid.** A gap close to `step + 2 · radius` wide may open or close as the grid shifts; use a smaller `step` where it matters.
 - **One sort key per sprite is never exact next to a footprint that is not square** (section 13.4). Slices shrink the error to thin strips at sprite corners; `maxPixels` sets how much of it a scene accepts.
-- **Grid checks are slow for a live editor.** Up to release 0.7.0 the editor re-runs `reachable` and `sort_consistency` on every pointer move of a drag: on `walk` and `court` dragging falls to about 12 frames per second. Stage 8 moves them to the end of a drag (section 10).
+- **Grid checks wait for the drop.** `reachable` and `sort_consistency` take too long to run on every pointer move, so during a drag their rows show the last result, out of date (section 10). Up to release 0.7.0 they did run on every move, and dragging on `walk` and `court` fell to about 12 frames per second.
 - **`sort_consistency` samples actor positions on a grid.** An error strip narrower than `step` may fall between samples and change as objects move by less than `step`.
 
 ## 19. Open questions

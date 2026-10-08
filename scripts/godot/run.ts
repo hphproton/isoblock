@@ -1,7 +1,8 @@
 import { spawnSync, type SpawnSyncReturns } from "node:child_process";
-import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { actorDifferences, sceneWithActor } from "./actor";
 import { measureCase } from "./compare";
 import type { Box } from "./measure";
 
@@ -11,9 +12,22 @@ export interface Options {
   readonly root: string;
 }
 
-interface ExportCase {
+/**
+ * One cross-check (SPEC 13.6): a case of `tests/fixtures/godot/cases.json` (SPEC 17), or an export
+ * case, which is drawn once in the default state, without instances or an actor.
+ */
+export interface GodotCase {
   readonly name: string;
   readonly scene: string;
+  readonly states: readonly (string | null)[];
+  readonly instantiate: readonly string[] | null;
+  readonly unmapped: readonly string[] | null;
+  readonly actor: { readonly size: readonly [number, number, number]; readonly path: readonly (readonly [number, number])[] } | null;
+}
+
+interface GodotCases {
+  readonly actorLimit: number;
+  readonly cases: readonly GodotCase[];
 }
 
 const SCREEN = "-screen 0 1280x1024x24";
@@ -33,6 +47,14 @@ function runGodot(options: Options, work: string, script: string, args: readonly
   });
 }
 
+/**
+ * A GDScript runtime error does not stop the script: it leaves the current function, and the checks
+ * after it never run. Any such error in a run is a failure.
+ */
+function scriptErrors(r: SpawnSyncReturns<string>): string[] {
+  return `${r.stdout}\n${r.stderr}`.split("\n").filter((line) => line.startsWith("SCRIPT ERROR"));
+}
+
 function isoblock(root: string, args: readonly string[]): void {
   const r = spawnSync(process.execPath, [join(root, "dist", "isoblock.mjs"), ...args], { encoding: "utf8" });
   if (r.status !== 0) throw new Error(`isoblock ${args.join(" ")} failed:\n${r.stderr}`);
@@ -42,36 +64,81 @@ function bytes(path: string): Buffer {
   return readFileSync(path);
 }
 
-/** Draw one case twice with the adapter and compare with the SVG of `render` (SPEC 13.6). */
-function crossCheck(options: Options, work: string, c: ExportCase): string[] {
-  const dir = join(work, c.name);
+/** The SVG of `render` for a scene file, in a state (`null` for the default). */
+function render(root: string, scene: string, state: string | null, out: string): string {
+  isoblock(root, ["render", scene, ...(state === null ? [] : ["--state", state]), "-o", out]);
+  return readFileSync(out, "utf8");
+}
+
+/** The files of the two runs: the same names, the same bytes. */
+function sameRuns(one: string, two: string): string[] {
+  const names = readdirSync(one).sort();
+  if (names.join("\n") !== readdirSync(two).sort().join("\n")) return ["the two runs wrote different files"];
+  return names.filter((n) => !bytes(join(one, n)).equals(bytes(join(two, n)))).map((n) => `${n} differs between two runs`);
+}
+
+/**
+ * Draw one case twice with the adapter: each state of `states` in order, then the actor along its
+ * path in the last state. Compare every frame with the SVG of `render` (SPEC 13.6).
+ */
+function crossCheck(options: Options, work: string, label: string, c: GodotCase, actorLimit: number): string[] {
+  const dir = join(work, label.replace(/[^A-Za-z0-9]+/g, "-"));
   mkdirSync(dir, { recursive: true });
   const scene = join(options.root, c.scene);
   isoblock(options.root, ["export", scene, "--target", "runtime", "-o", join(dir, "runtime.json")]);
-  isoblock(options.root, ["render", scene, "-o", join(dir, "render.svg")]);
+  writeFileSync(join(dir, "case.json"), JSON.stringify({ states: c.states, instantiate: c.instantiate, actor: c.actor }));
   const runtime = JSON.parse(readFileSync(join(dir, "runtime.json"), "utf8")) as { frame: { w: number; h: number }; objects: { id: string }[] };
+  const ids = runtime.objects.map((o) => o.id);
+  const { w: width, h: height } = runtime.frame;
   for (const run of ["one", "two"]) {
-    const r = runGodot(options, work, "cross_check", ["--runtime", join(dir, "runtime.json"), "--out", join(dir, run)]);
-    if (r.status !== 0 || !existsSync(join(dir, run, "alone.json"))) return [`Godot failed on ${c.name}:\n${r.stdout}\n${r.stderr}`];
+    const args = ["--runtime", join(dir, "runtime.json"), "--case", join(dir, "case.json"), "--out", join(dir, run)];
+    const r = runGodot(options, work, "cross_check", args);
+    if (r.status !== 0 || !existsSync(join(dir, run, "build.json")) || scriptErrors(r).length > 0) {
+      return [`Godot failed on ${label}:\n${r.stdout}\n${r.stderr}`];
+    }
   }
-  const problems: string[] = [];
-  for (const file of ["frame.png", "frame.rgba", "alone.json"]) {
-    if (!bytes(join(dir, "one", file)).equals(bytes(join(dir, "two", file)))) problems.push(`${file} differs between two runs`);
-  }
-  const measure = measureCase({
-    svg: readFileSync(join(dir, "render.svg"), "utf8"),
-    ids: runtime.objects.map((o) => o.id),
-    width: runtime.frame.w,
-    height: runtime.frame.h,
-    alone: JSON.parse(readFileSync(join(dir, "one", "alone.json"), "utf8")) as { id: string; box: Box | null }[],
-    rgba: new Uint8Array(bytes(join(dir, "one", "frame.rgba"))),
+  const out = join(dir, "one");
+  const problems = sameRuns(out, join(dir, "two"));
+  const unmapped = (JSON.parse(readFileSync(join(out, "build.json"), "utf8")) as { unmapped: string[] }).unmapped;
+  const want = c.instantiate === null ? [] : c.unmapped;
+  if (JSON.stringify(unmapped) !== JSON.stringify(want)) problems.push(`${label}: build returned unmapped ${JSON.stringify(unmapped)}, expected ${JSON.stringify(want)}`);
+
+  let without = 0;
+  c.states.forEach((state, k) => {
+    const name = state ?? "default";
+    const measure = measureCase({
+      svg: render(options.root, scene, state, join(dir, `step-${k}.svg`)),
+      ids,
+      width,
+      height,
+      alone: JSON.parse(readFileSync(join(out, `step-${k}.alone.json`), "utf8")) as { id: string; box: Box | null }[],
+      rgba: new Uint8Array(bytes(join(out, `step-${k}.rgba`))),
+    });
+    console.log(
+      `case ${label}, state ${name}: ${ids.length} objects, worst box edge ${measure.worstBox.toFixed(2)} px (limit 1)` +
+        `${measure.worstObject === null ? "" : ` at ${measure.worstObject}`}, ` +
+        `${measure.frameDifferences} frame pixels differ (limit ${measure.frameLimit})`,
+    );
+    problems.push(...measure.problems.map((p) => `${label}, state ${name}: ${p}`));
+    without = measure.frameDifferences;
   });
-  console.log(
-    `case ${c.name}: ${runtime.objects.length} objects, worst box edge ${measure.worstBox.toFixed(2)} px (limit 1)` +
-      `${measure.worstObject === null ? "" : ` at ${measure.worstObject}`}, ` +
-      `${measure.frameDifferences} frame pixels differ (limit ${measure.frameLimit}), runs ${problems.length === 0 ? "identical" : "DIFFER"}`,
-  );
-  return [...problems, ...measure.problems];
+
+  if (c.actor !== null) {
+    const actor = c.actor;
+    const state = c.states[c.states.length - 1] ?? null;
+    const text = readFileSync(scene, "utf8");
+    const extras = actor.path.map((at, j) => {
+      const file = join(dir, `actor-${j}.scene.json`);
+      writeFileSync(file, sceneWithActor(text, actor.size, at));
+      const svg = render(options.root, file, state, join(dir, `actor-${j}.svg`));
+      const extra = actorDifferences({ svg, rgba: new Uint8Array(bytes(join(out, `actor-${j}.rgba`))) }, ids, width, height) - without;
+      if (extra > actorLimit) problems.push(`${label}, actor at ${JSON.stringify(at)}: ${extra} more pixels differ than without the actor (limit ${actorLimit})`);
+      return extra;
+    });
+    console.log(`case ${label}, actor in state ${state ?? "default"}: ${actor.path.length} positions, more pixels than without the actor: ${extras.join(", ")} (limit ${actorLimit})`);
+  }
+  console.log(`case ${label}: runs ${problems.some((p) => /between two runs|different files/.test(p)) ? "DIFFER" : "identical"}`);
+  return problems;
 }
 
 /** `npm run test:godot`: golden vectors, adapter tests and the cross-checks of SPEC 13.6. Returns the exit code. */
@@ -79,16 +146,26 @@ export function runGodotChecks(options: Options): number {
   const work = mkdtempSync(join(tmpdir(), "isoblock-godot-"));
   try {
     cpSync(join(options.root, "adapters", "godot"), join(work, "project"), { recursive: true, filter: (src) => !src.includes(`${"/"}.godot`) });
-    const cases = (JSON.parse(readFileSync(join(options.root, "tests", "fixtures", "export", "cases.json"), "utf8")) as { cases: ExportCase[] }).cases;
-    const garden = cases.find((c) => c.name === "garden") ?? (cases[0] as ExportCase);
+    const fixtures = join(options.root, "tests", "fixtures");
+    const exportCases = (JSON.parse(readFileSync(join(fixtures, "export", "cases.json"), "utf8")) as { cases: { name: string; scene: string }[] }).cases;
+    const godot = JSON.parse(readFileSync(join(fixtures, "godot", "cases.json"), "utf8")) as GodotCases;
+    // The adapter's own tests run on `walk`: anchors, zones, lanes, states and sliced objects.
     const sample = join(work, "sample.runtime.json");
-    isoblock(options.root, ["export", join(options.root, garden.scene), "--target", "runtime", "-o", sample]);
-    const adapter = runGodot(options, work, "adapter_test", ["--golden", join(options.root, "tests", "golden", "projection.json"), "--runtime", sample]);
+    isoblock(options.root, ["export", join(fixtures, "gameplay", "walk.scene.json"), "--target", "runtime", "-o", sample]);
+    const golden = join(options.root, "tests", "golden");
+    const adapter = runGodot(options, work, "adapter_test", ["--golden", join(golden, "projection.json"), "--sort", join(golden, "sort.json"), "--runtime", sample]);
     const line = /godot adapter: (\d+) checks, (\d+) failed/.exec(adapter.stdout);
-    console.log(line === null ? "adapter tests: no result" : `adapter tests (golden vectors included): ${line[1]} checks, ${line[2]} failed`);
+    console.log(line === null ? "adapter tests: no result" : `adapter tests (golden vectors and sort keys included): ${line[1]} checks, ${line[2]} failed`);
     const problems: string[] = [];
-    if (adapter.status !== 0 || line === null || line[2] !== "0") problems.push(`adapter tests failed:\n${adapter.stdout}\n${adapter.stderr}`);
-    for (const c of cases) problems.push(...crossCheck(options, work, c));
+    const errors = scriptErrors(adapter);
+    if (adapter.status !== 0 || line === null || line[2] !== "0" || errors.length > 0) {
+      problems.push(`adapter tests failed${errors.length > 0 ? ` (${errors.join("; ")})` : ""}:\n${adapter.stdout}\n${adapter.stderr}`);
+    }
+    for (const c of exportCases) {
+      const plain: GodotCase = { name: c.name, scene: c.scene, states: [null], instantiate: null, unmapped: null, actor: null };
+      problems.push(...crossCheck(options, work, `export ${c.name}`, plain, godot.actorLimit));
+    }
+    for (const c of godot.cases) problems.push(...crossCheck(options, work, `godot ${c.name}`, c, godot.actorLimit));
     for (const p of problems) console.error(`FAIL ${p}`);
     console.log(problems.length === 0 ? "godot checks passed" : `godot checks failed: ${problems.length} problems`);
     return problems.length === 0 ? 0 : 1;

@@ -1,5 +1,43 @@
 # Changelog
 
+## 0.8.0
+
+Stage 8: the Godot adapter draws sprites and actors by the engine rule, applies states and instantiates types; the editor runs grid checks again when a drag ends. The scene file and the runtime file (`isoblock-runtime/2`) do not change.
+
+### Breaking: Godot adapter tree and API
+
+`adapters/godot/isoblock_runtime.gd` now draws the `sprites` of the runtime file, in ascending key, as the child order of one node (SPEC 13.4, 13.8). Parts are no longer nodes, and no node uses `z_index`.
+
+| 0.7.0 | Now |
+|---|---|
+| `Objects/<object>/<part>` (`Node2D` with an absolute `z_index` = `order`) holding face polygons | `Sprites/<sprite>` (`Node2D`, meta `object`, `key`, `slice`) in draw order, holding the faces of its pieces, or an instance of the type's scene |
+| `Objects/<object>` holds parts and anchors | `Objects/<object>` holds only its anchors (`Marker2D`) and its meta |
+| `build(data, color_of)` returns `{ root, code, message }` | `build(data, color_of, scenes)` returns `{ root, code, message, unmapped }` |
+| `E_Z_RANGE` (more than 4097 parts) | removed: any number of parts fits |
+| states and actors not supported | `apply_state(root, name)` (`E_STATE`); `add_actor`, `move_actor`, `remove_actor` (`E_ACTOR`); `sort_key(dir, footprint)`, `order_direction(camera)`, `faces(camera, dir, box)` |
+
+Upgrade from 0.7.0:
+
+1. Copy the new `isoblock_runtime.gd` into the game project. Runtime files exported by 0.7.0 load unchanged; an object without `sprites` and a file without `states` are now `E_SCHEMA`, so export older files again.
+2. Code that looked up parts under `Objects/<object>/<part>` or read their `z_index` must use the sprites: the children of `Sprites` whose meta `object` is the object id. Anchors stay at `Objects/<object>/<anchor>`, with the same meta.
+3. Do not reorder the children of `Sprites`, set a `z_index` on them or turn on y-sort: the child order is the draw order. Add moving objects with `add_actor(root, id, [w, d, h], [u, v], node)` and move them with `move_actor`, which keeps them in their place; a node added to the tree by other means is not sorted.
+4. To show art instead of debug boxes, pass `scenes` (type name to `PackedScene`) to `build`. The origin of each scene sits on the projected center of the object's footprint at h = 0; a sliced object shows one clipped copy per slice. `unmapped` lists the types that are still drawn as debug boxes.
+5. Code that checked for `E_Z_RANGE` can drop that branch.
+
+### Added
+
+- Godot adapter (SPEC 13.8): the `Sprites` container in the draw order of the engine rule (ascending key, equal keys in the order of the sprite list); instancing through a type to `PackedScene` map with the pivot on the projected footprint center, one instance per slice of a sliced object under a `Polygon2D` mask (the hull of the slice's pieces, `clip_children` = `CLIP_CHILDREN_ONLY`), instance meta `object`, `type`, `rot` and `slice`, and `unmapped`; `apply_state` with `""` for the default state and `E_STATE`; actors (`add_actor`, `move_actor`, `remove_actor`) placed after every scene sprite with a key at most theirs and in the order added among equal keys, drawn by the game's node or as a box, and `E_ACTOR`; `sort_key` and `order_direction` in double precision. A `Vector2` position is read as the shortest decimal with the same single-precision value, so actor keys equal the tool's keys.
+- Adapter tests: the keys of `tests/golden/sort.json` through `sort_key`, the tree and the draw order (also with equal keys), `unmapped`, the instances and their masks, states, actors, actor order on equal keys, and the error codes.
+- `npm run test:godot` runs every case of `tests/fixtures/godot/cases.json`: the states in order, the instanced types drawn from white art colored through `modulate`, and the actor along its path, where each frame may differ from the SVG of the scene with the actor (`isoblock-actor`) in at most `actorLimit` more pixels than the frame without it. A GDScript runtime error in a Godot run is now a failure.
+- Editor: during a drag, the rows of `reachable` and `sort_consistency` keep their last result and are marked out of date; they run again when the drag ends or is cancelled (SPEC 10). `window.isoblock.state()` reports the ids of those rows as `stale`.
+- Core: `searchesGrid`, the `defer` argument of `updateResults` and `rerunResults` in `src/core/incremental.ts`.
+- Tests: the editor's grid checks on `walk` and `court` (rows out of date during a drag, the panel equal to `check --json` on the saved file after the drop) and the frame-time test on both scenes (stage 2 criterion: the 95th-percentile interval between frames on the phone profile at 4x slowdown).
+
+### Changed
+
+- The cross-check of SPEC 13.6 clips each polygon to the frame before it takes the box of an object alone (stage 5 to 7 clipped the box, which differs where a frame edge cuts a slanted polygon edge).
+- `docs/AGENT_GUIDE.md` covers the adapter's sprites, states, actors and instancing, and the editor's grid checks.
+
 ## 0.7.0
 
 Stage 7: sprites, slices and sort keys, `sort_consistency`, and the runtime file `isoblock-runtime/2`.

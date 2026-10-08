@@ -111,6 +111,9 @@ main { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1
 .check[data-status="skip"] .badge { color: var(--skip); }
 .check[aria-pressed="true"] { background: #fff3d6; border-color: #e0a400; color: var(--ink); }
 .check[aria-pressed="true"] .message { color: var(--ink); }
+.check .stale { display: none; grid-column: 2; font-size: 12px; font-style: italic; color: var(--muted); }
+.check[data-stale="true"] { opacity: 0.6; }
+.check[data-stale="true"] .stale { display: block; }
 
 .overlays { display: flex; flex-wrap: wrap; gap: 4px 14px; }
 .overlays label { display: inline-flex; align-items: center; gap: 6px; min-height: var(--touch); }

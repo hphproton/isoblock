@@ -16,10 +16,10 @@ function files(dir: string): string[] {
 describe("Godot adapter (SPEC 13.8)", () => {
   const adapter = readFileSync(join(godot, "isoblock_runtime.gd"), "utf8");
 
-  it("is 150 to 300 lines without its tests", () => {
+  it("is 150 to 400 lines without its tests", () => {
     const lines = adapter.trimEnd().split("\n").length;
     expect(lines).toBeGreaterThanOrEqual(150);
-    expect(lines).toBeLessThanOrEqual(300);
+    expect(lines).toBeLessThanOrEqual(400);
   });
 
   it("is not npm code and imports nothing from src/", () => {
@@ -42,8 +42,16 @@ describe("Godot adapter (SPEC 13.8)", () => {
     expect(readFileSync(join(godot, ".gitignore"), "utf8")).toMatch(/^\.godot\/$/m);
   });
 
-  it("reports the error codes of the runtime file", () => {
-    for (const code of ["E_SCHEMA", "E_DUPLICATE_ID", "E_Z_RANGE", "E_IO", "E_JSON_PARSE"]) expect(adapter).toContain(code);
+  it("reports the error codes of SPEC 13.8, and no longer E_Z_RANGE", () => {
+    for (const code of ["E_SCHEMA", "E_DUPLICATE_ID", "E_IO", "E_JSON_PARSE", "E_STATE", "E_ACTOR"]) expect(adapter).toContain(code);
+    expect(adapter).not.toContain("E_Z_RANGE");
+  });
+
+  it("draws by the child order of one node, without z_index or y-sort (SPEC 13.8)", () => {
+    expect(adapter).not.toMatch(/z_index\s*=|z_as_relative\s*=|y_sort_enabled\s*=/);
+    for (const api of ["static func build(data: Dictionary, color_of: Callable = Callable(), scenes: Dictionary = {})", "static func apply_state(", "static func add_actor(", "static func move_actor(", "static func remove_actor(", "static func sort_key("]) {
+      expect(adapter).toContain(api);
+    }
   });
 
   it("reads the schema value of the runtime file the tool writes", () => {

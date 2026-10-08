@@ -1,10 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { runChecks } from "../../src/core/checks";
 import { moveObject, setRotation, setTypeSize } from "../../src/core/edit";
-import { changedObjects, involves, updateResults } from "../../src/core/incremental";
+import { changedObjects, involves, rerunResults, searchesGrid, updateResults } from "../../src/core/incremental";
 import type { Scene } from "../../src/core/types";
 import { fixtureNames, loadScene } from "../helpers/fixtures";
 import { loadWalk } from "../helpers/states";
+import { loadSortScene } from "../helpers/sort";
 import { box, makeScene } from "../helpers/scene";
 
 const yard = loadScene("yard");
@@ -257,5 +258,65 @@ describe("updateResults: the gameplay checks", () => {
     const next = { ...walk, zones: (walk.zones ?? []).slice(0, 1) };
     expect(changedObjects(walk, next)).toBe("all");
     expect(updateResults(walk, next, before).results).toEqual(runChecks(next));
+  });
+});
+
+describe("updateResults: grid checks wait for the end of a drag (SPEC 10)", () => {
+  const walk = loadWalk();
+  const court = loadSortScene({ scene: "tests/fixtures/sort/court.scene.json" });
+  const reachable = ["k1", "k2", "k3", "k4", "k5", "k6", "k7", "k8"];
+
+  it("names reachable and sort_consistency as the checks that search a grid", () => {
+    const grid = [...(walk.checks ?? []), ...(court.checks ?? [])].filter(searchesGrid).map((c) => c.check);
+    expect(new Set(grid)).toEqual(new Set(["reachable", "sort_consistency"]));
+    expect((walk.checks ?? []).filter((c) => !searchesGrid(c)).map((c) => c.check)).toEqual([
+      "capacity", "capacity", "capacity", "capacity", "min_screen_size", "min_screen_size", "visible", "clearance", "no_overlap",
+    ]);
+  });
+
+  it("keeps the previous result of a deferred check, lists it, and runs the other involved checks", () => {
+    const before = runChecks(walk);
+    const next = moveObject(walk, "barrier1", [5, 7.5]).scene;
+    const update = updateResults(walk, next, before, searchesGrid);
+    expect(update.deferred).toEqual(reachable);
+    expect(update.rerun).toEqual(["s1", "s2", "s3", "s4", "v1"]);
+    const fresh = runChecks(next);
+    (walk.checks ?? []).forEach((spec, i) => {
+      if (reachable.includes(spec.id)) expect(update.results[i]).toBe(before[i]);
+      else expect(update.results[i]).toEqual(fresh[i]);
+    });
+    // The move opens a path, so the deferred result of k2 is out of date until it runs again.
+    expect(update.results[1]?.status).toBe("fail");
+    expect(fresh[1]?.status).toBe("pass");
+    expect(rerunResults(next, update.results, new Set(update.deferred))).toEqual(fresh);
+  });
+
+  it("defers every sort_consistency check of court for a moved object", () => {
+    const before = runChecks(court);
+    const next = moveObject(court, "crate", [4.4, 3.9]).scene;
+    const update = updateResults(court, next, before, searchesGrid);
+    expect(update.deferred).toEqual(["s1", "s2", "s3", "s4", "s5", "s6", "s7", "s8"]);
+    expect(update.rerun).toEqual([]);
+    update.results.forEach((r, i) => expect(r).toBe(before[i]));
+    expect(rerunResults(next, update.results, new Set(update.deferred))).toEqual(runChecks(next));
+  });
+
+  it("runs every check, grid checks included, when a shared input changes", () => {
+    const before = runChecks(walk);
+    const next = { ...walk, zones: (walk.zones ?? []).slice(0, 1) };
+    const update = updateResults(walk, next, before, searchesGrid);
+    expect(update.deferred).toEqual([]);
+    expect(update.results).toEqual(runChecks(next));
+  });
+
+  it("re-runs only the named checks and keeps unchanged results as the same objects", () => {
+    const before = runChecks(walk);
+    expect(rerunResults(walk, before, new Set())).toBe(before);
+    const again = rerunResults(walk, before, new Set(["k1", "c1"]));
+    again.forEach((r, i) => expect(r).toBe(before[i]));
+    const next = moveObject(walk, "barrier1", [5, 7.5]).scene;
+    const partly = rerunResults(next, before, new Set(["k2"]));
+    expect(partly[1]).toEqual(runChecks(next)[1]);
+    expect(partly[0]).toBe(before[0]);
   });
 });

@@ -65,7 +65,10 @@ function summary(results: readonly CheckResult[]): string {
   return `(${parts.join(", ")})`;
 }
 
-/** Live check panel: one row per check; tapping a row highlights its objects in both views. */
+/**
+ * Live check panel: one row per check; tapping a row highlights its objects in both views. During a
+ * drag, the rows of grid checks keep their last result and are marked out of date (SPEC 10).
+ */
 export function mountChecks(store: EditorStore): void {
   const list = byId("checks-list");
   const count = byId("checks-count");
@@ -73,6 +76,8 @@ export function mountChecks(store: EditorStore): void {
   const press = (state: EditorState): void => {
     for (const b of list.querySelectorAll<HTMLButtonElement>("button.check")) {
       b.setAttribute("aria-pressed", String(b.dataset.check === state.highlightCheck));
+      const stale = state.stale.has(b.dataset.check ?? "");
+      if ((b.dataset.stale === "true") !== stale) b.dataset.stale = String(stale);
     }
   };
   const render = (state: EditorState): void => {
@@ -99,7 +104,14 @@ export function mountChecks(store: EditorStore): void {
     press(state);
   };
   store.subscribe((state, previous) => {
-    if (state.results !== previous.results || state.history !== previous.history || state.highlightCheck !== previous.highlightCheck) render(state);
+    if (
+      state.results !== previous.results ||
+      state.history !== previous.history ||
+      state.highlightCheck !== previous.highlightCheck ||
+      state.stale !== previous.stale
+    ) {
+      render(state);
+    }
   });
   render(store.get());
 }
@@ -111,6 +123,7 @@ function rowButton(store: EditorStore, r: CheckResult): HTMLButtonElement {
     el("span", { class: "badge" }, r.status.toUpperCase()),
     el("span", { class: "title" }, `${r.id} ${r.check}`),
     el("span", { class: "message" }, r.message),
+    el("span", { class: "stale" }, "out of date: runs again when the drag ends"),
   );
   button.addEventListener("click", () => store.highlightCheck(r.id));
   return button;

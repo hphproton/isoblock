@@ -2,7 +2,10 @@ import type { Browser, CDPSession, Page } from "playwright-core";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import type { Vec2 } from "../../src/core/types";
 import type { FrameSnapshot } from "../../src/editor/stats";
-import { ev, Fingers, hasBrowser, launch, openEditor, percentile, phone, screenOf } from "../helpers/browser";
+import { readFileSync } from "node:fs";
+import { ev, Fingers, hasBrowser, launch, openEditor, percentile, phone, sceneFile, screenOf, type SceneInput } from "../helpers/browser";
+import { sortScenePath } from "../helpers/sort";
+import { walkScenePath } from "../helpers/states";
 
 let browser: Browser;
 
@@ -126,12 +129,13 @@ async function oneRunMeets(
   expect.fail(`none of ${RUNS} runs met the criterion: ${misses.join(" | ")}`);
 }
 
-/** A page with the editor on `crowd`, the CPU slowed down, closed again when `use` is done. */
+/** A page with the editor on a scene (`crowd` by default), the CPU slowed down, closed again when `use` is done. */
 async function withEditor<T>(
   options: Parameters<typeof openEditor>[2],
   use: (page: Page, client: CDPSession) => Promise<T>,
+  scene: SceneInput = "crowd",
 ): Promise<T> {
-  const { page, context } = await openEditor(browser, "crowd", options);
+  const { page, context } = await openEditor(browser, scene, options);
   try {
     const client = await context.newCDPSession(page);
     await client.send("Emulation.setCPUThrottlingRate", { rate: SLOWDOWN });
@@ -217,4 +221,29 @@ describe.skipIf(!hasBrowser)("editor: frame time while dragging 200 objects (SPE
     },
     TEST_TIMEOUT_MS,
   );
+});
+
+/** SPEC section 17, stage 2: the 95th-percentile interval between animation frames, at most 1.1 display intervals. */
+const INTERVAL_MS = BUDGET_MS * 1.1;
+
+const gridScenes = [
+  { name: "walk", path: walkScenePath(), object: "barrier1" },
+  { name: "court", path: sortScenePath({ scene: "tests/fixtures/sort/court.scene.json" }), object: "crate" },
+] as const;
+
+describe.skipIf(!hasBrowser)("editor: frame time while dragging on scenes with grid checks (SPEC section 17, stage 8)", () => {
+  for (const c of gridScenes) {
+    it(
+      `${c.name}: phone with a 2x screen, input at the display rate: p95 interval at most ${INTERVAL_MS.toFixed(1)} ms at ${SLOWDOWN}x slowdown, in one of ${RUNS} runs`,
+      async () => {
+        const scene = sceneFile(`${c.name}.scene.json`, JSON.parse(readFileSync(c.path, "utf8")));
+        await oneRunMeets(
+          `${c.name}, phone with a 2x screen, input at display rate`,
+          () => withEditor(phone, async (page) => measureAtDisplayRate(page, await screenOf(page, "iso", c.object)), scene),
+          (snapshot) => [atMost("interval p95", percentile(snapshot.interval, 95), INTERVAL_MS)],
+        );
+      },
+      TEST_TIMEOUT_MS,
+    );
+  }
 });

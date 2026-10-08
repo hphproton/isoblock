@@ -3,6 +3,8 @@ import { runChecks } from "../../src/core/checks";
 import { moveObject, setRotation } from "../../src/core/edit";
 import { currentScene, EditorStore, isDirty, canUndoState, canRedoState } from "../../src/editor/store";
 import { loadScene } from "../helpers/fixtures";
+import { loadSortScene } from "../helpers/sort";
+import { loadWalk } from "../helpers/states";
 
 const overlap = loadScene("overlap");
 const crowd = loadScene("crowd");
@@ -206,5 +208,79 @@ describe("EditorStore: view state", () => {
     store.select(null);
     store.setSnap(store.get().snap);
     expect(seen).not.toHaveBeenCalled();
+  });
+});
+
+describe("EditorStore: grid checks wait for the end of a drag (SPEC 10)", () => {
+  const walk = loadWalk();
+  const reachable = ["k1", "k2", "k3", "k4", "k5", "k6", "k7", "k8"];
+  // Moving barrier1 out of the gap in the lawn opens a path: k2 goes from fail to pass.
+  const first = moveObject(walk, "barrier1", [5, 7.2]).scene;
+  const second = moveObject(first, "barrier1", [5, 7.5]).scene;
+
+  it("keeps the result of every grid check during a drag and marks it out of date; the other checks run", () => {
+    const store = opened(walk);
+    const before = store.get().results;
+    store.setLive(first);
+    const state = store.get();
+    expect([...state.stale]).toEqual(reachable);
+    const fresh = runChecks(first);
+    state.results.forEach((r, i) => {
+      if (reachable.includes(r.id)) expect(r).toBe(before[i]);
+      else expect(r).toEqual(fresh[i]);
+    });
+    const stale = state.stale;
+    store.setLive(second);
+    expect(store.get().stale).toBe(stale);
+    expect(store.get().results.find((r) => r.id === "k2")?.status).toBe("fail");
+  });
+
+  it("runs the grid checks again when the drag ends, so the results equal a full run", () => {
+    const store = opened(walk);
+    store.setLive(first);
+    store.setLive(second);
+    store.commitLive();
+    expect(store.get().stale.size).toBe(0);
+    expect(store.get().results).toEqual(runChecks(second));
+    expect(store.get().results.find((r) => r.id === "k2")?.status).toBe("pass");
+  });
+
+  it("runs them again when a drag is cancelled, for the scene before the drag", () => {
+    const store = opened(walk);
+    store.setLive(second);
+    store.cancelLive();
+    expect(store.get().stale.size).toBe(0);
+    expect(store.get().results).toEqual(runChecks(walk));
+  });
+
+  it("runs every involved check at once for other edits, undo and redo", () => {
+    const store = opened(walk);
+    store.edit(moveObject(walk, "barrier1", [5, 7.5]), "barrier1");
+    expect(store.get().stale.size).toBe(0);
+    expect(store.get().results).toEqual(runChecks(second));
+    store.undo();
+    expect(store.get().results).toEqual(runChecks(walk));
+    store.redo();
+    expect(store.get().results).toEqual(runChecks(second));
+    expect(store.get().stale.size).toBe(0);
+  });
+
+  it("defers every sort_consistency check of court during a drag", () => {
+    const court = loadSortScene({ scene: "tests/fixtures/sort/court.scene.json" });
+    const store = opened(court);
+    const moved = moveObject(court, "crate", [4.4, 3.9]).scene;
+    store.setLive(moved);
+    expect([...store.get().stale]).toEqual(["s1", "s2", "s3", "s4", "s5", "s6", "s7", "s8"]);
+    store.commitLive();
+    expect(store.get().stale.size).toBe(0);
+    expect(store.get().results).toEqual(runChecks(moved));
+  });
+
+  it("opens a scene with nothing out of date", () => {
+    const store = opened(walk);
+    store.setLive(first);
+    store.open(walk, "walk.scene.json");
+    expect(store.get().stale.size).toBe(0);
+    expect(store.get().results).toEqual(runChecks(walk));
   });
 });

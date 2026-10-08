@@ -241,3 +241,27 @@ Template:
   - `README.md` still says "Status: pre-release, stage 1 in progress"; I did not touch it, as no stage task covers it.
 - Answer (maintainer): Approved as written; every reading agrees with the maintainer's reference. SPEC 9.3 now states the state rule (sprites and piece order from the scene without the hidden objects, an `ids` list that loses all objects examines none), the order of the two `skip` rules and how `positions` counts. Message and `describe` wording stay free. The release commit points `README.md` to `ROADMAP.md` for the status.
 
+
+## Q-024 · Godot adapter details where SPEC 13.8 is silent
+- Spec section: 13.4, 13.6, 13.8, 17 (Godot fixtures)
+- Question: A few points of the stage 8 adapter and of `npm run test:godot` are not stated.
+- Reading chosen for now:
+  - Actor keys are compared with the sprite keys of the file exactly (`<=`), so they must round the same way: `sort_key` computes `cu * (u0 + u1) + cv * (v0 + v1)` in double precision and rounds with `round(x * 1e6) / 1e6` (halves away from zero, as `toFixed` does for exact halves). `order_direction(camera)` computes `c` in double precision with 9 decimals; `Vector3` and `Vector2` hold single precision only, which is not enough for 6 decimals of a key. `camera_direction` now returns that rounded direction.
+  - `at` of `add_actor` and `move_actor` is an Array `[u, v]` or a `Vector2`. A `Vector2` is read as the shortest decimal with the same single-precision value (`Vector2(4.2, 1.3)` gives 4.2, not 4.19999980926514). Without that, the fixture position (5.7, 6.2) of `court` with a 0.4 x 0.4 actor gives the key 23.799999 instead of 23.8, and next to a sprite with the key 23.8 the actor would be drawn on the wrong side of it.
+  - An actor is a `Node2D` at the projection of `at` at h = 0; the game's `node` is its child with its position set to (0, 0), and the debug box is drawn relative to it, so a move only changes the position and the child order. `remove_actor` frees the actor and the game's node with it. Among actors with equal keys the order is the order of `add_actor`; a moved actor keeps it, and an actor removed and added again comes after the others.
+  - `apply_state`, `add_actor`, `move_actor` and `remove_actor` return `{ code, message }`. The root keeps `camera`, `cameraDir`, `states` and a counter of added actors as meta.
+  - `check` (and so `build`) also requires the top-level `states` and the `sprites` of every object (`E_SCHEMA`): the adapter uses both.
+  - Instances are not turned for `rot`; they carry it as meta. The adapter does not set `modulate`; the test harness does, as SPEC 17 describes.
+  - Node names: sprites `<object id>_<slice>`, actors `actor_<id>`. Lookups use meta, never names, because Godot replaces characters such as `/` and `.` in node names.
+  - The line count is `wc -l` of `isoblock_runtime.gd`: 397 (comments included).
+  - Harness: an export case is drawn once in the default state, without instances or an actor, and `build` must return `unmapped: []` there and in the cases with `instantiate: null`. The scene with the actor (SPEC 13.6) gets the type `isoblock-actor` with `size` and the object `isoblock-actor` at `pos` = `at - [w/2, d/2]`, rounded to 9 decimals; it is rendered with `--state` of the last state. The actor's color is object number (objects + 1). "The frame without the actor" is the frame of the last state. A GDScript runtime error (`SCRIPT ERROR`) in any Godot run is a failure, because it leaves the current test function silently.
+- Answer (maintainer): Approved as written. SPEC 13.8 now states the `Vector2` reading, the order of a removed and re-added actor, the `E_SCHEMA` cases for `states` and `sprites`, and lookups by metadata. Failing on `SCRIPT ERROR` is a good catch; keep it.
+
+## Q-025 · Grid checks in the editor during a drag
+- Spec section: 10, 17 (stage 8)
+- Question: Which checks wait, what the panel shows, and what the frame-time test on `walk` and `court` measures are not fully stated.
+- Reading chosen for now:
+  - Every `reachable` and `sort_consistency` check waits during a drag, whatever its grid size; every other check runs live as before. They run again when the drag ends and also when it is cancelled (a second finger, `pointercancel`); before the pointer passes the drag threshold nothing changes.
+  - A row that waits keeps its status, message and highlight ids, is dimmed, and shows `out of date: runs again when the drag ends`; the count in the panel header counts it with its last status.
+  - The frame-time tests drag `barrier1` on `walk` and `crate` on `court` in the isometric view on the phone profile (390x844 at pixel ratio 2, one pointer move per animation frame, 4x CPU slowdown), along the path of the `crowd` tests. The condition is the SPEC 17 criterion only: the 95th-percentile interval at most 18.4 ms in one of up to 3 runs; work time and the median are printed.
+- Answer (maintainer): Approved as written. SPEC 10 now says that a cancelled drag re-runs the waiting checks too; the wording of a waiting row stays free.

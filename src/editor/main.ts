@@ -15,7 +15,15 @@ export interface IsoblockHook {
   scene(): Scene | null;
   /** The text `Save` would write. */
   text(): string | null;
-  state(): { fileName: string | null; selected: string | null; highlight: readonly string[]; dirty: boolean; mode: string };
+  state(): {
+    fileName: string | null;
+    selected: string | null;
+    highlight: readonly string[];
+    dirty: boolean;
+    mode: string;
+    /** Ids of the checks whose rows are out of date (grid checks during a drag). */
+    stale: readonly string[];
+  };
   screenOf(view: ViewKind, id: string): readonly [number, number] | null;
   viewport(view: ViewKind): Viewport;
   lockIcons(view: ViewKind): readonly string[];
@@ -142,7 +150,7 @@ window.isoblock = {
   },
   state: () => {
     const s = store.get();
-    return { fileName: s.fileName, selected: s.selected, highlight: [...s.highlightIds], dirty: isDirty(s), mode: s.mode };
+    return { fileName: s.fileName, selected: s.selected, highlight: [...s.highlightIds], dirty: isDirty(s), mode: s.mode, stale: [...s.stale] };
   },
   screenOf: (view, id) => views[view].screenOf(id),
   viewport: (view) => views[view].getViewport(),

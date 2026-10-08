@@ -180,6 +180,8 @@ Select an object (tap or click it) to see its properties, each with its unit:
 
 The checks of the scene run again after every change, and only the checks that involve the changed objects run again (`in_region` and `no_overlap` even measure only the changed objects). Tapping a row highlights its objects in both views; tapping it again, or `Esc`, clears the highlight. Rows show the same status, id and message as `isoblock check`.
 
+Checks that search a grid, `reachable` and `sort_consistency`, are too slow to run on every pointer move. While a drag is going on, their rows keep the last result, are dimmed and say `out of date: runs again when the drag ends`; when the object is dropped (or the drag is cancelled) they run again, so the panel then equals `isoblock check --json` on the saved file. Every other edit (a typed value, a lock, undo, redo, opening a file) runs every check it involves at once.
+
 ### Overlays
 
 Toggles for **Frame regions**, **Strips**, **Lanes**, **Zones**, **Anchors** (off by default) and **Object labels**.
@@ -190,7 +192,7 @@ One finger drags an object or pans; two fingers zoom and pan. Controls are 44 px
 
 ### Driving the editor from a script
 
-The page has a read-only object `window.isoblock` for tests and tools: `scene()`, `text()` (the text `Save` writes), `state()`, `screenOf(view, id)` (page coordinates that hit an object), `viewport(view)`, `lockIcons(view)`, `pixelRatio(view)`, `fit(view)`, `redraw(view)` and `frames` (`start()`, `stop()`, `snapshot()`). It cannot change the scene. The tests in `tests/editor/` use it with `playwright-core` and an installed Chromium.
+The page has a read-only object `window.isoblock` for tests and tools: `scene()`, `text()` (the text `Save` writes), `state()` (file name, selection, highlight, unsaved changes, view mode, and `stale`: the ids of the check rows that are out of date during a drag), `screenOf(view, id)` (page coordinates that hit an object), `viewport(view)`, `lockIcons(view)`, `pixelRatio(view)`, `fit(view)`, `redraw(view)` and `frames` (`start()`, `stop()`, `snapshot()`). It cannot change the scene. The tests in `tests/editor/` use it with `playwright-core` and an installed Chromium.
 
 ## Reading `describe`
 
@@ -677,7 +679,7 @@ Each object, in file order (output of `yard`, one line each):
 ```
 
 - `footprint` is `[u0, v0, u1, v1]` after rotation. `parts[].box` is `[u0, v0, h0, u1, v1, h1]` in world units after rotation; a type without parts has one part, `body`. `anchors[].at` is `[u, v, h]` in world units after rotation; `facing` and `kind` appear only when the type gives them.
-- `order` is the part's place in the painter's order (SPEC section 13.4): 0 is drawn first. It is computed for all parts of all objects together, so a part of one object can sit between two parts of another (the canopy of a tree in front of an actor, the actor in front of the trunk). Adapters use it as the draw order and do not sort static objects. `render` and the editor draw in the same order.
+- `order` is the part's place in the painter's order (SPEC section 13.4): 0 is drawn first. It is computed for all parts of all objects together, so a part of one object can sit between two parts of another (the canopy of a tree in front of an actor, the actor in front of the trunk). An adapter that draws parts instead of sprites uses it as the draw order and does not sort static objects. `render` and the editor draw in the same order.
 - Numbers the tool computes (footprints, boxes, anchors) are rounded to 6 decimals; `pos` is copied. `cameraDir` is the camera direction of SPEC section 5 with each component rounded to 9 decimals (`[1, 1, 1]` for true isometric).
 - `sprites` are the items an engine sorts and draws (see [Sprites and slices](#sprites-and-slices)); the bench above is cut into 3.
 - `states` has one entry per state of the scene, in file order, as `{ "hide": [ids] }` (`{ "closed": { "hide": ["bench"] } }`); it is `{}` when the scene has none. The file carries every state, so `export --target runtime` takes no `--state`.
@@ -694,7 +696,7 @@ A **sprite** is what an engine draws and sorts as one item: a whole object, or o
 - **Slices.** An object whose footprint is not square is cut along its long side into the number of slices that brings the slice length closest to the short side (at most 64; a tie keeps the smaller number). The `bench` above is 1.2 x 0.4, so it has 3 slices of 0.4 x 0.4. A square footprint, or one with no width or no depth, is one sprite.
 - **Pieces.** `pieces` are the part boxes cut to the slice, listed in the painter's order of their parts (`order`), so drawing them in list order gives the right result within a sprite. The first slice reaches to minus infinity and the last to plus infinity along the long axis, so a part that sticks out of the footprint (an awning) stays with the end slices. A piece no longer than 1e-9 along the long axis is left out.
 
-**The engine rule:** draw sprites in ascending `key`. On equal keys, draw scene sprites in the order of the sprite list, and actors (characters and vehicles that the game adds) after them. An actor's key is the key of its footprint. Draw the pieces of a sprite in list order. Static parts keep their `order` for adapters that do not sort sprites (the Godot adapter of this stage).
+**The engine rule:** draw sprites in ascending `key`. On equal keys, draw scene sprites in the order of the sprite list, and actors (characters and vehicles that the game adds) after them. An actor's key is the key of its footprint. Draw the pieces of a sprite in list order. The Godot adapter draws by this rule (see [Godot adapter](#godot-adapter)). Static parts keep their `order` for an adapter that draws parts instead of sprites; such an adapter cannot place a moving actor correctly.
 
 One key per sprite is exact next to a square footprint only. Where it is not, `sort_consistency` measures the error (see above).
 
@@ -736,7 +738,7 @@ $ isoblock export yard.scene.json --target gen-bbox --bbox-units norm1000 --bbox
 
 ## Godot adapter
 
-`adapters/godot/` holds a GDScript adapter for Godot 4.7 (Compatibility renderer). It reads the runtime file and builds a `Node2D` tree with the same projection and draw order as `render`. It is not npm code and imports nothing from `src/`.
+`adapters/godot/` holds a GDScript adapter for Godot 4.7 (Compatibility renderer). It reads the runtime file and builds a `Node2D` tree with the same projection as `render`, and draws the sprites of the file by the engine rule of SPEC 13.4. Games add their moving objects (actors) through it, switch states with it, and can replace the debug boxes with their own scenes per type. It is not npm code and imports nothing from `src/`.
 
 ### Setup
 
@@ -755,24 +757,50 @@ extends Node2D
 
 const Runtime := preload("res://isoblock/isoblock_runtime.gd")
 
+var root: Node2D
+
 
 func _ready() -> void:
 	var loaded := Runtime.load_file("res://data/scenes/yard.json")
 	if loaded["code"] != "":
 		return
-	var built := Runtime.build(loaded["data"], func(object: Dictionary) -> Color: return Color.from_hsv(float(object["id"].hash() % 360) / 360.0, 0.5, 0.9))
+	# The game's art per type (these paths are examples); other types are drawn as debug boxes.
+	var scenes := { "bench": preload("res://art/bench.tscn"), "tree": preload("res://art/tree.tscn") }
+	var built := Runtime.build(loaded["data"], func(object: Dictionary) -> Color: return Color.from_hsv(float(object["id"].hash() % 360) / 360.0, 0.5, 0.9), scenes)
 	if built["code"] != "":
 		return
-	add_child(built["root"])
+	if built["unmapped"].size() > 0:
+		push_warning("drawn as debug boxes: %s" % [built["unmapped"]])
+	root = built["root"]
+	add_child(root)
+	Runtime.apply_state(root, "closed")
+	Runtime.add_actor(root, "hero", [0.4, 0.4, 1.2], [2.7, 1.7], preload("res://art/hero.tscn").instantiate())
+
+
+func walk_to(at: Array) -> void:
+	Runtime.move_actor(root, "hero", at)
 ```
 
-The same script is available as the global class `IsoblockRuntime` once Godot has scanned the project. This example ran with Godot 4.7.1: the `yard` file gives 5 objects, 2 lanes, and `Objects/bench/seat1` at (362.35, 520) with `kind` `seat` and `facing` `back`.
+The same script is available as the global class `IsoblockRuntime` once Godot has scanned the project. Ran with Godot 4.7.1 on the `yard` file (debug boxes, no `scenes`): 5 objects, 7 sprites, 2 lanes, `Objects/bench/seat1` at (362.35, 520) with `kind` `seat`; the sprites in draw order have the keys 7.34 (the object `actor`), 8.8 (`tree`), 12.8, 13.6, 14.2, 14.4 and 15.8; `apply_state(root, "closed")` hides `bench`; an actor added at (2.7, 1.7) has the key 8.8 and is drawn right after `tree`.
 
-- `load_file(path)` returns `{ data, code, message }`. `build(data, color_of)` returns `{ root, code, message }`; `color_of` takes the object's dictionary and returns the flat `Color` of its boxes (optional). `check(data)` validates without building. `project(camera, u, v, h)`, `unproject(camera, point, h)` and `camera_direction(camera)` match `tests/golden/projection.json` within 0.001.
-- Errors are returned with a code (and also printed): `E_SCHEMA` (a `schema` other than `isoblock-runtime/2`, or a missing key), `E_DUPLICATE_ID` (object, zone or lane ids, or the part or anchor ids of one object), `E_Z_RANGE` (more parts than `z_index` holds: 4097), `E_IO`, `E_JSON_PARSE`. On an error nothing is built and `root` is null.
-- The tree: root (named by the scene id) with three containers. `Objects` has one `Node2D` per object, named by its id, with meta `id`, `type`, `rot`, `tags` and `footprint`; each part is a child `Node2D` with an absolute `z_index` equal to its `order` and the faces of its box that point toward the camera as `Polygon2D` (antialiasing off, one flat color per object); each anchor is a `Marker2D` named by its id at its projected point, with meta `kind` and `facing`. `Zones` has one hidden `Polygon2D` per zone and `Lanes` one hidden `Line2D` per lane, each with its data as meta (`kind`, `points`, and for lanes `dir` and `width` in world units).
-- The adapter reads `isoblock-runtime/2`. It draws the parts by `order`, as before, and does not use `sprites` and `states` yet. Drawing sprites and actors by the engine rule, applying states and `instantiate` by type arrive in stage 8.
-- Gameplay reads zones, lanes and anchors from the meta; the adapter does not move anything.
+**Functions** (all static; errors come back as `{ code, message }` with an empty `code` on success, and are also printed):
+
+- `load_file(path)` returns `{ data, code, message }` (`E_IO`, `E_JSON_PARSE`).
+- `build(data, color_of, scenes)` returns `{ root, code, message, unmapped }`. `color_of` (optional) takes the object's dictionary and returns the flat `Color` of its debug faces. `scenes` (optional) maps type names to `PackedScene`s. `unmapped` lists the types of the file's objects that `scenes` lacks, each once, in the order of their first object, and `[]` when `scenes` is empty; those types are drawn as debug boxes. On an error nothing is built and `root` is null. `check(data)` validates without building.
+- `apply_state(root, name)` shows every object, then hides the objects that `states.<name>.hide` lists, with their sprites and anchors; `""` is the default state and hides nothing. An unknown name is `E_STATE` and changes nothing. Actors are not affected.
+- `add_actor(root, id, size, at, node, color)` adds a moving object of `size` `[w, d, h]` whose footprint is centered on `at`. `node` (optional) is the game's node for it; it is placed at the projection of `at` at h = 0. Without a node the actor draws its box in `color`. `move_actor(root, id, at)` moves it and gives it its new place in the draw order; `remove_actor(root, id)` removes and frees it (the game's node too). A duplicate id on `add_actor`, and an unknown id on `move_actor` or `remove_actor`, are `E_ACTOR`.
+- `at` is an array `[u, v]` (double precision) or a `Vector2`. A `Vector2` holds single precision, so its components are read back as the shortest decimal with the same value (4.2, not 4.19999980926514); that keeps the actor's key equal to a sprite's key where the tool says they are equal.
+- `sort_key(dir, footprint)` is the key of a footprint `[u0, v0, u1, v1]` (SPEC 13.4) for a camera direction with 9 decimals, such as the file's `cameraDir`; `order_direction(camera)` computes that direction from a camera. `project(camera, u, v, h)`, `unproject(camera, point, h)` and `camera_direction(camera)` match `tests/golden/projection.json` within 0.001, and `sort_key` matches the keys of `tests/golden/sort.json`.
+- `faces(camera, dir, box)` returns the faces of a box that point toward the camera, as the debug drawing uses them.
+- Error codes: `E_SCHEMA` (a `schema` other than `isoblock-runtime/2`, a missing key, an object without `sprites`), `E_DUPLICATE_ID` (object, zone or lane ids, or the part or anchor ids of one object), `E_IO`, `E_JSON_PARSE`, `E_STATE`, `E_ACTOR`.
+
+**The tree.** The root is named by the scene id and has four containers:
+
+- `Objects`: one `Node2D` per object, named by its id, with meta `id`, `type`, `rot`, `tags` and `footprint`. Its children are its anchors: a `Marker2D` named by the anchor id at its projected point, with meta `kind` and `facing`.
+- `Sprites`: one `Node2D` per sprite of the runtime file, with meta `object` (the object id), `key` and `slice` (its position in the object's `sprites`). **The child order is the draw order**: ascending key, equal keys in the order of the sprite list (objects in file order, slices in order). Every `z_index` stays 0 and relative, and Godot's y-sort is not used (it treats close keys as equal). A sprite of an unmapped type holds the faces of its pieces that point toward the camera, piece by piece, as `Polygon2D` (antialiasing off, the object's flat color). Actors are children of `Sprites` too, with meta `actor` (the id) and `key` (the key of their footprint): after every scene sprite whose key is at most theirs, before every scene sprite with a larger key, and among actors with equal keys in the order they were added. A moved actor keeps that order among actors of its key.
+- `Zones`: one hidden `Polygon2D` per zone, and `Lanes`: one hidden `Line2D` per lane, each with its data as meta (`kind`, `points`, and for lanes `dir` and `width` in world units). Gameplay reads zones, lanes and anchors from the meta; the adapter does not move anything.
+
+**Instancing.** A sprite of a mapped type holds an instance of the type's scene, positioned at the object's pivot: the projection of the center of its footprint at h = 0. So the origin of the game's scene is the point on the ground under the middle of the object, and the art is drawn around it in screen pixels (1 pixel per frame unit at scale 1). Instances carry meta `object`, `type`, `rot` and `slice`. An object of one sprite holds its instance directly. Each sprite of a sliced object (a long object, cut into slices so that one key per sprite sorts right next to a moving actor) holds a `Polygon2D` mask, the convex hull of the projected corners of the slice's pieces with `clip_children` set to `CLIP_CHILDREN_ONLY`, and under it its own copy of the instance; each slice shows the part of the image inside its pieces. Art that reaches outside the parts' boxes of a sliced object is cut off, so the parts should follow the art. The adapter does not turn instances: an instance carries the object's `rot` as meta, and the game picks or turns its art for it. To tint an instance, set its `modulate`.
 
 ### Test
 
@@ -782,10 +810,12 @@ The same script is available as the global class `IsoblockRuntime` once Godot ha
 GODOT=/opt/godot/Godot_v4.7.1-stable_linux.x86_64 npm run test:godot
 ```
 
-It builds the tool, runs the adapter's own tests in Godot (golden vectors, the node tree, the error codes), then, for every case in `tests/fixtures/export/cases.json`, exports the runtime file, renders the SVG, draws the file with the adapter at frame size (1 pixel per frame unit) and measures (SPEC section 13.6):
+It builds the tool and runs the adapter's own tests in Godot: golden vectors, the keys of `tests/golden/sort.json` through `sort_key`, the node tree and draw order, `unmapped` and the instances, states, actors and their order on equal keys, and the error codes. A GDScript runtime error in any Godot run counts as a failure. Then it draws, at frame size (1 pixel per frame unit), every case in `tests/fixtures/export/cases.json` once and every case in `tests/fixtures/godot/cases.json` in each of its states in order, and measures each frame against the SVG of `render` (with `--state` for a state; SPEC section 13.6):
 
-- each object alone: the box of its pixels is within 1 pixel of the box of its polygons in the SVG on every edge;
+- each object alone: the box of its pixels is within 1 pixel of the box of its polygons in the SVG on every edge, the polygons clipped to the frame first;
 - the whole frame: at most 100 pixels per 1,000,000 differ in which object they show, compared with a painter's raster of the SVG polygons (a pixel center on an edge goes to the polygon that owns it by the top-left rule);
+- `build` returns the case's `unmapped`; the instanced case draws its types from white art colored through `modulate`, each slice clipped by its mask;
+- with an actor, at each point of its path (in the last state) the whole frame differs in at most `actorLimit` more pixels than the frame without the actor, against the SVG of the scene with the actor added as its last object (`isoblock-actor`);
 - two runs of Godot give identical PNG bytes.
 
 The test prints one line per case and exits 0 only when everything holds. It is not part of `npm test`.

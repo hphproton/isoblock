@@ -1,7 +1,7 @@
 import { runChecks } from "../core/checks";
 import type { EditResult } from "../core/edit";
 import { canRedo, canUndo, commit, redo, startHistory, undo, type History } from "../core/history";
-import { updateResults } from "../core/incremental";
+import { rerunResults, searchesGrid, updateResults } from "../core/incremental";
 import { setLock } from "../core/locks";
 import type { CheckResult, Scene } from "../core/types";
 
@@ -24,6 +24,11 @@ export interface EditorState {
   readonly results: readonly CheckResult[];
   /** The scene that `results` belong to. */
   readonly resultsScene: Scene | null;
+  /**
+   * Ids of the checks whose result is out of date: grid checks keep their last result during a drag
+   * and run again when it ends (SPEC 10).
+   */
+  readonly stale: ReadonlySet<string>;
   readonly selected: string | null;
   readonly highlightCheck: string | null;
   readonly highlightIds: ReadonlySet<string>;
@@ -46,6 +51,7 @@ const INITIAL: EditorState = {
   saved: null,
   results: [],
   resultsScene: null,
+  stale: NO_IDS,
   selected: null,
   highlightCheck: null,
   highlightIds: NO_IDS,
@@ -103,13 +109,27 @@ export class EditorStore {
     for (const listener of [...this.listeners]) listener(next, previous);
   }
 
-  /** Results for `scene`, reusing what is known about the scene they were computed for. */
-  private resultsFor(scene: Scene): Pick<EditorState, "results" | "resultsScene" | "highlightIds"> {
-    const { resultsScene, results, highlightCheck } = this.state;
-    const update =
-      resultsScene === null ? { results: runChecks(scene) } : updateResults(resultsScene, scene, results);
-    const highlightIds = update.results === results ? this.state.highlightIds : idsOf(update.results, highlightCheck);
-    return { results: update.results, resultsScene: scene, highlightIds };
+  /**
+   * Results for `scene`, reusing what is known about the scene they were computed for. During a drag
+   * the grid checks keep their result and become stale; otherwise stale checks run again.
+   */
+  private resultsFor(scene: Scene, dragging = false): Pick<EditorState, "results" | "resultsScene" | "highlightIds" | "stale"> {
+    const { resultsScene, results, highlightCheck, stale } = this.state;
+    if (resultsScene === null) {
+      const fresh = runChecks(scene);
+      return { results: fresh, resultsScene: scene, highlightIds: idsOf(fresh, highlightCheck), stale: NO_IDS };
+    }
+    const update = updateResults(resultsScene, scene, results, dragging ? searchesGrid : undefined);
+    let next = update.results;
+    let nextStale = stale;
+    if (dragging && update.deferred.some((id) => !stale.has(id))) nextStale = new Set([...stale, ...update.deferred]);
+    if (!dragging && stale.size > 0) {
+      const ran = new Set(update.rerun);
+      next = rerunResults(scene, next, new Set([...stale].filter((id) => !ran.has(id))));
+      nextStale = NO_IDS;
+    }
+    const highlightIds = next === results ? this.state.highlightIds : idsOf(next, highlightCheck);
+    return { results: next, resultsScene: scene, highlightIds, stale: nextStale };
   }
 
   open(scene: Scene, fileName: string | null): void {
@@ -152,10 +172,10 @@ export class EditorStore {
     this.set({ notice: text === null ? null : { kind, text } });
   }
 
-  /** Preview a scene while a drag is going on. The history does not change. */
+  /** Preview a scene while a drag is going on. The history does not change; grid checks wait for the end of the drag. */
   setLive(scene: Scene): void {
     if (this.state.history === null) return;
-    this.set({ live: scene, ...this.resultsFor(scene) });
+    this.set({ live: scene, ...this.resultsFor(scene, true) });
   }
 
   /** Drop the preview and go back to the scene in the history. */
@@ -165,11 +185,11 @@ export class EditorStore {
     this.set({ live: null, ...this.resultsFor(history.present) });
   }
 
-  /** Make the preview the present scene: one history step for the whole drag. */
+  /** Make the preview the present scene: one history step for the whole drag. The stale checks run again. */
   commitLive(): void {
     const { history, live } = this.state;
     if (history === null || live === null) return;
-    this.set({ history: commit(history, live), live: null });
+    this.set({ history: commit(history, live), live: null, ...this.resultsFor(live) });
   }
 
   /** Apply the result of an edit as one history step. A blocked edit shows its reason. */

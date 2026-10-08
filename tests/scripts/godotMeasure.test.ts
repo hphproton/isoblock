@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
+import { ACTOR_ID, actorDifferences, sceneWithActor } from "../../scripts/godot/actor";
 import { measureCase } from "../../scripts/godot/compare";
-import { boxDifference, countDifferences, frameIds, frameLimit, paintedIds, polygonBoxes, type Box } from "../../scripts/godot/measure";
+import { boxDifference, clipToFrame, countDifferences, frameIds, frameLimit, paintedIds, polygonBoxes, type Box } from "../../scripts/godot/measure";
 import { objectPolygons, type ObjectPolygon } from "../../scripts/godot/svgObjects";
 
 const square = (ref: string, x0: number, y0: number, x1: number, y1: number): ObjectPolygon => ({
@@ -27,6 +28,26 @@ describe("godot cross-check: boxes", () => {
   it("takes the bounds of all polygons of an object, clipped to the frame", () => {
     const boxes = polygonBoxes([square("a", -5, 2, 4, 6), square("a", 3, 1, 12, 3), square("b", 20, 20, 30, 30)], ["a", "b", "c"], 10, 10);
     expect(boxes).toEqual([[0, 1, 10, 6], null, null]);
+  });
+
+  it("clips each polygon to the frame before taking its bounds (SPEC 13.6, stage 8)", () => {
+    // A triangle cut by the left edge along its slanted sides: inside the frame it spans y 2 to 6.
+    const triangle: ObjectPolygon = { ref: "a", points: [[-4, 0], [4, 4], [-4, 8]] };
+    expect(polygonBoxes([triangle], ["a"], 10, 10)).toEqual([[0, 2, 4, 6]]);
+    // Clipping the box of the polygon instead would give [0, 0, 4, 8].
+    expect(clipToFrame(triangle.points, 10, 10)).toEqual([[0, 2], [4, 4], [0, 6]]);
+  });
+
+  it("clips against every frame edge and leaves a polygon outside the frame empty", () => {
+    const diamond: [number, number][] = [[5, -2], [12, 5], [5, 12], [-2, 5]];
+    const clipped = clipToFrame(diamond, 10, 10);
+    expect(Math.min(...clipped.map((p) => p[0]))).toBe(0);
+    expect(Math.max(...clipped.map((p) => p[0]))).toBe(10);
+    expect(Math.min(...clipped.map((p) => p[1]))).toBe(0);
+    expect(Math.max(...clipped.map((p) => p[1]))).toBe(10);
+    expect(clipToFrame(diamond, 10, 10)).toHaveLength(8);
+    expect(clipToFrame([[20, 20], [30, 20], [30, 30]], 10, 10)).toEqual([]);
+    expect(polygonBoxes([{ ref: "a", points: [[-3, -3], [-1, -3], [-1, 12]] }], ["a"], 10, 10)).toEqual([null]);
   });
 
   it("measures the largest edge difference and lets empty boxes agree", () => {
@@ -131,5 +152,37 @@ describe("godot cross-check: one case", () => {
   it("reports a different list of objects or a frame of another size", () => {
     expect(measureCase({ svg, ids, width: 12, height: 12, alone: alone.slice(0, 1), rgba: engineFrame(12, 12) }).problems).toHaveLength(1);
     expect(measureCase({ svg, ids, width: 12, height: 12, alone, rgba: new Uint8Array(4) }).problems).toHaveLength(1);
+  });
+});
+
+describe("godot cross-check: actors (SPEC 13.6)", () => {
+  const scene = JSON.stringify({ schema: "isoblock/1", id: "s", types: { box: { size: [1, 1, 1] } }, objects: [{ id: "b", type: "box", pos: [0, 0] }] });
+
+  it("adds the actor as the last object, with its own type, footprint centered on its position", () => {
+    const withActor = JSON.parse(sceneWithActor(scene, [0.4, 0.4, 1.7], [2.35, 2.9]));
+    expect(withActor.types[ACTOR_ID]).toEqual({ size: [0.4, 0.4, 1.7] });
+    expect(withActor.objects.map((o: { id: string }) => o.id)).toEqual(["b", ACTOR_ID]);
+    // 2.35 - 0.2 is 2.1500000000000004 in floating point; the file keeps the decimal.
+    expect(withActor.objects[1]).toEqual({ id: ACTOR_ID, type: ACTOR_ID, pos: [2.15, 2.7] });
+    expect(withActor.types.box).toEqual({ size: [1, 1, 1] });
+  });
+
+  it("refuses a scene that already has the actor's type", () => {
+    const taken = JSON.stringify({ types: { [ACTOR_ID]: { size: [1, 1, 1] } }, objects: [] });
+    expect(() => sceneWithActor(taken, [1, 1, 1], [0, 0])).toThrow(/already has a type/);
+  });
+
+  it("counts the actor as the object after the scene's objects", () => {
+    const svg = [
+      '<polygon data-layer="object" data-ref="a" points="0,0 4,0 4,4 0,4" fill="#000"/>',
+      `<polygon data-layer="object" data-ref="${ACTOR_ID}" points="2,2 4,2 4,4 2,4" fill="#000"/>`,
+    ].join("\n");
+    const rgba = new Uint8Array(4 * 4 * 4);
+    for (let y = 0; y < 4; y++) {
+      for (let x = 0; x < 4; x++) rgba.set([0, x >= 2 && y >= 2 ? 2 : 1, 0, 255], (y * 4 + x) * 4);
+    }
+    expect(actorDifferences({ svg, rgba }, ["a"], 4, 4)).toBe(0);
+    rgba.set([0, 1, 0, 255], (3 * 4 + 3) * 4);
+    expect(actorDifferences({ svg, rgba }, ["a"], 4, 4)).toBe(1);
   });
 });
