@@ -1,0 +1,69 @@
+{
+  "schema": "isoblock/1",
+  "id": "openstrip",
+  "units": {
+    "name": "u"
+  },
+  "camera": {
+    "angleU": 30,
+    "angleV": 150,
+    "pxPerUnit": 100,
+    "origin": [
+      0,
+      300
+    ]
+  },
+  "frame": {
+    "w": 600,
+    "h": 2000,
+    "regions": [
+      {
+        "id": "view",
+        "rect": [
+          0,
+          0,
+          600,
+          1000
+        ]
+      },
+      {
+        "id": "panel",
+        "rect": [
+          100,
+          1000,
+          600,
+          1200
+        ],
+        "blocksScene": true
+      }
+    ]
+  },
+  "strips": [
+    {
+      "id": "ground",
+      "v": [
+        0,
+        null
+      ]
+    }
+  ],
+  "types": {
+    "box": {
+      "size": [
+        1,
+        1,
+        1
+      ]
+    }
+  },
+  "objects": [
+    {
+      "id": "crate",
+      "type": "box",
+      "pos": [
+        3,
+        0.5
+      ]
+    }
+  ]
+}

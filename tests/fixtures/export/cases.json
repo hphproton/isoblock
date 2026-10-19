@@ -93,6 +93,12 @@
         }
       ],
       "png": "garden.png"
+    },
+    {
+      "name": "openstrip",
+      "scene": "tests/fixtures/export/openstrip.scene.json",
+      "genBbox": [],
+      "png": "openstrip.png"
     }
   ]
 }

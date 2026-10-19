@@ -14,7 +14,8 @@
     "typecheck": "tsc --noEmit && tsc --noEmit -p src/editor",
     "test": "vitest run",
     "build": "node scripts/build.mjs",
-    "test:godot": "node scripts/test-godot.mjs"
+    "test:godot": "node scripts/test-godot.mjs",
+    "check:publish": "node scripts/check-publish.mjs"
   },
   "dependencies": {
     "@resvg/resvg-wasm": "2.6.2",

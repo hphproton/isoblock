@@ -1,0 +1,376 @@
+{
+  "tolerance": {
+    "value": 0.01,
+    "valuePx": 1.0
+  },
+  "cases": [
+    {
+      "scene": "tests/fixtures/measures/measures.scene.json",
+      "state": null,
+      "checks": [
+        {
+          "id": "foot",
+          "check": "in_region",
+          "status": "pass",
+          "value": 0,
+          "threshold": 0,
+          "ids": []
+        },
+        {
+          "id": "drawn",
+          "check": "in_region",
+          "status": "fail",
+          "value": 1,
+          "threshold": 0,
+          "ids": [
+            "tower"
+          ],
+          "outside": [
+            0.137931
+          ]
+        },
+        {
+          "id": "drawn_some_out",
+          "check": "in_region",
+          "status": "pass",
+          "value": 0,
+          "threshold": 0,
+          "ids": [],
+          "outside": []
+        },
+        {
+          "id": "size_bounds",
+          "check": "min_screen_size",
+          "status": "fail",
+          "value": 232,
+          "threshold": 240,
+          "ids": [
+            "tower"
+          ]
+        },
+        {
+          "id": "size_height",
+          "check": "min_screen_size",
+          "status": "fail",
+          "value": 192,
+          "threshold": 200,
+          "ids": [
+            "tower"
+          ]
+        },
+        {
+          "id": "size_person",
+          "check": "min_screen_size",
+          "status": "fail",
+          "value": 28.8,
+          "threshold": 30,
+          "ids": [
+            "person"
+          ]
+        },
+        {
+          "id": "size_sign",
+          "check": "min_screen_size",
+          "status": "pass",
+          "value": 128,
+          "threshold": 128,
+          "ids": [
+            "sign"
+          ]
+        },
+        {
+          "id": "walks_near",
+          "check": "lane_apart",
+          "status": "fail",
+          "value": 0.3,
+          "threshold": 0.5,
+          "ids": [
+            "walk1",
+            "walk2"
+          ],
+          "overlap": 0.0
+        },
+        {
+          "id": "walks_ok",
+          "check": "lane_apart",
+          "status": "pass",
+          "value": 0.3,
+          "threshold": 0,
+          "ids": [
+            "walk1",
+            "walk2"
+          ],
+          "overlap": 0.0
+        },
+        {
+          "id": "walks_cross",
+          "check": "lane_apart",
+          "status": "fail",
+          "value": 0,
+          "threshold": 0,
+          "ids": [
+            "walk1",
+            "walk3"
+          ],
+          "overlap": 0.6
+        },
+        {
+          "id": "off_pond",
+          "check": "lane_apart",
+          "status": "pass",
+          "value": 0.5,
+          "threshold": 0.4,
+          "ids": [
+            "walk1",
+            "pond"
+          ],
+          "overlap": 0.0
+        },
+        {
+          "id": "off_pond_far",
+          "check": "lane_apart",
+          "status": "fail",
+          "value": 0.5,
+          "threshold": 0.6,
+          "ids": [
+            "walk1",
+            "pond"
+          ],
+          "overlap": 0.0
+        },
+        {
+          "id": "touch_bed",
+          "check": "lane_apart",
+          "status": "pass",
+          "value": 0,
+          "threshold": 0,
+          "ids": [
+            "walk1",
+            "bed"
+          ],
+          "overlap": 0.0
+        },
+        {
+          "id": "touch_bed_min",
+          "check": "lane_apart",
+          "status": "fail",
+          "value": 0,
+          "threshold": 0.1,
+          "ids": [
+            "walk1",
+            "bed"
+          ],
+          "overlap": 0.0
+        },
+        {
+          "id": "on_plaza",
+          "check": "lane_apart",
+          "status": "fail",
+          "value": 0,
+          "threshold": 0,
+          "ids": [
+            "walk1",
+            "plaza"
+          ],
+          "overlap": 0.3
+        },
+        {
+          "id": "diag_shape",
+          "check": "lane_apart",
+          "status": "skip",
+          "value": null,
+          "threshold": null,
+          "ids": []
+        },
+        {
+          "id": "no_points",
+          "check": "lane_apart",
+          "status": "skip",
+          "value": null,
+          "threshold": null,
+          "ids": []
+        }
+      ]
+    },
+    {
+      "scene": "tests/fixtures/measures/measures.scene.json",
+      "state": "no_tower",
+      "checks": [
+        {
+          "id": "foot",
+          "check": "in_region",
+          "status": "pass",
+          "value": 0,
+          "threshold": 0,
+          "ids": []
+        },
+        {
+          "id": "drawn",
+          "check": "in_region",
+          "status": "pass",
+          "value": 0,
+          "threshold": 0,
+          "ids": [],
+          "outside": []
+        },
+        {
+          "id": "drawn_some_out",
+          "check": "in_region",
+          "status": "pass",
+          "value": 0,
+          "threshold": 0,
+          "ids": [],
+          "outside": []
+        },
+        {
+          "id": "size_bounds",
+          "check": "min_screen_size",
+          "status": "skip",
+          "value": null,
+          "threshold": null,
+          "ids": []
+        },
+        {
+          "id": "size_height",
+          "check": "min_screen_size",
+          "status": "skip",
+          "value": null,
+          "threshold": null,
+          "ids": []
+        },
+        {
+          "id": "size_person",
+          "check": "min_screen_size",
+          "status": "fail",
+          "value": 28.8,
+          "threshold": 30,
+          "ids": [
+            "person"
+          ]
+        },
+        {
+          "id": "size_sign",
+          "check": "min_screen_size",
+          "status": "pass",
+          "value": 128,
+          "threshold": 128,
+          "ids": [
+            "sign"
+          ]
+        },
+        {
+          "id": "walks_near",
+          "check": "lane_apart",
+          "status": "fail",
+          "value": 0.3,
+          "threshold": 0.5,
+          "ids": [
+            "walk1",
+            "walk2"
+          ],
+          "overlap": 0.0
+        },
+        {
+          "id": "walks_ok",
+          "check": "lane_apart",
+          "status": "pass",
+          "value": 0.3,
+          "threshold": 0,
+          "ids": [
+            "walk1",
+            "walk2"
+          ],
+          "overlap": 0.0
+        },
+        {
+          "id": "walks_cross",
+          "check": "lane_apart",
+          "status": "fail",
+          "value": 0,
+          "threshold": 0,
+          "ids": [
+            "walk1",
+            "walk3"
+          ],
+          "overlap": 0.6
+        },
+        {
+          "id": "off_pond",
+          "check": "lane_apart",
+          "status": "pass",
+          "value": 0.5,
+          "threshold": 0.4,
+          "ids": [
+            "walk1",
+            "pond"
+          ],
+          "overlap": 0.0
+        },
+        {
+          "id": "off_pond_far",
+          "check": "lane_apart",
+          "status": "fail",
+          "value": 0.5,
+          "threshold": 0.6,
+          "ids": [
+            "walk1",
+            "pond"
+          ],
+          "overlap": 0.0
+        },
+        {
+          "id": "touch_bed",
+          "check": "lane_apart",
+          "status": "pass",
+          "value": 0,
+          "threshold": 0,
+          "ids": [
+            "walk1",
+            "bed"
+          ],
+          "overlap": 0.0
+        },
+        {
+          "id": "touch_bed_min",
+          "check": "lane_apart",
+          "status": "fail",
+          "value": 0,
+          "threshold": 0.1,
+          "ids": [
+            "walk1",
+            "bed"
+          ],
+          "overlap": 0.0
+        },
+        {
+          "id": "on_plaza",
+          "check": "lane_apart",
+          "status": "fail",
+          "value": 0,
+          "threshold": 0,
+          "ids": [
+            "walk1",
+            "plaza"
+          ],
+          "overlap": 0.3
+        },
+        {
+          "id": "diag_shape",
+          "check": "lane_apart",
+          "status": "skip",
+          "value": null,
+          "threshold": null,
+          "ids": []
+        },
+        {
+          "id": "no_points",
+          "check": "lane_apart",
+          "status": "skip",
+          "value": null,
+          "threshold": null,
+          "ids": []
+        }
+      ]
+    }
+  ]
+}
