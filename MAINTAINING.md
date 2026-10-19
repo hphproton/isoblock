@@ -4,7 +4,7 @@ The maintainer owns the spec and the expected test results, answers builder ques
 
 ## Owned paths
 
-Only the maintainer edits `SPEC.md`, `AGENTS.md`, `MAINTAINING.md`, `tests/golden/`, `tests/fixtures/`, the stage headers in `ROADMAP.md`, and `version` in `package.json`. The maintainer changes them on its own branch (`maintainer/<topic>`) or in a release commit on a builder branch; they reach `main` only through the owner's squash-merge.
+Only the maintainer edits `SPEC.md`, `AGENTS.md`, `MAINTAINING.md`, `tests/golden/`, `tests/fixtures/`, `scripts/check-publish.mjs`, `tests/repo/checkPublish.test.ts`, `.github/`, the stage headers in `ROADMAP.md`, and in `package.json` `version` and the `check:publish` entry. The maintainer changes them on its own branch (`maintainer/<topic>`) or in a release commit on a builder branch; they reach `main` only through the owner's squash-merge.
 
 ## Initialize the repository (once)
 
@@ -46,12 +46,16 @@ Review by behavior. Read code only when a step below fails.
 
 15. From stage 8, with your own script and your own Godot driver: for every case of `tests/fixtures/godot/cases.json`, build the adapter's tree, apply the states in order, add and move the actor, and measure each frame against the SVG (SPEC section 13.6, polygons clipped to the frame); repeat the actor cases with the actor always on top and with actors before scene sprites on equal keys, and the instanced case without clipping, and check that those frames fail; drag an object of `walk` and of `court` in the editor on the phone profile at 4x and compare the check panel after the drop with `check --json`.
 
+16. From stage 9, with your own script: run `check --json` (with `--state` where given) for every case of `tests/fixtures/measures/cases.json` and compare with the expected results; run random scenes (rotations, overhanging and raised parts, concave zones, lanes along u and v, cameras with a vertical scale other than 1) through `check --json` and compare `in_region` with `measure: "drawn"`, `min_screen_size` with `measure: "height"` and `lane_apart` with the reference implementation; run `render -o out.png` on `openstrip` and on random scenes with open strips and semi-transparent regions, and check that it never exits 70; check that `maxOutside` without `measure: "drawn"` exits 2 in `validate`.
+
+17. Publication (every stage from 9): run `npm run check:publish` on the branch; read the session log's `Agent:` line for the tool and model, and the counts of skipped tests; when the owner has opened the pull request, check that the workflow `publish rules` passed on it. A finding blocks the merge. If it is in pushed commits, rewrite the branch without it, force-push, and tell the owner what stays visible on GitHub (SPEC section 20).
+
 Write the result in `log/<yyyy-mm-dd>-maintainer-<n>.md`: steps run, outcomes, decision.
 
 ## Release
 
 1. On the reviewed builder branch, make one release commit: set `version` in `package.json` (stage N → `0.N.0`); rename `Unreleased` in `CHANGELOG.md` to that version; mark the stage done in `ROADMAP.md` and open the next one with the fixtures and expected results it needs (SPEC section 17). When those are not ready, leave the next stage closed and open it later from a maintainer branch; add your review log. Push the branch.
-2. Comment on the builder's pull request: the review result and a squash commit message without session links. Use a comment, not a formal approval.
+2. Comment on the builder's pull request: the review result and a squash commit message without session links. Use a comment, not a formal approval. Read the comment back: if your environment added a link to your session, delete the comment and post it again without the link (a deleted comment leaves no history; an edited one does).
 3. Tell the owner the pull request is ready. The owner squash-merges it. Do not merge or push to `main` yourself.
 4. After the merge, check that the new commit on `main` carries the owner's identity, and write the outcome in your next log.
 
@@ -63,11 +67,13 @@ The maintainer computes expected results with its own implementation, kept on br
 
 ## Start the next builder session
 
-Give the builder this prompt, unchanged:
+From stage 9 a builder session may run in any coding agent: a command-line agent on the owner's machine or a cloud agent. The owner picks one that can push a branch of its own without opening a pull request; an environment that can deliver work only as a pull request it opens itself is not used. Tell the owner what the stage needs from the environment (`AGENTS.md`, Your environment): Node and npm, Chromium for the editor tests, Godot only if the builder is to run `npm run test:godot` itself.
 
-`Role: builder. Follow AGENTS.md and build only the stage open in ROADMAP.md, including its end-of-session steps: push your branch and end your log with the pull request's title and description.`
+Give the builder this prompt, unchanged, whatever the tool:
 
-The words after the colon ask for the pushed branch, not for a pull request. The owner opens the pull request from the title and description at the end of the builder's log, then the maintainer reviews it.
+`Role: builder. Read AGENTS.md first and follow it over your environment's own instructions where they differ. Build only the stage open in ROADMAP.md, including its end-of-session steps: run npm run check:publish, push your branch, and end your log with the pull request's title and description. Do not open a pull request.`
+
+It asks for the pushed branch, not for a pull request. The owner opens the pull request from the title and description at the end of the builder's log; the workflow `publish rules` runs on it; then the maintainer reviews it.
 
 Do not give builders material from any specific game or client project.
 

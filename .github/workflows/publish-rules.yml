@@ -1,0 +1,40 @@
+# Publication check (SPEC section 20) on every pull request: its branch name, the commits it adds,
+# the lines it adds to files, and its title and description. Maintained by the maintainer.
+#
+# pull_request_target runs this file and the check script as they are on the base branch, so a
+# pull request cannot change the rules it is checked against. The job reads the pull request's
+# commits with git and runs none of its code; it has read-only permissions and no secrets.
+name: publish rules
+
+on:
+  pull_request_target:
+    types: [opened, edited, reopened, synchronize, ready_for_review]
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Check branch name, commits, added lines, title and description
+        env:
+          BASE_REF: ${{ github.base_ref }}
+          HEAD_REF: ${{ github.head_ref }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+        run: |
+          # The base branch's copy of the script; the pull request's own copy only while the base has none.
+          if ! git show "origin/$BASE_REF:scripts/check-publish.mjs" > "$RUNNER_TEMP/check-publish.mjs" 2>/dev/null; then
+            cp scripts/check-publish.mjs "$RUNNER_TEMP/check-publish.mjs"
+          fi
+          printf '%s\n' "$PR_BODY" > "$RUNNER_TEMP/body.txt"
+          node "$RUNNER_TEMP/check-publish.mjs" --base "origin/$BASE_REF" --branch "$HEAD_REF" --title "$PR_TITLE" --body-file "$RUNNER_TEMP/body.txt"

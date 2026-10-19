@@ -165,8 +165,23 @@ Not in stage 8: generated engine scenes, Phaser and Tiled adapters, a `@tool` sc
 
 **Done when:** all tests pass, `npm run test:godot` passes, earlier fixtures still match, and the stage 8 criteria in SPEC section 17 hold.
 
-## After stage 8
+## Stage 9 · open
 
-No further stage is scheduled. Candidates are the items SPEC section 17 lists as not scheduled and the open questions of SPEC section 19; the owner decides what comes next, and the maintainer specifies it as a new stage.
+Fixes and measures (SPEC sections 8, 9.4, 11.1, 14, 17, 20). From this stage a builder session may run in any coding agent; `AGENTS.md` says what the environment needs, and `npm run check:publish` checks what the branch would publish. Fixtures: `tests/fixtures/measures/` (scene `measures`, its results in the default state and in state `no_tower`), `tests/fixtures/export/openstrip.scene.json`, and the block images of this release in `tests/fixtures/export/` and `tests/fixtures/states/`.
+
+- [ ] SVG and block image: a polygon with an opacity below 1 carries it as `fill-opacity` and `stroke-opacity`, never as `opacity` (SPEC 14); `render -o out.png` writes the block image of `openstrip`, which release 0.8.0 could not (exit 70)
+- [ ] `in_region` with `measure` and `maxOutside`, and the result field `outside` (SPEC 9.4); `maxOutside` without `measure: "drawn"` is a schema error
+- [ ] `min_screen_size` with `measure: "height"` (SPEC 9.4)
+- [ ] `lane_apart` (SPEC 9.4) in the schema and in `check`; its result field `overlap`
+- [ ] `compare`: the labels and cells of SPEC 11.1 for the new measures and `lane_apart`
+- [ ] The editor's check panel shows the new measures and `lane_apart` like the other checks, and equals `check --json` on the saved file
+- [ ] States: the new measures under `--state` (SPEC 9.4)
+- [ ] `docs/AGENT_GUIDE.md`: the new parameters and check; what `conflict` means and what to do about it (SPEC 8)
+- [ ] `CHANGELOG.md`: the block images differ from release 0.8.0 along the strokes of semi-transparent polygons
+- [ ] Session log says `branch ready for review`
+
+Not in stage 9: heights for zones and lanes, a camera elevation parameter, states that hide a part of an object or a frame region, `x-` keys in the runtime file, better start positions for the solver (SPEC sections 17 and 18).
+
+**Done when:** every case of `tests/fixtures/measures/cases.json` meets its expected results; the branch is named `builder/stage-9`, and its session log names the tool and model, gives the test counts with skipped tests and ends with the pull request's title and description; every case of `tests/fixtures/export/cases.json` and of `tests/fixtures/states/cases.json` meets its expected files, the PNG of `openstrip` included; `npm run check:publish` reports nothing; all tests pass, with no test skipped where Chromium is available; earlier fixtures still match, except the block images that this stage replaces.
 
 One builder task is waiting for a session before a build is distributed: the build carries the third-party notices (`MAINTAINING.md`, Before distributing a build).

@@ -1,0 +1,429 @@
+{
+  "schema": "isoblock/1",
+  "id": "measures",
+  "units": {
+    "name": "u",
+    "note": "synthetic unit"
+  },
+  "camera": {
+    "angleU": 30,
+    "angleV": 150,
+    "pxPerUnit": 40,
+    "verticalScale": 0.8,
+    "origin": [
+      400,
+      160
+    ]
+  },
+  "frame": {
+    "w": 800,
+    "h": 600,
+    "regions": [
+      {
+        "id": "view",
+        "rect": [
+          0,
+          0,
+          800,
+          500
+        ]
+      },
+      {
+        "id": "panel",
+        "rect": [
+          0,
+          500,
+          800,
+          600
+        ],
+        "blocksScene": true
+      }
+    ]
+  },
+  "types": {
+    "crate": {
+      "size": [
+        1,
+        1,
+        1
+      ]
+    },
+    "tower": {
+      "size": [
+        1,
+        1,
+        6
+      ]
+    },
+    "person": {
+      "size": [
+        0.5,
+        0.5,
+        1.8
+      ]
+    },
+    "sign": {
+      "size": [
+        1,
+        1,
+        4
+      ],
+      "parts": [
+        {
+          "id": "post",
+          "box": [
+            0.4,
+            0.4,
+            0,
+            0.6,
+            0.6,
+            3
+          ]
+        },
+        {
+          "id": "plate",
+          "box": [
+            0,
+            0.4,
+            3,
+            1,
+            0.6,
+            4
+          ]
+        }
+      ]
+    },
+    "mat": {
+      "size": [
+        2,
+        1,
+        0
+      ]
+    }
+  },
+  "objects": [
+    {
+      "id": "tower",
+      "type": "tower",
+      "pos": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "crate",
+      "type": "crate",
+      "pos": [
+        4,
+        1
+      ]
+    },
+    {
+      "id": "sign",
+      "type": "sign",
+      "pos": [
+        10,
+        0
+      ],
+      "rot": 90
+    },
+    {
+      "id": "person",
+      "type": "person",
+      "pos": [
+        5,
+        3
+      ]
+    },
+    {
+      "id": "mat",
+      "type": "mat",
+      "pos": [
+        2,
+        3
+      ]
+    }
+  ],
+  "zones": [
+    {
+      "id": "pond",
+      "kind": "water",
+      "points": [
+        [
+          6,
+          3
+        ],
+        [
+          10,
+          3
+        ],
+        [
+          10,
+          8.5
+        ],
+        [
+          9,
+          8.5
+        ],
+        [
+          9,
+          5
+        ],
+        [
+          6,
+          5
+        ]
+      ]
+    },
+    {
+      "id": "bed",
+      "kind": "planted",
+      "points": [
+        [
+          0,
+          6.5
+        ],
+        [
+          3,
+          6.5
+        ],
+        [
+          3,
+          8
+        ],
+        [
+          0,
+          8
+        ]
+      ]
+    },
+    {
+      "id": "plaza",
+      "kind": "paved",
+      "points": [
+        [
+          1,
+          4
+        ],
+        [
+          1,
+          5.8
+        ],
+        [
+          2,
+          5.8
+        ],
+        [
+          2,
+          4
+        ]
+      ]
+    },
+    {
+      "id": "mark",
+      "kind": "marker"
+    }
+  ],
+  "lanes": [
+    {
+      "id": "walk1",
+      "kind": "walk",
+      "width": 1,
+      "points": [
+        [
+          0,
+          6
+        ],
+        [
+          8,
+          6
+        ]
+      ]
+    },
+    {
+      "id": "walk2",
+      "kind": "walk",
+      "width": 1,
+      "points": [
+        [
+          0,
+          7.3
+        ],
+        [
+          8,
+          7.3
+        ]
+      ]
+    },
+    {
+      "id": "walk3",
+      "kind": "walk",
+      "width": 0.6,
+      "points": [
+        [
+          4,
+          5
+        ],
+        [
+          4,
+          9
+        ]
+      ]
+    },
+    {
+      "id": "diag",
+      "kind": "walk",
+      "width": 0.5,
+      "points": [
+        [
+          0,
+          0
+        ],
+        [
+          3,
+          3
+        ]
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "id": "foot",
+      "check": "in_region",
+      "region": "view",
+      "ids": [
+        "tower",
+        "crate",
+        "sign"
+      ]
+    },
+    {
+      "id": "drawn",
+      "check": "in_region",
+      "region": "view",
+      "measure": "drawn",
+      "ids": [
+        "tower",
+        "crate",
+        "sign",
+        "mat"
+      ]
+    },
+    {
+      "id": "drawn_some_out",
+      "check": "in_region",
+      "region": "view",
+      "measure": "drawn",
+      "maxOutside": 0.2,
+      "ids": [
+        "tower",
+        "sign"
+      ]
+    },
+    {
+      "id": "size_bounds",
+      "check": "min_screen_size",
+      "target": "tower",
+      "min": 240
+    },
+    {
+      "id": "size_height",
+      "check": "min_screen_size",
+      "target": "tower",
+      "measure": "height",
+      "min": 200
+    },
+    {
+      "id": "size_person",
+      "check": "min_screen_size",
+      "target": "person",
+      "measure": "height",
+      "min": 30,
+      "screenWidth": 400
+    },
+    {
+      "id": "size_sign",
+      "check": "min_screen_size",
+      "target": "sign",
+      "measure": "height",
+      "min": 128
+    },
+    {
+      "id": "walks_near",
+      "check": "lane_apart",
+      "lane": "walk1",
+      "target": "lane:walk2",
+      "min": 0.5
+    },
+    {
+      "id": "walks_ok",
+      "check": "lane_apart",
+      "lane": "walk1",
+      "target": "lane:walk2"
+    },
+    {
+      "id": "walks_cross",
+      "check": "lane_apart",
+      "lane": "walk1",
+      "target": "lane:walk3"
+    },
+    {
+      "id": "off_pond",
+      "check": "lane_apart",
+      "lane": "walk1",
+      "target": "zone:pond",
+      "min": 0.4
+    },
+    {
+      "id": "off_pond_far",
+      "check": "lane_apart",
+      "lane": "walk1",
+      "target": "zone:pond",
+      "min": 0.6
+    },
+    {
+      "id": "touch_bed",
+      "check": "lane_apart",
+      "lane": "walk1",
+      "target": "zone:bed"
+    },
+    {
+      "id": "touch_bed_min",
+      "check": "lane_apart",
+      "lane": "walk1",
+      "target": "zone:bed",
+      "min": 0.1
+    },
+    {
+      "id": "on_plaza",
+      "check": "lane_apart",
+      "lane": "walk1",
+      "target": "zone:plaza"
+    },
+    {
+      "id": "diag_shape",
+      "check": "lane_apart",
+      "lane": "diag",
+      "target": "lane:walk1"
+    },
+    {
+      "id": "no_points",
+      "check": "lane_apart",
+      "lane": "walk1",
+      "target": "zone:mark"
+    }
+  ],
+  "states": {
+    "no_tower": {
+      "hide": [
+        "tower"
+      ]
+    }
+  },
+  "meta": {
+    "version": 1,
+    "status": "draft",
+    "approvedBy": null,
+    "approvedAt": null
+  }
+}
