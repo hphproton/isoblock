@@ -169,16 +169,16 @@ Not in stage 8: generated engine scenes, Phaser and Tiled adapters, a `@tool` sc
 
 Fixes and measures (SPEC sections 8, 9.4, 11.1, 14, 17, 20). From this stage a builder session may run in any coding agent; `AGENTS.md` says what the environment needs, and `npm run check:publish` checks what the branch would publish. Fixtures: `tests/fixtures/measures/` (scene `measures`, its results in the default state and in state `no_tower`), `tests/fixtures/export/openstrip.scene.json`, and the block images of this release in `tests/fixtures/export/` and `tests/fixtures/states/`.
 
-- [ ] SVG and block image: a polygon with an opacity below 1 carries it as `fill-opacity` and `stroke-opacity`, never as `opacity` (SPEC 14); `render -o out.png` writes the block image of `openstrip`, which release 0.8.0 could not (exit 70)
-- [ ] `in_region` with `measure` and `maxOutside`, and the result field `outside` (SPEC 9.4); `maxOutside` without `measure: "drawn"` is a schema error
-- [ ] `min_screen_size` with `measure: "height"` (SPEC 9.4)
-- [ ] `lane_apart` (SPEC 9.4) in the schema and in `check`; its result field `overlap`
-- [ ] `compare`: the labels and cells of SPEC 11.1 for the new measures and `lane_apart`
-- [ ] The editor's check panel shows the new measures and `lane_apart` like the other checks, and equals `check --json` on the saved file
-- [ ] States: the new measures under `--state` (SPEC 9.4)
-- [ ] `docs/AGENT_GUIDE.md`: the new parameters and check; what `conflict` means and what to do about it (SPEC 8)
-- [ ] `CHANGELOG.md`: the block images differ from release 0.8.0 along the strokes of semi-transparent polygons
-- [ ] Session log says `branch ready for review`
+- [x] SVG and block image: a polygon with an opacity below 1 carries it as `fill-opacity` and `stroke-opacity`, never as `opacity` (SPEC 14); `render -o out.png` writes the block image of `openstrip`, which release 0.8.0 could not (exit 70)
+- [x] `in_region` with `measure` and `maxOutside`, and the result field `outside` (SPEC 9.4); `maxOutside` without `measure: "drawn"` is a schema error
+- [x] `min_screen_size` with `measure: "height"` (SPEC 9.4)
+- [x] `lane_apart` (SPEC 9.4) in the schema and in `check`; its result field `overlap`
+- [x] `compare`: the labels and cells of SPEC 11.1 for the new measures and `lane_apart`
+- [x] The editor's check panel shows the new measures and `lane_apart` like the other checks, and equals `check --json` on the saved file
+- [x] States: the new measures under `--state` (SPEC 9.4)
+- [x] `docs/AGENT_GUIDE.md`: the new parameters and check; what `conflict` means and what to do about it (SPEC 8)
+- [x] `CHANGELOG.md`: the block images differ from release 0.8.0 along the strokes of semi-transparent polygons
+- [x] Session log says `branch ready for review`
 
 Not in stage 9: heights for zones and lanes, a camera elevation parameter, states that hide a part of an object or a frame region, `x-` keys in the runtime file, better start positions for the solver (SPEC sections 17 and 18).
 
