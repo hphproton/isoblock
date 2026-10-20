@@ -1,10 +1,12 @@
 import { fmt, percent, plain } from "./format";
+import { EPS } from "./geometry";
 import type {
   CapacityCheck,
   CheckResult,
   CheckSpec,
   ClearanceCheck,
   InRegionCheck,
+  LaneApartCheck,
   LaneClearCheck,
   LaneReachesCheck,
   MinScreenSizeCheck,
@@ -35,6 +37,12 @@ function body(spec: CheckSpec, r: CheckResult): string {
     }
     case "lane_clear":
       return `${(spec as LaneClearCheck).lane}: blocked by ${join(r.ids)}`;
+    case "lane_apart": {
+      const s = spec as LaneApartCheck;
+      const target = s.target.replace(/^(?:lane|zone):/, "");
+      if ((r.overlap ?? 0) > EPS) return `${s.lane}${TIMES}${target}: overlap ${fmt(r.overlap ?? 0)}`;
+      return `${s.lane}${TIMES}${target}: ${fmt(r.value ?? 0)} < ${fmt(s.min ?? 0)}`;
+    }
     case "lane_reaches": {
       const s = spec as LaneReachesCheck;
       if (r.value === null) return `${s.lane}: does not reach ${s.edge} edge`;
@@ -51,6 +59,7 @@ function body(spec: CheckSpec, r: CheckResult): string {
       return `${(spec as CapacityCheck).kind}: ${r.value ?? 0} usable < ${r.threshold as number}${(r.rejected ?? []).length > 0 ? ` (blocked: ${join(r.rejected ?? [])})` : ""}`;
     case "min_screen_size": {
       const s = spec as MinScreenSizeCheck;
+      if (s.measure === "height") return `${s.target}: ${plain(r.value ?? 0)} px tall < ${plain(s.min)} px`;
       return `${s.target}: ${Math.round(r.value ?? 0)} px < ${plain(s.min)} px`;
     }
     case "sort_consistency":

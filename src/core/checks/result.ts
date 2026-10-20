@@ -15,6 +15,8 @@ export function canonical(r: CheckResult): CheckResult {
     ...(r.rejected === undefined ? {} : { rejected: r.rejected }),
     ...(r.worst === undefined ? {} : { worst: r.worst }),
     ...(r.positions === undefined ? {} : { positions: r.positions }),
+    ...(r.outside === undefined ? {} : { outside: r.outside }),
+    ...(r.overlap === undefined ? {} : { overlap: r.overlap }),
     message: r.message,
   };
 }

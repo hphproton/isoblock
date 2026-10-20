@@ -75,8 +75,9 @@ describe("involves", () => {
     expect(involves(spec, only("b"))).toBe(true);
   });
 
-  it("never re-runs lane_reaches or unimplemented checks for object changes", () => {
+  it("never re-runs lane_reaches, lane_apart or unimplemented checks for object changes", () => {
     expect(involves({ id: "x", check: "lane_reaches", lane: "l", edge: "right", region: "view" }, only("a"))).toBe(false);
+    expect(involves({ id: "x", check: "lane_apart", lane: "l", target: "lane:m" }, only("a"))).toBe(false);
     expect(involves({ id: "x", check: "state_stable" }, only("a"))).toBe(false);
   });
 

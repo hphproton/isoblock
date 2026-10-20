@@ -11,7 +11,7 @@ function valueCell(check: string, value: number | null, status: CheckStatus): st
   if (status === "skip") return `skip ${CROSS}`;
   let text: string;
   if (value === null) text = "none";
-  else if (check === "clearance" || check === "reachable") text = value.toFixed(2);
+  else if (check === "clearance" || check === "reachable" || check === "lane_apart") text = value.toFixed(2);
   else if (check === "min_screen_size") text = String(Math.floor(value + 0.5 + EPS));
   else if (check === "lane_reaches") text = String(Math.round(value));
   else if (check === "visible") text = String(Math.round(value * 100));

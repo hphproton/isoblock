@@ -60,3 +60,28 @@ describe("min_screen_size: height on screen", () => {
     expect(check(scene("post"), { min: 50 }).status).toBe("pass");
   });
 });
+
+describe("min_screen_size: height only (SPEC 9.4)", () => {
+  it("measures the vertical extent of the parts and leaves the footprint depth out", () => {
+    // flatScene: 10 px per unit. The post is 3 tall and 2 deep, so the bounds are 50 px and the height is 30 px.
+    const bounds = check(scene("post"), { min: 0 });
+    const height = check(scene("post"), { min: 0, measure: "height" });
+    expect(bounds.value).toBe(50);
+    expect([height.status, height.value, height.threshold, height.ids]).toEqual(["pass", 30, 0, ["p"]]);
+  });
+
+  it("uses the lowest and highest part, and does not change with rotation or position", () => {
+    expect(check(scene("tower"), { min: 0, measure: "height" }).value).toBe(50);
+    const moved = flatScene({
+      types,
+      objects: [{ id: "p", type: "post", pos: [4, 6], rot: 90 }],
+    });
+    expect(check(moved, { min: 0, measure: "height" }).value).toBe(30);
+  });
+
+  it("scales the height from the frame width to screenWidth and passes at min", () => {
+    expect(check(scene("post"), { min: 0, measure: "height", screenWidth: 200 }).value).toBe(60);
+    expect(check(scene("post"), { min: 30, measure: "height" }).status).toBe("pass");
+    expect(check(scene("post"), { min: 30.1, measure: "height" }).status).toBe("fail");
+  });
+});
