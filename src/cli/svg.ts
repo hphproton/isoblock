@@ -14,11 +14,13 @@ function esc(text: string): string {
 
 function polygonElement(p: DisplayPolygon): string {
   const points = p.points.map(([x, y]) => `${num(x)},${num(y)}`).join(" ");
-  const opacity = p.opacity === 1 ? "" : ` opacity="${num(p.opacity)}"`;
+  // SPEC 14: an opacity below 1 is fill-opacity and stroke-opacity, never the group attribute opacity.
+  // resvg 2.6.2 stops on that attribute when a shape reaches far outside the frame.
+  const transparency = p.opacity === 1 ? "" : ` fill-opacity="${num(p.opacity)}" stroke-opacity="${num(p.opacity)}"`;
   const dash = p.dashed ? ' stroke-dasharray="6 4"' : "";
   return (
     `<polygon data-layer="${p.layer}" data-ref="${esc(p.ref)}" points="${points}" fill="${esc(p.fill)}" ` +
-    `stroke="${esc(p.stroke)}" stroke-width="${num(p.strokeWidth)}" stroke-linejoin="round"${opacity}${dash}/>`
+    `stroke="${esc(p.stroke)}" stroke-width="${num(p.strokeWidth)}" stroke-linejoin="round"${transparency}${dash}/>`
   );
 }
 

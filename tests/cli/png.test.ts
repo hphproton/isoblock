@@ -19,7 +19,7 @@ async function render(argv: string[]) {
 
 describe("cli: render -o out.png", () => {
   it("has a case with a PNG in the case list", () => {
-    expect(withPng.map((c) => c.name)).toEqual(["yard", "garden"]);
+    expect(withPng.map((c) => c.name)).toEqual(["yard", "garden", "openstrip"]);
   });
 
   for (const c of withPng) {
