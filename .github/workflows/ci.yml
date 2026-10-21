@@ -1,0 +1,59 @@
+# Test suite and Godot cross-checks (SPEC section 16).
+# push and pull_request only. No secrets. Read-only contents.
+name: ci
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node: [20, 22]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+      - name: Install dependencies
+        run: npm ci
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Install Chromium
+        run: node node_modules/playwright-core/cli.js install chromium
+      - name: Test
+        run: |
+          set -o pipefail
+          npm test 2>&1 | tee "$RUNNER_TEMP/test.log"
+          if grep -E '^[[:space:]]*Tests .*skipped' "$RUNNER_TEMP/test.log"; then
+            echo "skipped tests are not allowed"
+            exit 1
+          fi
+
+  godot:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install dependencies
+        run: npm ci
+      - name: Install Godot 4.7.1
+        run: |
+          set -euo pipefail
+          url="https://github.com/godotengine/godot-builds/releases/download/4.7.1-stable"
+          curl -fsSL -o "$RUNNER_TEMP/SHA512-SUMS.txt" "$url/SHA512-SUMS.txt"
+          curl -fsSL -o "$RUNNER_TEMP/Godot_v4.7.1-stable_linux.x86_64.zip" "$url/Godot_v4.7.1-stable_linux.x86_64.zip"
+          (cd "$RUNNER_TEMP" && grep 'Godot_v4.7.1-stable_linux.x86_64.zip$' SHA512-SUMS.txt | sha512sum -c -)
+          unzip -q "$RUNNER_TEMP/Godot_v4.7.1-stable_linux.x86_64.zip" -d "$RUNNER_TEMP/godot"
+          test -x "$RUNNER_TEMP/godot/Godot_v4.7.1-stable_linux.x86_64" || chmod +x "$RUNNER_TEMP/godot/Godot_v4.7.1-stable_linux.x86_64"
+          echo "GODOT=$RUNNER_TEMP/godot/Godot_v4.7.1-stable_linux.x86_64" >> "$GITHUB_ENV"
+      - name: Godot cross-checks
+        run: xvfb-run -a npm run test:godot
