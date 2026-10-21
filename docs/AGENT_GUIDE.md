@@ -2,7 +2,7 @@
 
 How an AI agent uses IsoBlock. The builder fills each section as commands ship.
 
-Everything in this guide is available in version 0.8.0 (stage 8): the commands `validate`, `check`, `render`, `describe`, `relations`, `solve`, `patch`, `diff`, `compare` and `export`, the editor page `dist/editor.html`, and the Godot adapter in `adapters/godot/`. What is not scheduled is listed under [Not available yet](#not-available-yet).
+This guide describes the tool built from this repository: the commands `validate`, `check`, `render`, `describe`, `relations`, `solve`, `patch`, `diff`, `compare` and `export`, the editor page `dist/editor.html`, and the Godot adapter in `adapters/godot/`. What is not scheduled is listed under [Not available yet](#not-available-yet).
 
 ## Install and build
 
@@ -14,7 +14,9 @@ npm run build
 node dist/isoblock.mjs --help
 ```
 
-`npm run build` writes two files: `dist/isoblock.mjs`, the command line tool, which has no runtime dependencies beyond Node (the PNG renderer is inside it), and `dist/editor.html`, the editor, one self-contained page (see the Editor section). The examples below call the tool as `isoblock`; run it as `node dist/isoblock.mjs`.
+`npm run build` writes three files: `dist/isoblock.mjs`, the command line tool, which has no runtime dependencies beyond Node (the PNG renderer is inside it); `dist/editor.html`, the editor, one self-contained page (see the Editor section); and `dist/THIRD_PARTY_NOTICES.md`, copied unchanged from the repository. The notices travel with the two built files. The second line of `dist/isoblock.mjs` and the line after the doctype of `dist/editor.html` name that file. The examples below call the tool as `isoblock`; run it as `node dist/isoblock.mjs`.
+
+`isoblock --version` prints `isoblock <version>`, the `version` of `package.json` at the time of the build, and exits 0. It is the only argument that works without a command.
 
 Other scripts: `npm test` runs the test suite, `npm run typecheck` runs the TypeScript checker, `npm run test:godot` runs the Godot adapter checks (see [Godot adapter](#godot-adapter); it needs Godot and Xvfb, which are not npm packages).
 
@@ -23,15 +25,16 @@ Other scripts: `npm test` runs the test suite, `npm run typecheck` runs the Type
 Every command takes a scene file (`*.scene.json`, format `isoblock/1`) and reads it first with the schema and reference checks. If the file is not valid, the command stops with exit code 2 and an error message.
 
 ```
-isoblock validate <scene.json>
-isoblock check    <scene.json> [--json] [--state NAME]
+isoblock --version
+isoblock validate <scene.json> [--json]
+isoblock check    <scene.json> [--json] [--state NAME] [--only a,b]
 isoblock render   <scene.json> [--state NAME] -o <out.svg|out.png>
-isoblock describe <scene.json>
+isoblock describe <scene.json> [--relations] [--states]
 isoblock relations <scene.json> [--json]
 isoblock solve    <scene.json> [--only a,b] [-o <proposal.json>] [--patch <moves.patch>] [--json]
-isoblock patch    <scene.json> <patch> [-o <out.json>] [--dry-run] [--json]
+isoblock patch    <scene.json> <patch|-> [-o <out.json>] [--dry-run] [--json]
 isoblock diff     <a.json> <b.json> [--json]
-isoblock compare  <scene.json> --variant NAME=FILE... [--state NAME] [--format text|md|json]
+isoblock compare  <scene.json> --variant NAME=FILE... [--state NAME] [--format text|md|json] [--relations]
 isoblock export   <scene.json> --target runtime|gen-bbox [-o <out.json>] [--bbox-units px|norm1000] [--bbox-order xyxy|yxyx] [--state NAME]
 ```
 
@@ -44,7 +47,20 @@ $ isoblock validate yard.scene.json
 ok: yard.scene.json is a valid isoblock/1 scene (id yard)
 ```
 
-On failure, nothing else runs. The message starts with a code, then one line per problem:
+`--json` prints `{ "ok", "scene", "error" }` on stdout for every outcome, including a file that cannot be read, and prints nothing on stderr. `ok` is `true` or `false`. `scene` is the top-level `id` when that value is a string, otherwise `null`. `error` is `null`, or `{ "code", "message", "details" }` where `details` is the same lines the text report indents. The exit code is unchanged: 0 when the file is valid, 2 otherwise.
+
+```
+$ isoblock validate --json yard.scene.json
+{
+  "ok": true,
+  "scene": "yard",
+  "error": null
+}
+```
+
+A detail that names an unknown check, relation, property, type, object, region, strip, zone, lane, state or relation target ends with ` (did you mean "<name>"?)` when a known name is within two edits (an insertion, a deletion or a substitution). The nearest name is used; when two are equally near, the first in the list for that kind is used. A detail that only says a value must match one of several schemas is left out when another detail already points at that value or at something inside it.
+
+On failure without `--json`, nothing else runs. The message starts with a code, then one line per problem:
 
 ```
 error E_SCHEMA: scene does not match schema isoblock/1 (2 problems)
@@ -65,7 +81,7 @@ error E_SCHEMA: scene does not match schema isoblock/1 (2 problems)
 
 ### `check`
 
-Runs every check in the scene's `checks` list, in file order.
+Runs every check in the scene's `checks` list, in file order. `--only a,b` runs only the checks with those ids, still in `checks` order; the summary, the `--json` results and the exit code cover that selection. An empty entry or an id the scene does not have is `E_USAGE` (exit 2) and prints no results.
 
 ```
 $ isoblock check lane.scene.json
@@ -131,6 +147,14 @@ wrote yard.png
 ### `describe`
 
 Prints a compact summary, about 30 to 60 lines, so an agent never has to read the whole file or an image. Exit code 0 even when checks fail. See the next section.
+
+`--relations` adds one line per violated or skipped relation and a summary line, after the check lines and before the assumptions. `--states` adds one line in that same place, after the relation lines when both flags are given. Each flag adds only its own lines. On `yard`, both flags together add:
+
+```
+BAD r1 in_front_of bench×tree: violation 0.7172
+relations: 2 · 1 violated · 0 skipped · hard 1 of 1 satisfied · soft penalty 0.7172
+states: closed hides bench
+```
 
 ### `relations`, `solve`, `patch`, `diff`, `compare`
 
@@ -218,6 +242,8 @@ assumptions: tree.size.h=2.40
 - **Check lines:** one per `fail`, `warn` or `skip` check, in `checks` order, with the ids involved. The gameplay checks read `FAIL k3 reachable bench2: path of 3.10 u (max 1.00)`, `FAIL s1 capacity seat: 4 usable < 6 (blocked: ...)`, `FAIL m1 min_screen_size walker1: 126 px < 200 px` and `FAIL s1 sort_consistency shed, box, counter, kiosk: drawn out of order, worst 545.60 px2`. A drawn region reads `FAIL drawn in_region tower: outside view`, a height reads `FAIL size_height min_screen_size tower: 192 px tall < 200 px`, and a lane separation reads `FAIL walks_near lane_apart walk1×walk2: 0.30 < 0.50` or `FAIL walks_cross lane_apart walk1×walk3: overlap 0.60`. With none, the output says `checks: all N pass` (or `checks: none`).
 - **Numbers:** 2 decimals (up to 4 when 2 would lose information), whole pixels after `≈`, whole percentages.
 - **Assumptions:** `<type>.size.<w|d|h>`, `<type>.<part>.<u0|v0|h0|u1|v1|h1>`, or the JSON Pointer for other paths. `-` when there are none.
+- **`--relations`:** after the check lines, one `BAD` line per violated relation (`BAD r1 in_front_of bench×tree: violation 0.7172`; a hard relation starts the text after the colon with `hard; `) and one `SKIP` line per skipped relation, then `relations: <n> · <v> violated · <k> skipped · hard <h> of <H> satisfied · soft penalty <p>`. With no relations the only line is `relations: none`.
+- **`--states`:** one line, `states: <name> hides <ids>` for each state in file order, joined with ` · `. A state that hides nothing says `<name> hides nothing`. With no states the line is `states: none`. With both flags, this line follows the relation lines.
 
 ## Check reference
 
@@ -229,7 +255,7 @@ Parameters marked optional can be left out. A check with a wrong or unknown para
 | `no_overlap` | optional `ids`, `allow` (pairs, either order) | No two footprints overlap by more than 1e-9 along both axes, except allowed pairs. Touching is not overlap | Number of overlapping pairs |
 | `clearance` | `a`, `b`, `min` | Edge-to-edge distance between the two footprints is at least `min` | The distance |
 | `lane_clear` | `lane`; optional `ignore` | No object outside `ignore` has a footprint that overlaps the lane | Number of blocking objects |
-| `lane_reaches` | `lane`, `edge` (`right`, `left`), `region` | The lane meets the frame edge, and the whole meeting segment lies inside the region's y range | Largest y of the meeting segment, in px. `null` and `fail` when the lane does not reach the edge |
+| `lane_reaches` | `lane`, `edge` (`right`, `left`, `top` or `bottom`), `region` | The lane meets the frame edge, and the whole meeting segment lies inside the region's range along that edge (y for `right` and `left`, x for `top` and `bottom`) | Largest y of the meeting segment for `right` and `left`, largest x for `top` and `bottom`, in px. `null` and `fail` when the lane does not reach the edge |
 | `lane_apart` | `lane`, `target` (`lane:<id>` or `zone:<id>`); optional `min` (default 0) | The lane does not overlap the target, and the distance between them is at least `min` | The distance. Also `overlap`, the area they share |
 | `visible` | `target`, `maxOccluded`; optional `from` (default 0.55) | The share of the target's camera-facing faces hidden by other objects is at most `maxOccluded` | Occluded fraction, 0 to 1 |
 | `reachable` | `from`, `to` (points); optional `area`, `radius` (0.2), `step` (0.1), `ignore`, `max` | A walkable path exists from `from` to `to` on a grid of free cells, and with `max` it is at most that long | Path length in units (moves times `step`). `null` and `fail` when there is no path |
@@ -242,7 +268,7 @@ Notes:
 - `ids` in a result: failing objects (`in_region`), involved objects sorted alphabetically (`no_overlap`), blocking objects (`lane_clear`), `[a, b]` in file order (`clearance`), `[lane]` (`lane_reaches`), `[lane, target id]` (`lane_apart`), `[target]` (`visible`).
 - `visible` samples the top face and the side faces from `from` times the height up to the full height, 64 points per face, and casts a ray toward the camera from each point through the parts of every other object. `occluders` lists the objects that hide at least one point.
 - Footprints always use the type's `size` rectangle, even when parts stick out. Parts matter for `visible` and for drawing.
-- **`lane_clear`, `lane_reaches` and `lane_apart` support one lane shape:** exactly 2 points, parallel to u or v. Other shapes return `skip`. `lane_reaches` also returns `skip` for the `top` and `bottom` edges. A `lane_apart` zone with fewer than 3 points is `skip` too. A skipped `lane_apart` has no `overlap`.
+- **`lane_clear`, `lane_reaches` and `lane_apart` support one lane shape:** exactly 2 points, parallel to u or v. Other shapes return `skip`. `lane_reaches` evaluates `right`, `left`, `top` and `bottom`. A `lane_apart` zone with fewer than 3 points is `skip` too. A skipped `lane_apart` has no `overlap`.
 - **`skip` is not a pass.** It means the tool could not evaluate the check: the check is not implemented in this stage (`state_stable`), or its input has an unsupported shape (for example `reachable` in a scene with no walkable zone), or the check names an object that the chosen state hides. A skipped check has `value: null` and `threshold: null`, and `check` exits 1.
 
 ### The gameplay checks
@@ -340,8 +366,10 @@ Usage errors (exit 2, `E_USAGE`): a state name the scene does not define (the me
 Agents do not rewrite scene files. They send a small patch, and the tool applies it, checks the locks, and reports what changed. The loop for an agent: `describe` the scene, write a patch, run `patch --dry-run --json`, read the report, and run `patch` again without `--dry-run` once the report is what you want.
 
 ```
-isoblock patch <scene.json> <patch> [-o <out.json>] [--dry-run] [--json]
+isoblock patch <scene.json> <patch|-> [-o <out.json>] [--dry-run] [--json]
 ```
+
+A patch argument of `-` reads the patch from standard input. The same parsing rules apply. The log names that patch `-`.
 
 - The result goes to `-o`, else back into `<scene.json>`, in the saved format (two-space JSON, keys in file order, one final newline).
 - `--dry-run` runs everything and prints the report but writes nothing: no scene file and no log line.
@@ -373,9 +401,12 @@ relate bench in_front_of tree gap 1..1.5 hard
 | `set <pointer> <value> [note="<text>"]` | Replaces the value at an existing JSON Pointer. The value is read as JSON, else as a string (`2.5`, `true`, `"[1, 2]"`, `approved`). `note=` replaces the `note` of the assumption with that `path`; it is an error when there is none |
 | `lock <id> <lock>...` | Adds the locks the object does not have yet: `pos`, `pos.u`, `pos.v`, `rot`, `type`, or a JSON Pointer |
 | `relate <a> <rel> <b> [gap <min>..<max>] [axis <u\|v>] [t <min>..<max>] [min <n>] [hard] [weight <n>] [id=<id>] [source="<text>"]` | Appends a relation. `hard` is always written (`false` when not given). Without `id=` the id is the first free `r1`, `r2`, ... |
+| `add <id> <type> <u>,<v> [<rot>]` | Appends an object `{ "id", "type", "pos": [u, v], "rot" }`. `rot` is 0, 90, 180 or 270, and 0 when it is left out. An id already in use, or a position or rotation that is not in that form, is `E_PATCH`. An unknown type is `E_REF` after the patch is applied |
+| `remove <id>` | Removes the object, every relation whose `a`, `b` or `ids` names it, its entries in each state's `hide` list, and every assumption whose path is that object's index or below it. If an assumption or a pointer lock sits at a later object index, the index would shift and the command is `E_PATCH`. Checks are left as they are: a check that still names the object makes the result `E_REF`, so change the check in the same patch first |
 | `solve ...` | Not a patch command: a patch that contains it is invalid with `E_USAGE`. Run `isoblock solve --patch` and apply the patch it writes |
 
 - There is no `unlock`: people remove locks in the editor or in the file.
+- A command that names an object the scene does not have is `E_PATCH`. When another object id is within two edits, the message ends with ` (did you mean "<id>"?)`.
 - `move` and `rot` round the coordinates they compute to 6 decimals. `rot` leaves `pos` as it is when the footprint keeps its shape (0 to 180).
 - `relate` does not check its names: an unknown object in `a` or `b` is `E_REF` and an unknown relation name is `E_SCHEMA`, both reported after the patch applied.
 - After the last command, every `assumptions[].value` is set to the value its `path` points to. A provisional number stays provisional: only a person removes the entry.
@@ -468,7 +499,7 @@ diff yard -> yard: 1 changes
 ## `compare`
 
 ```
-isoblock compare <scene.json> --variant NAME=FILE... [--format text|md|json]
+isoblock compare <scene.json> --variant NAME=FILE... [--state NAME] [--format text|md|json] [--relations]
 ```
 
 Compares the scene with 1 to 4 variants by measured values. It does not choose: it separates what is measurable from what needs judgment (balance, feel, gameplay intent), and a person decides.
@@ -477,6 +508,7 @@ Compares the scene with 1 to 4 variants by measured values. It does not choose: 
 - Each variant is applied to a copy of the base. **Locks are ignored but recorded**: a variant that touches a lock is marked, not stopped. A variant that is malformed or gives an invalid scene stops the command with exit code 2.
 - **Every column runs the checks of the base scene**, so the columns are comparable. A variant that changes `checks` is compared under the base's checks.
 - The label of a variant is the first comment line of its patch, else its name. `--state NAME` evaluates every column in that state (see [States](#states)); `--render` is not scheduled.
+- `--relations` adds two rows and, in the JSON output, two keys: `hard relations violated` (`hardViolated`, the ids of hard relations whose status is `violated`) and `soft penalty` (`softPenalty`, rounded to 6 decimals; the text shows 2 decimals). Every column is measured with the base scene's relations on that column's positions, with every object present whatever the state. Without the flag those keys and rows are absent, and the output is unchanged. A count above zero is marked ` ✗`.
 - The exit code is 0 when the command completes, even if checks fail.
 
 ```
@@ -495,7 +527,7 @@ objects moved / total (u)    -       1 / 0.60  1 / 0.40  1 / 1.00
 How to read the table:
 
 - `failing checks`: checks with status `fail` or `skip`. `locks touched`: how many base locks the variant touches, then their labels; any entry marks the variant invalid (variant C above moves the locked tree).
-- One row per check that fails or is skipped in some column, or whose value differs from the base in some column, in the order of `checks`. The label names the check and its unit: `in_region <region>[/<strip>] (objects outside)`, `in_region <region>[/<strip>] drawn (objects outside)` for `measure: "drawn"`, `no_overlap (pairs)`, `clearance <a>×<b> (<unit>)`, `lane_clear <lane> (blocking objects)`, `lane_reaches <lane> (y px)`, `lane_apart <lane>×<target id> (<unit>)`, `visible <target> (% occluded)`, `reachable <check id> (<unit>)`, `capacity <check id> (usable <kind>)`, `min_screen_size <target> (px)`, `min_screen_size <target> height (px)` for `measure: "height"`, `sort_consistency <check id> (objects out of order)`; other checks show as `<check> <id>`.
+- One row per check that fails or is skipped in some column, or whose value differs from the base in some column, in the order of `checks`. The label names the check and its unit: `in_region <region>[/<strip>] (objects outside)`, `in_region <region>[/<strip>] drawn (objects outside)` for `measure: "drawn"`, `no_overlap (pairs)`, `clearance <a>×<b> (<unit>)`, `lane_clear <lane> (blocking objects)`, `lane_reaches <lane> (y px)` for `right` and `left` and `lane_reaches <lane> (x px)` for `top` and `bottom`, `lane_apart <lane>×<target id> (<unit>)`, `visible <target> (% occluded)`, `reachable <check id> (<unit>)`, `capacity <check id> (usable <kind>)`, `min_screen_size <target> (px)`, `min_screen_size <target> height (px)` for `measure: "height"`, `sort_consistency <check id> (objects out of order)`; other checks show as `<check> <id>`.
 - Cells: counts as integers, clearance, `lane_apart` and distances with 2 decimals, `lane_reaches` in whole pixels (`none` when the lane does not reach the edge), `visible` in whole percent, `reachable` with 2 decimals (`none` when there is no path), `capacity` and `sort_consistency` as integers, `min_screen_size` in whole pixels (halves up), `skip` for a skipped check. A trailing ` ✗` marks a value whose status is `fail` or `skip`.
 - `objects moved / total`: objects present in both scenes whose `pos` differs, and the sum of their ground distances.
 

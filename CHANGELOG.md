@@ -1,5 +1,23 @@
 # Changelog
 
+## Unreleased
+
+Stage 10: an agent can ask for the version, a JSON validation report, a subset of checks, relation and state lines in `describe`, patches from standard input, and relation rows in `compare`. Patches can add and remove objects. `lane_reaches` evaluates the top and bottom edges. The build carries the third-party notices, and a workflow runs the tests.
+
+### Added
+
+- `isoblock --version` prints `isoblock <version>`, the `version` of `package.json` at build time, and exits 0.
+- `validate --json` prints `{ "ok", "scene", "error" }` on stdout for every outcome, including a file that cannot be read, and prints nothing on stderr. The exit code is unchanged.
+- `check --only a,b` runs only those checks, in `checks` order. The summary, the JSON results and the exit code follow the selection. An empty or unknown id is `E_USAGE`.
+- `describe --relations` and `describe --states` add the relation lines and the state line of Appendix B. Each flag adds only its own lines.
+- `patch <scene> -` reads the patch from standard input. The log names it `-`.
+- Short commands `add <id> <type> <u>,<v> [<rot>]` and `remove <id>`. `add` appends an object. `remove` drops the object, the relations that name it, its `hide` entries and its assumptions. It refuses to shift a later object index in an assumption or a pointer lock, and it leaves checks alone.
+- Unknown names within two edits gain ` (did you mean "<name>"?)`, including an unknown object in a short command. A schema detail that only says a value must match one of several schemas is omitted when another detail reports a problem at or below its path.
+- `compare --relations` adds the rows `hard relations violated` and `soft penalty`, and the JSON keys `hardViolated` and `softPenalty`. Without the flag the output is unchanged.
+- `lane_reaches` evaluates `top` and `bottom`. The value is the largest x of the meeting segment, and the compare label is `lane_reaches <lane> (x px)`.
+- `npm run build` copies `THIRD_PARTY_NOTICES.md` to `dist/` and writes a header line into `dist/isoblock.mjs` and `dist/editor.html`.
+- `.github/workflows/ci.yml` runs the test suite on Node 20 and 22, with Chromium from `playwright-core`, and the Godot cross-checks with Godot 4.7.1 under Xvfb.
+
 ## 0.9.0
 
 Stage 9: a polygon with an opacity below 1 is drawn with `fill-opacity` and `stroke-opacity`, and checks can measure a drawn box, the vertical extent of an object, and the gap between a lane and a lane or a zone.
