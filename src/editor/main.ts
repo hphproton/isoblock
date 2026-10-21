@@ -4,6 +4,7 @@ import type { Viewport } from "../core/viewport";
 import { byId } from "./dom";
 import { describeError, downloadScene, readSceneFile } from "./files";
 import { FrameLoop } from "./frames";
+import { mountAssumptions, mountEdits } from "./controls";
 import { mountChecks, mountOverlays, mountStatus, mountToolbar } from "./panels";
 import { mountProps } from "./props";
 import { SceneView, type ViewKind } from "./sceneView";
@@ -84,8 +85,10 @@ fileInput.addEventListener("change", () => {
 });
 
 mountToolbar(store, { open: () => fileInput.click(), save });
+mountEdits(store);
 mountStatus(store);
 mountProps(byId("props-body"), store);
+mountAssumptions(store);
 mountChecks(store);
 mountOverlays(store);
 
@@ -100,9 +103,10 @@ store.subscribe((state, previous) => {
     state.highlightIds !== previous.highlightIds ||
     state.overlays !== previous.overlays ||
     state.mode !== previous.mode ||
-    state.opened !== previous.opened;
+    state.opened !== previous.opened ||
+    state.shownState !== previous.shownState;
   const ended = state.live === null && previous.live !== null;
-  if (ended) for (const view of Object.values(views)) view.markFull();
+  if (ended || state.shownState !== previous.shownState) for (const view of Object.values(views)) view.markFull();
   else if (redraw) for (const view of Object.values(views)) view.markDirty();
 });
 
@@ -116,6 +120,10 @@ window.addEventListener("drop", (e) => {
 window.addEventListener("keydown", (e) => {
   const target = e.target;
   const typing = target instanceof HTMLInputElement || target instanceof HTMLSelectElement || target instanceof HTMLTextAreaElement;
+  const textField =
+    target instanceof HTMLTextAreaElement ||
+    target instanceof HTMLSelectElement ||
+    (target instanceof HTMLInputElement && target.type !== "checkbox" && target.type !== "radio");
   const mod = e.ctrlKey || e.metaKey;
   const key = e.key.toLowerCase();
   if (mod && key === "s") {
@@ -128,6 +136,14 @@ window.addEventListener("keydown", (e) => {
   } else if (!typing && mod && key === "y") {
     e.preventDefault();
     store.redo();
+  } else if (!textField && (e.key === "Delete" || e.key === "Backspace")) {
+    if (store.get().selected === null) return;
+    e.preventDefault();
+    store.removeSelected();
+  } else if (!textField && (e.key === "ArrowLeft" || e.key === "ArrowRight" || e.key === "ArrowUp" || e.key === "ArrowDown")) {
+    if (store.get().selected === null) return;
+    e.preventDefault();
+    store.nudge(e.key, e.shiftKey);
   } else if (key === "escape") {
     store.select(null);
     if (store.get().highlightCheck !== null) store.highlightCheck(store.get().highlightCheck);

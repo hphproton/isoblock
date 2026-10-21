@@ -22,6 +22,8 @@ export type Parsed =
       readonly state?: string;
       /** Check ids of `check --only`; absent when every check runs. */
       readonly only?: readonly string[];
+      /** `check --failing`: the lines and JSON results are only `fail` and `skip`. */
+      readonly failing?: boolean;
       /** `describe --relations`. Absent when the flag is not set. */
       readonly relations?: boolean;
       /** `describe --states`. Absent when the flag is not set. */
@@ -73,14 +75,14 @@ export const USAGE = [
   "Usage:",
   "  isoblock --version                         print the version",
   "  isoblock validate <scene.json> [--json]    schema and reference checks",
-  "  isoblock check    <scene.json> [--json] [--state NAME] [--only a,b]",
+  "  isoblock check    <scene.json> [--json] [--state NAME] [--only a,b] [--failing]",
   "                                             run the scene's checks",
   "  isoblock render   <scene.json> [--state NAME] -o <out.svg|out.png>",
   "                                             draw the scene as SVG or PNG",
   "  isoblock describe <scene.json> [--relations] [--states]",
   "                                             compact summary for agents",
   "  isoblock relations <scene.json> [--json]   measure the scene's relations",
-  "  isoblock solve    <scene.json> [--only a,b] [-o <proposal.json>] [--patch <moves.patch>] [--json]",
+  "  isoblock solve    <scene.json> [--only a,b] [-o <proposal.json>] [--patch <moves.patch|->] [--json]",
   "                                             propose positions that meet the relations",
   "  isoblock patch    <scene.json> <patch|-> [-o <out.json>] [--dry-run] [--json]",
   "                                             apply a patch (JSON Patch or short commands)",
@@ -115,6 +117,7 @@ const FLAG_COMMANDS: Readonly<Record<string, readonly string[]>> = {
   "--variant": ["compare"],
   "--format": ["compare"],
   "--state": ["check", "render", "compare", "export"],
+  "--failing": ["check"],
   "--target": ["export"],
   "--bbox-units": ["export"],
   "--bbox-order": ["export"],
@@ -138,6 +141,7 @@ interface Scanned {
   readonly dryRun: boolean;
   readonly relations: boolean;
   readonly states: boolean;
+  readonly failing: boolean;
   readonly variants: readonly string[];
   /** The value of each flag that takes one, except `--variant`, which may repeat. */
   readonly values: Readonly<Record<string, string>>;
@@ -151,6 +155,7 @@ function scan(command: string, rest: readonly string[]): Scanned {
   let dryRun = false;
   let relations = false;
   let states = false;
+  let failing = false;
   for (let i = 0; i < rest.length; i++) {
     const [flag, inline] = split(rest[i] as string);
     // `-` is the patch file name that means standard input, not a flag.
@@ -166,6 +171,7 @@ function scan(command: string, rest: readonly string[]): Scanned {
     else if (flag === "--dry-run") dryRun = true;
     else if (flag === "--relations") relations = true;
     else if (flag === "--states") states = true;
+    else if (flag === "--failing") failing = true;
     else {
       const value = inline ?? rest[++i];
       if (value === undefined) throw usage(`flag '${flag}' needs a value`);
@@ -173,7 +179,7 @@ function scan(command: string, rest: readonly string[]): Scanned {
       else values[flag] = value;
     }
   }
-  return { positional, json, dryRun, relations, states, variants, values };
+  return { positional, json, dryRun, relations, states, failing, variants, values };
 }
 
 /** `--only a,b`: ids separated by commas, none empty; repeated ids count once. */
@@ -185,6 +191,7 @@ function parseOnly(value: string, what: string): readonly string[] {
 
 function parseSolve(file: string, s: Scanned): Parsed {
   const { "--only": only, "-o": output, "--patch": patchOutput } = s.values;
+  if (patchOutput === "-" && s.json) throw usage("solve --patch - writes to standard output and cannot be combined with --json");
   return {
     kind: "solve", file, json: s.json,
     ...(only === undefined ? {} : { only: parseOnly(only, "object ids") }),
@@ -289,5 +296,6 @@ export function parseArgs(argv: readonly string[]): Parsed {
     ...(only === undefined ? {} : { only }),
     ...(s.relations ? { relations: true } : {}),
     ...(s.states ? { states: true } : {}),
+    ...(s.failing ? { failing: true } : {}),
   };
 }

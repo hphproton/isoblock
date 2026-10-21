@@ -118,6 +118,19 @@ describe("parseCommand: add and remove", () => {
   });
 });
 
+describe("parseCommand: hide and show", () => {
+  it("reads a state and an object", () => {
+    expect(parse("hide closed crate2")).toEqual({ cmd: "hide", state: "closed", id: "crate2" });
+    expect(parse("show night bench")).toEqual({ cmd: "show", state: "night", id: "bench" });
+  });
+
+  it("rejects a missing word and an empty name", () => {
+    for (const line of ["hide closed", "show", "hide", "hide closed crate2 extra", 'hide "" crate']) {
+      expect(code(line), line).toBe("E_PATCH");
+    }
+  });
+});
+
 describe("parseCommand: other names", () => {
   it("points solve to isoblock solve --patch (E_USAGE)", () => {
     expect(code("solve only=a")).toBe("E_USAGE");

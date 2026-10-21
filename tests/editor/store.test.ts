@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { runChecks } from "../../src/core/checks";
+import { runChecksInState } from "../../src/core/checks/inState";
 import { moveObject, setRotation } from "../../src/core/edit";
 import { currentScene, EditorStore, isDirty, canUndoState, canRedoState } from "../../src/editor/store";
 import { loadScene } from "../helpers/fixtures";
@@ -38,6 +39,18 @@ describe("EditorStore: open", () => {
     store.open(overlap, "a.json");
     store.open(crowd, "b.json");
     expect(store.get().opened).toBe(2);
+  });
+
+  it("opens a state named default with that state's check results", () => {
+    const yard = loadScene("yard");
+    const scene = { ...yard, states: { default: { hide: ["crate1"] }, ...yard.states } };
+    const store = new EditorStore();
+    store.open(scene, "yard.scene.json");
+    const state = store.get();
+    expect(state.shownState).toBe("default");
+    expect(state.results).toEqual(runChecksInState(scene, "default"));
+    expect(state.results).not.toEqual(runChecks(scene));
+    expect(state.results.find((row) => row.id === "c4")?.status).toBe("skip");
   });
 
   it("replaces the previous scene, its history and its selection", () => {

@@ -2,7 +2,7 @@
 
 IsoBlock keeps the layout of a 2D isometric scene as data. People and AI agents edit one scene file; IsoBlock checks it against the scene's rules, renders it, and exports one approved layout to the game engine, to image generation and to graybox gameplay.
 
-Made by [Forty-Two Twice](https://10101042.xyz), an independent game studio. Status: pre-release, version 0.10.0. Scene format `isoblock/1`. Breaking changes and upgrade steps are listed in [`CHANGELOG.md`](CHANGELOG.md).
+Made by [Forty-Two Twice](https://10101042.xyz), an independent game studio. Status: pre-release, version 0.11.0. Scene format `isoblock/1`. Breaking changes and upgrade steps are listed in [`CHANGELOG.md`](CHANGELOG.md).
 
 ## Why
 
@@ -21,7 +21,7 @@ IsoBlock makes the scene file the single source of truth, checks it with exact r
 - **Render**: SVG and PNG, with no native dependencies.
 - **Export**: a runtime file (`isoblock-runtime/2`) for engines, and bounding boxes for image generation (`gen-bbox`).
 - **Godot 4 adapter** ([`adapters/godot/`](adapters/godot/)): builds a node tree from the runtime file, draws sprites in the tool's draw order, switches states, and places the game's moving actors.
-- **Editor** (`dist/editor.html`): one offline page with dragging on isometric and top-down views, locks, undo and a live check panel.
+- **Editor** (`dist/editor.html`): one offline page with dragging on isometric and top-down views, adding, duplicating, deleting and nudging objects, a state switch, locks, settling assumptions, undo and a live check panel.
 
 ## Quick start
 
@@ -42,11 +42,11 @@ The sample scene `yard` contains three deliberate mistakes: two crates closer th
 ```
 isoblock --version
 isoblock validate  <scene.json> [--json]
-isoblock check     <scene.json> [--json] [--state NAME] [--only a,b]
+isoblock check     <scene.json> [--json] [--state NAME] [--only a,b] [--failing]
 isoblock render    <scene.json> [--state NAME] -o <out.svg|out.png>
 isoblock describe  <scene.json> [--relations] [--states]
 isoblock relations <scene.json> [--json]
-isoblock solve     <scene.json> [--only a,b] [-o <proposal.json>] [--patch <moves.patch>] [--json]
+isoblock solve     <scene.json> [--only a,b] [-o <proposal.json>] [--patch <moves.patch|->] [--json]
 isoblock patch     <scene.json> <patch|-> [-o <out.json>] [--dry-run] [--json]
 isoblock diff      <a.json> <b.json> [--json]
 isoblock compare   <scene.json> --variant NAME=FILE... [--state NAME] [--format text|md|json] [--relations]

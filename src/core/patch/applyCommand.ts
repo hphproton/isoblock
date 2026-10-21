@@ -158,6 +158,38 @@ function removeObject(doc: unknown, id: string): unknown {
   return removeAt(dropHides(dropRelations(dropAssumptions(doc, index), id), id), ["objects", String(index)]);
 }
 
+function stateRecord(doc: unknown): Rec | null {
+  const states = resolvePointer(doc, "/states").value;
+  return isRecord(states) ? states : null;
+}
+
+/** Append the object to a state's hide list, creating the state when it is missing. */
+function hideObject(doc: unknown, state: string, id: string): unknown {
+  objectIndex(doc, id);
+  const states = stateRecord(doc);
+  if (states === null) return addAt(doc, ["states"], { [state]: { hide: [id] } });
+  if (!Object.hasOwn(states, state)) return addAt(doc, ["states", state], { hide: [id] });
+  const def = states[state];
+  if (!isRecord(def)) throw fail(`state "${state}" is not an object`);
+  if (!Object.hasOwn(def, "hide")) return addAt(doc, ["states", state, "hide"], [id]);
+  if (!Array.isArray(def.hide)) throw fail(`state "${state}" hide is not a list`);
+  if (def.hide.includes(id)) throw fail(`object "${id}" is already hidden in "${state}"`);
+  return addAt(doc, ["states", state, "hide", "-"], id);
+}
+
+/** Remove the object from a state's hide list. The state stays, also when the list is empty. */
+function showObject(doc: unknown, state: string, id: string): unknown {
+  objectIndex(doc, id);
+  const states = stateRecord(doc);
+  if (states === null || !Object.hasOwn(states, state)) {
+    throw fail(`unknown state "${state}"${hint(state, states === null ? [] : Object.keys(states))}`);
+  }
+  const def = states[state];
+  const list = isRecord(def) && Array.isArray(def.hide) ? def.hide : [];
+  if (!list.includes(id)) throw fail(`object "${id}" is not hidden in "${state}"`);
+  return replaceAt(doc, ["states", state, "hide"], list.filter((item) => item !== id));
+}
+
 /** Apply one short command to scene data. Returns new data. Throws `E_PATCH`. */
 export function applyCommand(doc: unknown, command: Command): unknown {
   switch (command.cmd) {
@@ -175,5 +207,9 @@ export function applyCommand(doc: unknown, command: Command): unknown {
       return addObject(doc, command);
     case "remove":
       return removeObject(doc, command.id);
+    case "hide":
+      return hideObject(doc, command.state, command.id);
+    case "show":
+      return showObject(doc, command.state, command.id);
   }
 }
