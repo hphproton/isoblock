@@ -157,7 +157,6 @@ export class EditorStore {
   }
 
   open(scene: Scene, fileName: string | null): void {
-    const results = runChecks(scene);
     const { overlays, snap, mode, opened } = this.state;
     this.state = { ...INITIAL, overlays, snap, mode, opened };
     this.set({
@@ -165,8 +164,7 @@ export class EditorStore {
       fileName,
       history: startHistory(scene),
       saved: scene,
-      results,
-      resultsScene: scene,
+      ...this.resultsFor(scene),
     });
   }
 
