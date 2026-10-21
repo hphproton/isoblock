@@ -209,7 +209,7 @@ Not in stage 10: `compare --render` and layout indicators, patches and variant s
 
 **Done when:** all tests pass, `npm run test:godot` passes, earlier fixtures still match, the workflow `ci` passes on the branch, `npm run check:publish` reports nothing, the branch is named `builder/stage-10`, its session log names the tool and model, gives the test counts with skipped tests and ends with the pull request's title and description, and the stage 10 criteria in SPEC section 17 hold.
 
-## Stage 11 · open
+## Stage 11 · done (0.11.0)
 
 Editor, round 2 (SPEC sections 8, 10, 11, 12, 16, 17). Editor and CLI; no engine work, no scene format change, no new dependency. Fixtures: `tests/fixtures/hide/` (the patches 31 to 37, for `hide` and `show`) and `tests/fixtures/editor/` (`cases.json` with 16 editor cases and the expected file of each case that changes the scene).
 
@@ -231,3 +231,7 @@ Editor, round 2 (SPEC sections 8, 10, 11, 12, 16, 17). Editor and CLI; no engine
 Not in stage 11: a relation panel, relation overlays and a Solve button in the editor, sort-point and occlusion-ray overlays (planned for a later stage); creating, renaming or deleting states and moving objects per state; selecting several objects; patches and variant switching in the editor; `compare --render` and layout indicators, an `unlock` command, `state_stable`, generated engine scenes (not scheduled). The Rust crate license texts in `THIRD_PARTY_NOTICES.md` are a maintainer task (`MAINTAINING.md`, Before distributing a build).
 
 **Done when:** all tests pass, `npm run test:godot` passes, earlier fixtures still match, the workflow `ci` passes on the branch, `npm run check:publish` reports nothing, the branch is named `builder/stage-11`, its session log names the tool and model, gives the test counts with skipped tests and ends with the pull request's title and description, and the stage 11 criteria in SPEC section 17 hold.
+
+## After stage 11
+
+No further stage is open. The next one planned covers heights and levels for zones, lanes and objects, a camera given by elevation and direction, states that hide part of an object or a frame region, and `x-` keys in the runtime file; the maintainer specifies it once the scenes that need it are described.
