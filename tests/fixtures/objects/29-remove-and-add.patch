@@ -1,0 +1,3 @@
+# swap the second crate for a box
+remove c
+add e box 4,3

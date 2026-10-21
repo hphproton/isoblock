@@ -1,0 +1,302 @@
+{
+  "schema": "isoblock/1",
+  "id": "edges",
+  "units": {
+    "name": "u",
+    "note": "abstract unit"
+  },
+  "camera": {
+    "angleU": 30,
+    "angleV": 150,
+    "pxPerUnit": 100,
+    "verticalScale": 1,
+    "origin": [
+      500,
+      500
+    ]
+  },
+  "frame": {
+    "w": 1000,
+    "h": 1000,
+    "regions": [
+      {
+        "id": "hud",
+        "rect": [
+          0,
+          0,
+          1000,
+          150
+        ],
+        "blocksScene": true
+      },
+      {
+        "id": "view",
+        "rect": [
+          0,
+          150,
+          1000,
+          1000
+        ]
+      },
+      {
+        "id": "stage",
+        "rect": [
+          200,
+          150,
+          800,
+          1000
+        ]
+      }
+    ]
+  },
+  "types": {
+    "post": {
+      "size": [
+        0.4,
+        0.4,
+        1.0
+      ]
+    }
+  },
+  "objects": [
+    {
+      "id": "post",
+      "type": "post",
+      "pos": [
+        0,
+        0
+      ],
+      "rot": 0
+    }
+  ],
+  "lanes": [
+    {
+      "id": "north",
+      "kind": "walk",
+      "width": 0.8,
+      "points": [
+        [
+          -4,
+          0
+        ],
+        [
+          -4,
+          -8
+        ]
+      ]
+    },
+    {
+      "id": "side",
+      "kind": "walk",
+      "width": 0.8,
+      "points": [
+        [
+          -2.6,
+          0
+        ],
+        [
+          -2.6,
+          -9
+        ]
+      ]
+    },
+    {
+      "id": "east",
+      "kind": "walk",
+      "width": 0.8,
+      "points": [
+        [
+          1,
+          0
+        ],
+        [
+          1,
+          -12
+        ]
+      ]
+    },
+    {
+      "id": "south",
+      "kind": "walk",
+      "width": 1.0,
+      "points": [
+        [
+          0,
+          3.5
+        ],
+        [
+          9,
+          3.5
+        ]
+      ]
+    },
+    {
+      "id": "mid",
+      "kind": "walk",
+      "width": 1.0,
+      "points": [
+        [
+          0,
+          4.5
+        ],
+        [
+          9,
+          4.5
+        ]
+      ]
+    },
+    {
+      "id": "short",
+      "kind": "walk",
+      "width": 1.0,
+      "points": [
+        [
+          0,
+          3.5
+        ],
+        [
+          4,
+          3.5
+        ]
+      ]
+    },
+    {
+      "id": "bend",
+      "kind": "walk",
+      "width": 1.0,
+      "points": [
+        [
+          0,
+          6
+        ],
+        [
+          3,
+          6
+        ],
+        [
+          3,
+          9
+        ]
+      ]
+    },
+    {
+      "id": "row",
+      "kind": "walk",
+      "width": 1.0,
+      "points": [
+        [
+          0,
+          0
+        ],
+        [
+          8,
+          0
+        ]
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "id": "c1",
+      "check": "lane_reaches",
+      "lane": "north",
+      "edge": "top",
+      "region": "view"
+    },
+    {
+      "id": "c2",
+      "check": "lane_reaches",
+      "lane": "north",
+      "edge": "top",
+      "region": "stage"
+    },
+    {
+      "id": "c3",
+      "check": "lane_reaches",
+      "lane": "side",
+      "edge": "top",
+      "region": "view"
+    },
+    {
+      "id": "c4",
+      "check": "lane_reaches",
+      "lane": "side",
+      "edge": "top",
+      "region": "stage"
+    },
+    {
+      "id": "c5",
+      "check": "lane_reaches",
+      "lane": "east",
+      "edge": "top",
+      "region": "view"
+    },
+    {
+      "id": "c6",
+      "check": "lane_reaches",
+      "lane": "south",
+      "edge": "bottom",
+      "region": "view"
+    },
+    {
+      "id": "c7",
+      "check": "lane_reaches",
+      "lane": "south",
+      "edge": "bottom",
+      "region": "stage"
+    },
+    {
+      "id": "c8",
+      "check": "lane_reaches",
+      "lane": "mid",
+      "edge": "bottom",
+      "region": "stage"
+    },
+    {
+      "id": "c9",
+      "check": "lane_reaches",
+      "lane": "short",
+      "edge": "bottom",
+      "region": "view"
+    },
+    {
+      "id": "c10",
+      "check": "lane_reaches",
+      "lane": "bend",
+      "edge": "top",
+      "region": "view"
+    },
+    {
+      "id": "c11",
+      "check": "lane_reaches",
+      "lane": "row",
+      "edge": "right",
+      "region": "view"
+    },
+    {
+      "id": "c12",
+      "check": "lane_reaches",
+      "lane": "row",
+      "edge": "left",
+      "region": "view"
+    },
+    {
+      "id": "c13",
+      "check": "lane_reaches",
+      "lane": "north",
+      "edge": "bottom",
+      "region": "view"
+    },
+    {
+      "id": "c14",
+      "check": "lane_clear",
+      "lane": "row"
+    }
+  ],
+  "meta": {
+    "version": 1,
+    "status": "draft",
+    "approvedBy": null,
+    "approvedAt": null
+  }
+}

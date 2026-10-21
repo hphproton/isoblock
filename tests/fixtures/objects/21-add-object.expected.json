@@ -1,0 +1,29 @@
+{
+  "base": "tests/fixtures/yard.scene.json",
+  "tolerance": {
+    "value": 0.01,
+    "valuePx": 1.0,
+    "coordinate": 1e-06
+  },
+  "exit": 1,
+  "status": "applied",
+  "error": null,
+  "locks": [],
+  "diff": [
+    {
+      "op": "add",
+      "path": "/objects/crate3",
+      "to": {
+        "id": "crate3",
+        "type": "crate",
+        "pos": [
+          7.6,
+          0.5
+        ],
+        "rot": 0
+      }
+    }
+  ],
+  "checks": [],
+  "failing": 3
+}

@@ -1,0 +1,52 @@
+{
+  "base": "tests/fixtures/objects/shelf.scene.json",
+  "tolerance": {
+    "value": 0.01,
+    "valuePx": 1.0,
+    "coordinate": 1e-06
+  },
+  "exit": 0,
+  "status": "applied",
+  "error": null,
+  "locks": [],
+  "diff": [
+    {
+      "op": "remove",
+      "path": "/objects/d",
+      "from": {
+        "id": "d",
+        "type": "crate",
+        "pos": [
+          4,
+          1.4
+        ],
+        "rot": 0
+      }
+    },
+    {
+      "op": "remove",
+      "path": "/relations/r2",
+      "from": {
+        "id": "r2",
+        "a": "c",
+        "rel": "gap",
+        "b": "d",
+        "gap": [
+          0.5,
+          1
+        ],
+        "hard": true
+      }
+    },
+    {
+      "op": "replace",
+      "path": "/states/bare/hide",
+      "from": [
+        "d"
+      ],
+      "to": []
+    }
+  ],
+  "checks": [],
+  "failing": 0
+}

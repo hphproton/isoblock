@@ -4,7 +4,7 @@ The maintainer owns the spec and the expected test results, answers builder ques
 
 ## Owned paths
 
-Only the maintainer edits `SPEC.md`, `AGENTS.md`, `MAINTAINING.md`, `tests/golden/`, `tests/fixtures/`, `scripts/check-publish.mjs`, `tests/repo/checkPublish.test.ts`, `.github/`, the stage headers in `ROADMAP.md`, and in `package.json` `version` and the `check:publish` entry. The maintainer changes them on its own branch (`maintainer/<topic>`) or in a release commit on a builder branch; they reach `main` only through the owner's squash-merge.
+Only the maintainer edits `SPEC.md`, `AGENTS.md`, `MAINTAINING.md`, `tests/golden/`, `tests/fixtures/`, `scripts/check-publish.mjs`, `tests/repo/checkPublish.test.ts`, `.github/` except `.github/workflows/ci.yml` (written by the stage 10 builder, reviewed by the maintainer), the stage headers in `ROADMAP.md`, and in `package.json` `version` and the `check:publish` entry. The maintainer changes them on its own branch (`maintainer/<topic>`) or in a release commit on a builder branch; they reach `main` only through the owner's squash-merge.
 
 ## Initialize the repository (once)
 
@@ -50,6 +50,8 @@ Review by behavior. Read code only when a step below fails.
 
 17. Publication (every stage from 9): run `npm run check:publish` on the branch. When it reports an author or committer that is an agent's own identity (check the commits on GitHub: signed by the environment, linked to the agent's account), add the address to `AGENT_IDENTITIES` in `scripts/check-publish.mjs` on a maintainer branch, with a test; an invented identity is a finding for the builder instead; read the session log's `Agent:` line for the tool and model, and the counts of skipped tests; when the owner has opened the pull request, check that the workflow `publish rules` passed on it. A finding blocks the merge. If it is in pushed commits, rewrite the branch without it, force-push, and tell the owner what stays visible on GitHub (SPEC section 20).
 
+18. From stage 10, with your own script: read the result of the workflow `ci` on the pull request (both jobs green, no skipped tests in the log); run `check --json` on `tests/fixtures/edges/edges.scene.json`, `patch --json` for every file in `tests/fixtures/objects/`, `compare --relations` on `yard` with the four variants in all three formats, and `validate --json` on every case of `tests/fixtures/invalid/cases.json`, and compare with the expected files; run `describe --relations --states` on `yard` against SPEC Appendix B; pipe a patch into `patch scene.json -` and compare its report and log line with the file form; run `--version`, `check --only` with a known, an unknown and an empty id, and `compare` without `--relations` against the stage 3 expected files; run random scenes with lanes toward all four edges and misspelled names through `check --json` and `validate --json` and compare with the reference implementation; run `npm run build` and check `dist/THIRD_PARTY_NOTICES.md`, the two header lines, and that the notices test fails when a row of the table is removed.
+
 Write the result in `log/<yyyy-mm-dd>-maintainer-<n>.md`: steps run, outcomes, decision.
 
 ## Release
@@ -88,4 +90,4 @@ Every later change follows the content rules of SPEC section 20 from the start: 
 `THIRD_PARTY_NOTICES.md` lists the third-party code that `npm run build` bundles into `dist/`. Before a build is distributed in any form:
 
 - The notices of the Rust crates inside the WebAssembly module of `@resvg/resvg-wasm` are complete, with their license texts.
-- The build carries the notices: a builder task writes `THIRD_PARTY_NOTICES.md` next to the built files and a one-line header in each built file that points to it, and a test fails when the packages in the bundles differ from the list.
+- The build carries the notices: stage 10 writes `THIRD_PARTY_NOTICES.md` next to the built files and a one-line header in each built file that points to it, and its test fails when the packages in the bundles differ from the list (SPEC section 16).

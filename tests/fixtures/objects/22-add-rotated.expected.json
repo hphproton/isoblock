@@ -1,0 +1,29 @@
+{
+  "base": "tests/fixtures/yard.scene.json",
+  "tolerance": {
+    "value": 0.01,
+    "valuePx": 1.0,
+    "coordinate": 1e-06
+  },
+  "exit": 1,
+  "status": "applied",
+  "error": null,
+  "locks": [],
+  "diff": [
+    {
+      "op": "add",
+      "path": "/objects/bench2",
+      "to": {
+        "id": "bench2",
+        "type": "bench",
+        "pos": [
+          1,
+          3
+        ],
+        "rot": 90
+      }
+    }
+  ],
+  "checks": [],
+  "failing": 3
+}
