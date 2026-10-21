@@ -184,8 +184,27 @@ Not in stage 9: heights for zones and lanes, a camera elevation parameter, state
 
 **Done when:** every case of `tests/fixtures/measures/cases.json` meets its expected results; the branch is named `builder/stage-9`, and its session log names the tool and model, gives the test counts with skipped tests and ends with the pull request's title and description; every case of `tests/fixtures/export/cases.json` and of `tests/fixtures/states/cases.json` meets its expected files, the PNG of `openstrip` included; `npm run check:publish` reports nothing; all tests pass, with no test skipped where Chromium is available; earlier fixtures still match, except the block images that this stage replaces.
 
-## After stage 9
+## Stage 10 · open
 
-No further stage is open. The owner has scheduled a stage 10 (agent protocol, round 2, and distribution); the maintainer opens it from a maintainer branch once it is specified against this repository.
+Agent protocol, round 2, and distribution (SPEC sections 6, 9.1, 11, 11.1, 12, 16, 17, 20, Appendices B and D). Core and CLI; no engine work, no scene format change, no new dependency. Fixtures: `tests/fixtures/edges/` (the scene `edges.scene.json` with `lane_reaches` on all four edges), `tests/fixtures/objects/` (the scene `shelf.scene.json` and the patches 21 to 30 for `add` and `remove`), `tests/fixtures/compare/yard.D.patch` with `yard.relations.expected.{json,txt,md}`, and `tests/fixtures/invalid/` (15 broken scenes with `cases.json`).
 
-One builder task is waiting for a session before a build is distributed: the build carries the third-party notices (`MAINTAINING.md`, Before distributing a build).
+- [ ] `isoblock --version` prints `isoblock <version>` from `package.json` at build time (SPEC section 11)
+- [ ] `validate --json`: `{ ok, scene, error }` on stdout for every outcome, unreadable files included; exit codes unchanged
+- [ ] `check --only a,b`: selected checks only, in `checks` order; summary, results and exit code follow the selection; empty or unknown id is `E_USAGE`
+- [ ] `describe --relations` and `--states` (SPEC Appendix B); `describe` of `yard` with both flags equals the appendix
+- [ ] `patch scene.json -` reads the patch from standard input; the log names it `-`
+- [ ] Short commands `add` and `remove` (SPEC section 12): `add` appends an object with `rot`; `remove` drops the object, its relations, its `hide` entries and its assumptions, refuses index shifts, and leaves checks alone
+- [ ] Suggestions: ` (did you mean "<name>"?)` on unknown names within Levenshtein distance 2, with the pools and tie rule of SPEC section 6; also in the `E_PATCH` message for an unknown object
+- [ ] Schema details: no `oneOf` or discriminator line when another detail reports a problem at or below its path
+- [ ] `compare --relations`: rows `hard relations violated` and `soft penalty`, keys `hardViolated` and `softPenalty` (SPEC section 11.1, Appendix D); output without the flag is unchanged
+- [ ] `lane_reaches` evaluates `top` and `bottom` (SPEC section 9.1): edge lines, thresholds, values, `describe` line with `x≈`, `compare` label `(x px)`
+- [ ] `npm run build` writes `dist/THIRD_PARTY_NOTICES.md` and the header line in each built file (SPEC section 16); a test compares the bundled packages with the notices table
+- [ ] `.github/workflows/ci.yml`: the test suite on Node 20 and 22 with Chromium from `playwright-core`, no skipped tests; the Godot cross-checks with Godot 4.7.1 checked against `SHA512-SUMS.txt` under Xvfb (SPEC section 16)
+- [ ] Tests load `tests/fixtures/edges/`, `tests/fixtures/objects/`, `tests/fixtures/invalid/cases.json` and the relation compare fixture, and compare with the expected files
+- [ ] `CHANGELOG.md` lists the new flags and commands
+- [ ] `docs/AGENT_GUIDE.md` covers `--version`, `validate --json`, `check --only`, the `describe` flags, `add`, `remove`, patches from standard input and `compare --relations`
+- [ ] Session log says `branch ready for review`
+
+Not in stage 10: `compare --render` and layout indicators, patches and variant switching in the editor, an `unlock` command, cascading removal of checks, `state_stable`, generated engine scenes (not scheduled). The Rust crate license texts in `THIRD_PARTY_NOTICES.md` are a maintainer task (`MAINTAINING.md`, Before distributing a build).
+
+**Done when:** all tests pass, `npm run test:godot` passes, earlier fixtures still match, the workflow `ci` passes on the branch, `npm run check:publish` reports nothing, the branch is named `builder/stage-10`, its session log names the tool and model, gives the test counts with skipped tests and ends with the pull request's title and description, and the stage 10 criteria in SPEC section 17 hold.

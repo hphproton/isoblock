@@ -1,0 +1,157 @@
+{
+  "cases": [
+    {
+      "file": "check-typo.invalid.json",
+      "code": "E_SCHEMA",
+      "scene": "yard",
+      "contains": [
+        "/checks/3/check",
+        "did you mean \"clearance\"?"
+      ],
+      "excludes": [
+        "oneOf"
+      ]
+    },
+    {
+      "file": "rel-typo.invalid.json",
+      "code": "E_SCHEMA",
+      "scene": "yard",
+      "contains": [
+        "/relations/0/rel",
+        "did you mean \"in_front_of\"?"
+      ],
+      "excludes": [
+        "oneOf"
+      ]
+    },
+    {
+      "file": "key-typo.invalid.json",
+      "code": "E_SCHEMA",
+      "scene": "yard",
+      "contains": [
+        "\"poss\"",
+        "did you mean \"pos\"?"
+      ],
+      "excludes": []
+    },
+    {
+      "file": "type-typo.invalid.json",
+      "code": "E_REF",
+      "scene": "yard",
+      "contains": [
+        "\"crat\"",
+        "did you mean \"crate\"?"
+      ],
+      "excludes": []
+    },
+    {
+      "file": "region-typo.invalid.json",
+      "code": "E_REF",
+      "scene": "yard",
+      "contains": [
+        "\"veiw\"",
+        "did you mean \"view\"?"
+      ],
+      "excludes": []
+    },
+    {
+      "file": "object-tie.invalid.json",
+      "code": "E_REF",
+      "scene": "yard",
+      "contains": [
+        "\"crate3\"",
+        "did you mean \"crate1\"?"
+      ],
+      "excludes": [
+        "did you mean \"crate2\"?"
+      ]
+    },
+    {
+      "file": "state-typo.invalid.json",
+      "code": "E_REF",
+      "scene": "yard",
+      "contains": [
+        "\"benchh\"",
+        "did you mean \"bench\"?"
+      ],
+      "excludes": []
+    },
+    {
+      "file": "lane-typo.invalid.json",
+      "code": "E_REF",
+      "scene": "yard",
+      "contains": [
+        "\"pth\"",
+        "did you mean \"path\"?"
+      ],
+      "excludes": []
+    },
+    {
+      "file": "strip-typo.invalid.json",
+      "code": "E_REF",
+      "scene": "yard",
+      "contains": [
+        "\"flor\"",
+        "did you mean \"floor\"?"
+      ],
+      "excludes": []
+    },
+    {
+      "file": "target-typo.invalid.json",
+      "code": "E_REF",
+      "scene": "yard",
+      "contains": [
+        "\"tre\"",
+        "did you mean \"tree\"?"
+      ],
+      "excludes": []
+    },
+    {
+      "file": "no-suggestion.invalid.json",
+      "code": "E_REF",
+      "scene": "yard",
+      "contains": [
+        "\"zeppelin\""
+      ],
+      "excludes": [
+        "did you mean"
+      ]
+    },
+    {
+      "file": "not-json.invalid.json",
+      "code": "E_JSON_PARSE",
+      "scene": null,
+      "contains": [],
+      "excludes": []
+    },
+    {
+      "file": "camera-parallel.invalid.json",
+      "code": "E_SCHEMA",
+      "scene": "yard",
+      "contains": [
+        "angleU"
+      ],
+      "excludes": [
+        "did you mean"
+      ]
+    },
+    {
+      "file": "wrong-type.invalid.json",
+      "code": "E_SCHEMA",
+      "scene": "yard",
+      "contains": [
+        "/objects/1/pos"
+      ],
+      "excludes": [
+        "did you mean"
+      ]
+    },
+    {
+      "file": "unknown-schema.invalid.json",
+      "code": "E_SCHEMA",
+      "scene": null,
+      "contains": [],
+      "excludes": []
+    }
+  ]
+}

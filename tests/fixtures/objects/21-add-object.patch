@@ -1,0 +1,3 @@
+# a third crate behind the others, then nudged
+add crate3 crate 7.4,0.5
+move crate3 u+0.2
