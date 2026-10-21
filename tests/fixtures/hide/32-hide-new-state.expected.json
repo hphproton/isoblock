@@ -1,0 +1,26 @@
+{
+  "base": "tests/fixtures/objects/shelf.scene.json",
+  "tolerance": {
+    "value": 0.01,
+    "valuePx": 1,
+    "coordinate": 1e-06
+  },
+  "exit": 0,
+  "status": "applied",
+  "error": null,
+  "locks": [],
+  "diff": [
+    {
+      "op": "add",
+      "path": "/states/night",
+      "to": {
+        "hide": [
+          "c",
+          "d"
+        ]
+      }
+    }
+  ],
+  "checks": [],
+  "failing": 0
+}

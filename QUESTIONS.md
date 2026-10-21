@@ -67,6 +67,7 @@ Template:
 - Question: The property panel edits numbers that can be provisional (`assumptions[]`). `describe` prints `assumptions[].value`. What happens to the entry when the number is edited?
 - Reading chosen for now: The entry stays (the number is still provisional; only a person settles it) and its `value` follows the edited number, so the file never contradicts itself and `describe` stays true. `note`, `origin` and `owner` are not touched. The editor never adds or removes assumptions.
 - Answer (maintainer): Approved as written. SPEC section 10 now states it.
+- Change (maintainer, stage 11): editing a number still keeps its entry. A person can now settle an entry in the editor (`Settle`, then `Confirm`), which removes it; the editor still never adds one, and no patch command removes one (SPEC section 10, Edits).
 
 ## Q-007 · Locks that are JSON Pointers
 - Spec section: 6
