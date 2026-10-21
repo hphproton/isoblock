@@ -184,7 +184,7 @@ Not in stage 9: heights for zones and lanes, a camera elevation parameter, state
 
 **Done when:** every case of `tests/fixtures/measures/cases.json` meets its expected results; the branch is named `builder/stage-9`, and its session log names the tool and model, gives the test counts with skipped tests and ends with the pull request's title and description; every case of `tests/fixtures/export/cases.json` and of `tests/fixtures/states/cases.json` meets its expected files, the PNG of `openstrip` included; `npm run check:publish` reports nothing; all tests pass, with no test skipped where Chromium is available; earlier fixtures still match, except the block images that this stage replaces.
 
-## Stage 10 · open
+## Stage 10 · done (0.10.0)
 
 Agent protocol, round 2, and distribution (SPEC sections 6, 9.1, 11, 11.1, 12, 16, 17, 20, Appendices B and D). Core and CLI; no engine work, no scene format change, no new dependency. Fixtures: `tests/fixtures/edges/` (the scene `edges.scene.json` with `lane_reaches` on all four edges), `tests/fixtures/objects/` (the scene `shelf.scene.json` and the patches 21 to 30 for `add` and `remove`), `tests/fixtures/compare/yard.D.patch` with `yard.relations.expected.{json,txt,md}`, and `tests/fixtures/invalid/` (15 broken scenes with `cases.json`).
 
@@ -208,3 +208,7 @@ Agent protocol, round 2, and distribution (SPEC sections 6, 9.1, 11, 11.1, 12, 1
 Not in stage 10: `compare --render` and layout indicators, patches and variant switching in the editor, an `unlock` command, cascading removal of checks, `state_stable`, generated engine scenes (not scheduled). The Rust crate license texts in `THIRD_PARTY_NOTICES.md` are a maintainer task (`MAINTAINING.md`, Before distributing a build).
 
 **Done when:** all tests pass, `npm run test:godot` passes, earlier fixtures still match, the workflow `ci` passes on the branch, `npm run check:publish` reports nothing, the branch is named `builder/stage-10`, its session log names the tool and model, gives the test counts with skipped tests and ends with the pull request's title and description, and the stage 10 criteria in SPEC section 17 hold.
+
+## After stage 10
+
+No further stage is open. The owner chooses the next one; the maintainer specifies it against this repository, with its fixtures and expected results, and opens it from a maintainer branch.

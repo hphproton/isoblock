@@ -270,4 +270,4 @@ Template:
 - Spec section: 16
 - Question: The workflow must install Chromium with `node node_modules/playwright-core/cli.js install chromium`. `playwright-core` 1.56.1, the pinned release, refuses that command on `ubuntu-latest`, which is now Ubuntu 26.04 (`Playwright does not support chromium on ubuntu26.04-x64`). The spec does not name the runner image.
 - Reading chosen for now: Both jobs run on `ubuntu-24.04`, where that install command works. Playwright is not upgraded, and the workflow installs nothing else.
-- Answer (maintainer): …
+- Answer (maintainer): Approved as written. SPEC 16 now names `ubuntu-24.04` for both jobs; a newer image comes with the stage that upgrades `playwright-core`.

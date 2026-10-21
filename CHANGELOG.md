@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.10.0
 
 Stage 10: an agent can ask for the version, a JSON validation report, a subset of checks, relation and state lines in `describe`, patches from standard input, and relation rows in `compare`. Patches can add and remove objects. `lane_reaches` evaluates the top and bottom edges. The build carries the third-party notices, and a workflow runs the tests.
 

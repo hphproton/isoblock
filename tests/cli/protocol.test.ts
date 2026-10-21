@@ -22,7 +22,7 @@ describe("cli: version and validate --json", () => {
     expect(r.code).toBe(0);
     expect(r.err).toBe("");
     expect(r.out).toBe(`isoblock ${VERSION}\n`);
-    expect(VERSION).toBe("0.9.0");
+    expect(VERSION).toBe(JSON.parse(readFileSync(join(repoRoot, "package.json"), "utf8")).version);
   });
 
   it("prints ok JSON for a valid scene and keeps the text report without --json", () => {
