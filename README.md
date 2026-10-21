@@ -2,7 +2,7 @@
 
 IsoBlock keeps the layout of a 2D isometric scene as data. People and AI agents edit one scene file; IsoBlock checks it against the scene's rules, renders it, and exports one approved layout to the game engine, to image generation and to graybox gameplay.
 
-Made by [Forty-Two Twice](https://10101042.xyz), an independent game studio. Status: pre-release, version 0.8.0. Scene format `isoblock/1`. Breaking changes and upgrade steps are listed in [`CHANGELOG.md`](CHANGELOG.md).
+Made by [Forty-Two Twice](https://10101042.xyz), an independent game studio. Status: pre-release, version 0.10.0. Scene format `isoblock/1`. Breaking changes and upgrade steps are listed in [`CHANGELOG.md`](CHANGELOG.md).
 
 ## Why
 
