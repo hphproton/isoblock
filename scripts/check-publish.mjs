@@ -5,9 +5,10 @@
 //   node scripts/check-publish.mjs [--base <ref>] [--branch <name>] [--title <text>] [--body-file <file>]
 //
 // - Every commit of the branch that is not on the base (default `origin/main`, else `main`):
-//   author and committer use no-reply addresses; the message has no URL, no link to an agent
-//   session, no line that names a session or task, no address that is not a no-reply address,
-//   and at most one `Co-Authored-By:` line.
+//   author and committer are a no-reply address or a listed agent identity, never a made-up one;
+//   the subject and body follow the message rules; the trailers are only `Co-authored-by:` and
+//   `Signed-off-by:`, one per address; the message has no URL, no session link or line, and no
+//   other address.
 // - Every line the branch adds to a text file: no link to an agent session, task, run or chat,
 //   and no email address that is not a no-reply address.
 // - The branch name (`--branch`, else the current branch): `builder/<topic>` or `maintainer/<topic>`.
@@ -40,7 +41,18 @@ const SESSION_LINE = /^\s*(?:[A-Za-z][\w]*[- ])?(?:session|task|run|chat|convers
 const URL = /\bhttps?:\/\/|\bwww\.[a-z0-9-]+\.[a-z]/i;
 /** Email addresses; the top-level domain must be letters, so `pkg@1.2.3` is not one. */
 const EMAIL = /\b[A-Za-z0-9._%+-]+@(?:[A-Za-z0-9-]+\.)+[A-Za-z]{2,}\b/g;
-const CO_AUTHOR = /^\s*co-authored-by\s*:/i;
+/** A trailer line: a key with at least one hyphen, a colon and a value (`Co-authored-by: ...`). */
+const TRAILER = /^([A-Za-z][A-Za-z0-9]*(?:-[A-Za-z0-9]+)+):\s+\S/;
+const ALLOWED_TRAILERS = new Set(["co-authored-by", "signed-off-by"]);
+const PREFIX = /^(?:[a-z]+(?:\([^)]*\))?!?:|\[[^\]]*\])\s/i;
+const SUBJECT_MAX = 72;
+const BODY_MAX = 72;
+
+/**
+ * The commit identities of agent environments, as the environment sets them up for its own agent.
+ * The maintainer adds one when a new agent's identity is first seen (MAINTAINING.md, review step 17).
+ */
+export const AGENT_IDENTITIES = new Set(["cursoragent@cursor.com"]);
 const BRANCH = /^(?:builder|maintainer)\/[a-z0-9][a-z0-9._-]*$/;
 
 /** No-reply: the local part is `noreply` or `no-reply` (a `+tag` allowed), or the domain is a no-reply or reserved one. */
@@ -54,6 +66,17 @@ export function isNoReply(email) {
   return /(?:^|\.)(?:example\.(?:com|org|net)|[a-z0-9-]+\.(?:invalid|example|test))$|^(?:invalid|example|test)$/.test(domain);
 }
 
+/** An address at a reserved domain: fine in text, never an identity. */
+export function isReserved(email) {
+  const domain = email.slice(email.lastIndexOf("@") + 1).toLowerCase();
+  return /(?:^|\.)(?:example\.(?:com|org|net)|[a-z0-9-]+\.(?:invalid|example|test))$|^(?:invalid|example|test)$/.test(domain);
+}
+
+/** An address that may be the author or committer of a commit. */
+export function isIdentity(email) {
+  return !isReserved(email) && (isNoReply(email) || AGENT_IDENTITIES.has(email.toLowerCase()));
+}
+
 /** Addresses that are not personal: an SSH remote such as `git@github.com`. */
 function isServiceAddress(email) {
   return /^git@/i.test(email);
@@ -64,7 +87,9 @@ export function textFindings(where, line) {
   const out = [];
   if (SESSION_LINKS.some((re) => re.test(line))) out.push(`${where}: link to an agent session, task, run or chat`);
   for (const email of line.match(EMAIL) ?? []) {
-    if (!isNoReply(email) && !isServiceAddress(email)) out.push(`${where}: email address that is not a no-reply address`);
+    if (!isNoReply(email) && !isServiceAddress(email) && !AGENT_IDENTITIES.has(email.toLowerCase())) {
+      out.push(`${where}: email address that is not a no-reply address or an agent identity`);
+    }
   }
   return out;
 }
@@ -74,7 +99,8 @@ export function commitFindings(c) {
   const out = [];
   const at = `commit ${c.sha.slice(0, 7)}`;
   for (const [role, email] of [["author", c.author], ["committer", c.committer]]) {
-    if (!isNoReply(email)) out.push(`${at}: ${role} email is not a no-reply address`);
+    if (isReserved(email)) out.push(`${at}: ${role} email is a made-up address; commit with your environment's identity`);
+    else if (!isIdentity(email)) out.push(`${at}: ${role} email is not a no-reply address or a known agent identity`);
   }
   const lines = c.message.replace(/\s+$/, "").split("\n");
   lines.forEach((line, i) => {
@@ -83,7 +109,42 @@ export function commitFindings(c) {
     if (SESSION_LINE.test(line)) out.push(`${where}: names a session or task`);
     out.push(...textFindings(where, line));
   });
-  if (lines.filter((l) => CO_AUTHOR.test(l)).length > 1) out.push(`${at}: more than one Co-Authored-By line`);
+  out.push(...messageFindings(at, lines));
+  return out;
+}
+
+/** The subject, body and trailer rules of SPEC section 20. */
+export function messageFindings(at, lines) {
+  const out = [];
+  const subject = lines[0] ?? "";
+  if (subject.trim() === "") return [`${at}: empty subject`];
+  if (subject.length > SUBJECT_MAX) out.push(`${at}: subject longer than ${SUBJECT_MAX} characters`);
+  if (/\.\s*$/.test(subject)) out.push(`${at}: subject ends with a period`);
+  if (!/^[A-Z]/.test(subject)) out.push(`${at}: subject does not start with a capital letter`);
+  if (PREFIX.test(subject)) out.push(`${at}: subject has a prefix`);
+  if (lines.length > 1 && lines[1].trim() !== "") out.push(`${at}: no blank line after the subject`);
+  const paragraphs = lines.slice(1).join("\n").trim().split(/\n\s*\n/).filter((p) => p.trim() !== "");
+  const last = paragraphs.length > 0 ? paragraphs[paragraphs.length - 1].split("\n") : [];
+  const trailers = last.length > 0 && last.every((l) => TRAILER.test(l)) ? last : [];
+  const body = paragraphs.slice(0, trailers.length > 0 ? -1 : undefined).join("\n").split("\n");
+  body.forEach((line) => {
+    if (line.length > BODY_MAX && /\s/.test(line.trim())) out.push(`${at}: body line longer than ${BODY_MAX} characters`);
+    if (/^#{1,6}\s/.test(line)) out.push(`${at}: Markdown heading in the body`);
+    if (TRAILER.test(line) && ALLOWED_TRAILERS.has((TRAILER.exec(line)?.[1] ?? "").toLowerCase())) out.push(`${at}: trailer outside the last block`);
+  });
+  const seen = new Set();
+  for (const line of trailers) {
+    const key = (TRAILER.exec(line)?.[1] ?? "").toLowerCase();
+    if (!ALLOWED_TRAILERS.has(key)) {
+      out.push(`${at}: trailer "${key}" is not allowed`);
+      continue;
+    }
+    const email = /<([^>]+)>\s*$/.exec(line)?.[1];
+    if (email === undefined) out.push(`${at}: ${key} line without an address`);
+    else if (!isIdentity(email)) out.push(`${at}: ${key} address is not a no-reply address or a known agent identity`);
+    else if (seen.has(`${key} ${email.toLowerCase()}`)) out.push(`${at}: ${key} line repeated for one address`);
+    else seen.add(`${key} ${email.toLowerCase()}`);
+  }
   return out;
 }
 
