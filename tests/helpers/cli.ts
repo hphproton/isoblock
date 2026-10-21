@@ -13,7 +13,7 @@ export interface Captured {
 }
 
 /** In-memory I/O. Fixture paths read the real fixture; other paths use `files`. */
-export function memoryIo(initial: Record<string, string> = {}, rasterize?: Io["rasterize"]): Captured {
+export function memoryIo(initial: Record<string, string> = {}, rasterize?: Io["rasterize"], stdin = ""): Captured {
   const files = new Map(Object.entries(initial));
   const bytes = new Map<string, Uint8Array>();
   let out = "";
@@ -25,6 +25,9 @@ export function memoryIo(initial: Record<string, string> = {}, rasterize?: Io["r
       // Scene files under tests/fixtures/ are read from the repository.
       if (path.startsWith(fixturesDir) && path.endsWith(".scene.json") && existsSync(path)) return readFileSync(path, "utf8");
       throw new IsoblockError("E_IO", `cannot read ${path}: no such file`);
+    },
+    readStdin() {
+      return stdin;
     },
     writeText(path, text) {
       files.set(path, text);

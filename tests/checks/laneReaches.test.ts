@@ -64,15 +64,28 @@ describe("lane_reaches: edge cases", () => {
     expect(far.value).toBeNull();
   });
 
-  it("skips top and bottom edges", () => {
-    for (const edge of ["top", "bottom"]) {
-      const r = run([[0, 5], [12, 5]], edge);
-      expect(r.status).toBe("skip");
-      expect(r.value).toBeNull();
-      expect(r.threshold).toBeNull();
-      expect(r.ids).toEqual([]);
-      expect(r.message).toContain(edge);
-    }
+  it("evaluates the top and bottom edges", () => {
+    const top = run([[0, 0], [10, 0]], "top", 0); // y = 0, x 0..100
+    expect(top.status).toBe("pass");
+    expect(top.value).toBeCloseTo(100, 6);
+    expect(top.threshold).toEqual([0, 100]);
+    const short = run([[0, 5], [10, 5]], "top", 0);
+    expect(short.status).toBe("fail");
+    expect(short.value).toBeNull();
+    expect(short.message).toBe("lane does not reach edge");
+    const bottom = run([[0, 10], [10, 10]], "bottom", 0); // y = 100
+    expect(bottom.status).toBe("pass");
+    expect(bottom.value).toBeCloseTo(100, 6);
+    const outside = runChecks(
+      flatScene({
+        frame: { w: 100, h: 100, regions: [{ id: "r", rect: [20, 0, 80, 100] }] },
+        lanes: [{ id: "L", width: 0, points: [[0, 0], [10, 0]] }],
+        checks: [{ id: "c", check: "lane_reaches", lane: "L", edge: "top", region: "r" }],
+      }),
+    )[0]!;
+    expect(outside.status).toBe("fail");
+    expect(outside.value).toBeCloseTo(100, 6);
+    expect(outside.threshold).toEqual([20, 80]);
   });
 
   it("skips lane shapes that the stage does not support", () => {

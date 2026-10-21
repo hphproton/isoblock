@@ -15,6 +15,13 @@ export const nodeIo: Io = {
       throw new IsoblockError("E_IO", `cannot read ${path}: ${reason(e)}`);
     }
   },
+  readStdin() {
+    try {
+      return readFileSync(0, "utf8");
+    } catch (e) {
+      throw new IsoblockError("E_IO", `cannot read standard input: ${reason(e)}`);
+    }
+  },
   writeText(path, text) {
     try {
       writeFileSync(path, text);

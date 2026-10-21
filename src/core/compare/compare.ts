@@ -2,6 +2,7 @@ import { runChecks } from "../checks";
 import { runChecksHiding } from "../checks/inState";
 import { round6 } from "../checks/result";
 import { EPS } from "../geometry";
+import { evaluateRelations } from "../relations/evaluate";
 import { hiddenIn, withoutObjects } from "../states";
 import type { CheckResult, CheckSpec, CheckStatus, Scene } from "../types";
 import { failingCount } from "../patch/changes";
@@ -41,6 +42,10 @@ export interface Comparison {
   readonly variants: readonly { readonly name: string; readonly label: string | null }[];
   readonly failing: readonly number[];
   readonly locksTouched: readonly (readonly string[])[];
+  /** Present only with `compare --relations` (SPEC section 11.1). One entry per column, base first. */
+  readonly hardViolated?: readonly (readonly string[])[];
+  /** Soft penalty rounded to 6 decimals. Present only with `compare --relations`. */
+  readonly softPenalty?: readonly number[];
   readonly moved: readonly (Moved | null)[];
   readonly checks: readonly CompareCheck[];
 }
@@ -81,20 +86,35 @@ function rowOf(spec: CheckSpec, unit: string, columns: readonly (readonly CheckR
   };
 }
 
+/** The column's positions with the base scene's relations. A state does not hide objects here. */
+function withBaseRelations(base: Scene, scene: Scene): Scene {
+  return scene.relations === base.relations ? scene : { ...scene, relations: base.relations };
+}
+
+function relationMeasures(base: Scene, scenes: readonly Scene[]): Pick<Comparison, "hardViolated" | "softPenalty"> {
+  const reports = scenes.map((scene) => evaluateRelations(withBaseRelations(base, scene)));
+  return {
+    hardViolated: reports.map((report) => report.results.filter((r) => r.hard && r.status === "violated").map((r) => r.id)),
+    softPenalty: reports.map((report) => round6(report.softPenalty)),
+  };
+}
+
 /**
  * Apply each variant to a copy of the base scene, run the base scene's checks on every result and
  * measure (SPEC section 11.1). Locks are ignored but recorded. With `state`, every column is
  * evaluated in that state of the base scene (SPEC section 9.2): the objects it hides are not
- * present, so they are not checked and not counted as moved. Throws like `applyVariant`; an
+ * present, so they are not checked and not counted as moved. `relations` adds the relation rows;
+ * those are measured with every object present, whatever the state. Throws like `applyVariant`; an
  * unknown state is `E_USAGE`.
  */
-export function compareVariants(base: Scene, variants: readonly VariantInput[], state?: string): Comparison {
+export function compareVariants(base: Scene, variants: readonly VariantInput[], state?: string, relations = false): Comparison {
   const hidden = state === undefined ? undefined : hiddenIn(base, state);
   const applied = variants.map((v) => ({ name: v.name, ...applyVariant(base, v.name, v.text) }));
   const resultsOf = (scene: Scene) =>
     hidden === undefined ? runChecks(scene) : runChecksHiding(scene, hidden, state as string);
   const present = (scene: Scene) => (hidden === undefined ? scene : withoutObjects(scene, hidden));
   const columns = [resultsOf(base), ...applied.map((a) => resultsOf(a.scene))];
+  const full = [base, ...applied.map((a) => a.scene)];
   return {
     scene: base.id,
     state: state ?? DEFAULT_STATE,
@@ -102,6 +122,7 @@ export function compareVariants(base: Scene, variants: readonly VariantInput[], 
     variants: [{ name: "base", label: null }, ...applied.map((a) => ({ name: a.name, label: a.description ?? a.name }))],
     failing: columns.map(failingCount),
     locksTouched: [[], ...applied.map((a) => a.locks)],
+    ...(relations ? relationMeasures(base, full) : {}),
     moved: [null, ...applied.map((a) => movedOf(present(base), present(a.scene)))],
     checks: (base.checks ?? []).map((spec, i) => rowOf(spec, base.units.name, columns, i)),
   };

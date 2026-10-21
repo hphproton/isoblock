@@ -101,6 +101,23 @@ describe("parseCommand: relate", () => {
   });
 });
 
+describe("parseCommand: add and remove", () => {
+  it("appends an object and reads an optional rotation", () => {
+    expect(parse("add crate3 crate 7.4,0.5")).toEqual({ cmd: "add", id: "crate3", type: "crate", pos: [7.4, 0.5], rot: 0 });
+    expect(parse("add bench2 bench 1,3 90")).toEqual({ cmd: "add", id: "bench2", type: "bench", pos: [1, 3], rot: 90 });
+  });
+
+  it("rejects a bad position, a bad rotation and the wrong number of words", () => {
+    for (const line of ["add crate3 crate 7.6", "add crate3 crate 7.4,0.5 45", "add crate3 crate", "remove", "remove a b"]) {
+      expect(code(line), line).toBe("E_PATCH");
+    }
+  });
+
+  it("names the object to remove", () => {
+    expect(parse("remove d")).toEqual({ cmd: "remove", id: "d" });
+  });
+});
+
 describe("parseCommand: other names", () => {
   it("points solve to isoblock solve --patch (E_USAGE)", () => {
     expect(code("solve only=a")).toBe("E_USAGE");

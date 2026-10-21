@@ -33,6 +33,20 @@ describe("describe: Appendix B", () => {
   it("reproduces the yard output exactly", () => {
     expect(describeFixture("yard")).toBe(APPENDIX_B);
   });
+
+  it("adds the relation and state lines when those flags are set", () => {
+    const scene = loadScene("yard");
+    const results = runChecks(scene);
+    const relations = [
+      `BAD r1 in_front_of bench${TIMES}tree: violation 0.7172`,
+      `relations: 2 ${DOT} 1 violated ${DOT} 0 skipped ${DOT} hard 1 of 1 satisfied ${DOT} soft penalty 0.7172`,
+    ].join("\n");
+    const states = "states: closed hides bench";
+    const withBoth = APPENDIX_B.replace("\nassumptions:", `\n${relations}\n${states}\nassumptions:`);
+    expect(describeScene(scene, results, { relations: true, states: true })).toBe(withBoth);
+    expect(describeScene(scene, results, { relations: true })).toBe(APPENDIX_B.replace("\nassumptions:", `\n${relations}\nassumptions:`));
+    expect(describeScene(scene, results, { states: true })).toBe(APPENDIX_B.replace("\nassumptions:", `\n${states}\nassumptions:`));
+  });
 });
 
 describe("describe: check lines", () => {

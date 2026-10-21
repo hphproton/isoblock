@@ -7,7 +7,9 @@ export type Command =
   | { readonly cmd: "rot"; readonly id: string; readonly rot: Rot }
   | { readonly cmd: "set"; readonly pointer: string; readonly value: unknown; readonly note?: string }
   | { readonly cmd: "lock"; readonly id: string; readonly locks: readonly string[] }
-  | { readonly cmd: "relate"; readonly id?: string; readonly fields: Readonly<Record<string, unknown>> };
+  | { readonly cmd: "relate"; readonly id?: string; readonly fields: Readonly<Record<string, unknown>> }
+  | { readonly cmd: "add"; readonly id: string; readonly type: string; readonly pos: readonly [number, number]; readonly rot: Rot }
+  | { readonly cmd: "remove"; readonly id: string };
 
 const NUMBER = /^-?(?:\d+(?:\.\d*)?|\.\d+)$/;
 const OFFSET = /^([uv])([+-])((?:\d+(?:\.\d*)?|\.\d+))$/;
@@ -122,6 +124,25 @@ function parseRelate(args: readonly string[]): Command {
   return { cmd: "relate", ...(id === undefined ? {} : { id }), fields };
 }
 
+const POSITION = /^(-?(?:\d+(?:\.\d*)?|\.\d+)),(-?(?:\d+(?:\.\d*)?|\.\d+))$/;
+
+function parseAdd(args: readonly string[]): Command {
+  const [id, type, pos, rot, extra] = args;
+  if (id === undefined || type === undefined || pos === undefined || extra !== undefined) {
+    throw fail("usage: add <id> <type> <u>,<v> [<rot>]");
+  }
+  const m = POSITION.exec(pos);
+  if (m === null) throw fail(`bad position "${pos}": write u,v as decimal numbers, like 1.5,2`);
+  if (rot !== undefined && !ROTATIONS.includes(rot)) throw fail(`rotation must be 0, 90, 180 or 270, not "${rot}"`);
+  return { cmd: "add", id, type, pos: [Number(m[1]), Number(m[2])], rot: rot === undefined ? 0 : (Number(rot) as Rot) };
+}
+
+function parseRemove(args: readonly string[]): Command {
+  const [id, extra] = args;
+  if (id === undefined || extra !== undefined) throw fail("usage: remove <id>");
+  return { cmd: "remove", id };
+}
+
 /** Parse the tokens of one command line. Throws `E_PATCH`, or `E_USAGE` for a command of a later stage. */
 export function parseCommand(tokens: readonly string[]): Command {
   const [name, ...args] = tokens;
@@ -136,6 +157,10 @@ export function parseCommand(tokens: readonly string[]): Command {
       return parseLock(args);
     case "relate":
       return parseRelate(args);
+    case "add":
+      return parseAdd(args);
+    case "remove":
+      return parseRemove(args);
     case "solve":
       throw new IsoblockError("E_USAGE", "'solve' is not a patch command: run 'isoblock solve <scene> --patch <file>' and apply the patch it writes");
     default:

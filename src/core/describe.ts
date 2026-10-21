@@ -1,11 +1,13 @@
 import { checkLines } from "./describeChecks";
 import { fmt, plain } from "./format";
 import { pointerTokens } from "./pointer";
-import type { CheckResult, Scene } from "./types";
+import { evaluateRelations } from "./relations/evaluate";
+import type { CheckResult, Relation, Scene } from "./types";
 
 export { fmt } from "./format";
 
 const DOT = "\u00b7";
+const TIMES = "\u00d7";
 const SIZE_NAMES = ["w", "d", "h"] as const;
 const BOX_NAMES = ["u0", "v0", "h0", "u1", "v1", "h1"] as const;
 /** Spaces after the widest cell, per column: id, type, pos, size, rot. */
@@ -94,16 +96,68 @@ function assumptionLine(scene: Scene): string {
   return `assumptions: ${list.length > 0 ? list.join(` ${DOT} `) : "-"}`;
 }
 
+function relationTargets(rel: Relation): string {
+  if (rel.rel === "order_along") return (rel.ids ?? []).join(TIMES);
+  if (rel.a === undefined) return "";
+  return rel.b === undefined ? rel.a : `${rel.a}${TIMES}${rel.b}`;
+}
+
+/** Violated and skipped relations, then the summary line (SPEC Appendix B). */
+function relationBlock(scene: Scene): string[] {
+  const report = evaluateRelations(scene);
+  const relations = scene.relations ?? [];
+  if (report.results.length === 0) return ["relations: none"];
+  const lines = report.results.flatMap((result, i) => {
+    if (result.status === "satisfied") return [];
+    const rel = relations[i];
+    const targets = rel === undefined ? result.ids.join(TIMES) : relationTargets(rel);
+    if (result.status === "skip") return [`SKIP ${result.id} ${result.rel} ${targets}: ${result.message}`];
+    const hard = result.hard ? "hard; " : "";
+    return [`BAD ${result.id} ${result.rel} ${targets}: ${hard}violation ${fmt(result.violation ?? 0)}`];
+  });
+  const violated = report.results.filter((r) => r.status === "violated").length;
+  const skipped = report.results.filter((r) => r.status === "skip").length;
+  const hard = report.results.filter((r) => r.hard);
+  const satisfied = hard.filter((r) => r.status === "satisfied").length;
+  lines.push(
+    `relations: ${report.results.length} ${DOT} ${violated} violated ${DOT} ${skipped} skipped ${DOT} hard ${satisfied} of ${hard.length} satisfied ${DOT} soft penalty ${fmt(report.softPenalty)}`,
+  );
+  return lines;
+}
+
+/** One line for every state, in file order (SPEC Appendix B). */
+function statesLine(scene: Scene): string {
+  const entries = Object.entries(scene.states ?? {});
+  if (entries.length === 0) return "states: none";
+  const parts = entries.map(([name, def]) => {
+    const hide = def.hide ?? [];
+    return hide.length === 0 ? `${name} hides nothing` : `${name} hides ${hide.join(", ")}`;
+  });
+  return `states: ${parts.join(` ${DOT} `)}`;
+}
+
+export interface DescribeOptions {
+  /** Relation lines of SPEC Appendix B. */
+  readonly relations?: boolean;
+  /** The state line of SPEC Appendix B. */
+  readonly states?: boolean;
+}
+
 /** Compact scene summary for agents (SPEC section 12, Appendix B). No trailing newline. */
-export function describeScene(scene: Scene, results: readonly CheckResult[]): string {
+export function describeScene(scene: Scene, results: readonly CheckResult[], options: DescribeOptions = {}): string {
   const lines = checkLines(scene, results);
   const count = (scene.checks ?? []).length;
   const status = lines.length > 0 ? lines : [count === 0 ? "checks: none" : `checks: all ${count} pass`];
+  const extra = [
+    ...(options.relations ? relationBlock(scene) : []),
+    ...(options.states ? [statesLine(scene)] : []),
+  ];
   const { lines: rows, provisional } = table(scene);
   return [
     header(scene),
     ...rows,
     ...status,
+    ...extra,
     assumptionLine(scene),
     ...(provisional ? ["(* = provisional value)"] : []),
   ].join("\n");

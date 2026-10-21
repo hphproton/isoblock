@@ -1,0 +1,73 @@
+# Test suite and Godot cross-checks (SPEC section 16).
+# push and pull_request only. No secrets. Read-only contents.
+# ubuntu-24.04: playwright-core 1.56 cannot install Chromium on ubuntu-latest (Ubuntu 26).
+name: ci
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        node: [20, 22]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+      - name: Install dependencies
+        run: npm ci
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Install Chromium
+        run: node node_modules/playwright-core/cli.js install chromium
+      - name: Test
+        run: |
+          set -euo pipefail
+          npm test -- --reporter=default --reporter=json --outputFile="$RUNNER_TEMP/vitest.json"
+          node --input-type=module -e '
+            import { readFileSync } from "node:fs";
+            const file = `${process.env.RUNNER_TEMP}/vitest.json`;
+            let report;
+            try {
+              report = JSON.parse(readFileSync(file, "utf8"));
+            } catch {
+              console.error("vitest json report is missing");
+              process.exit(1);
+            }
+            const pending = report.numPendingTests;
+            const todo = report.numTodoTests;
+            if (pending !== 0 || todo !== 0) {
+              console.error(`skipped tests are not allowed: numPendingTests=${pending} numTodoTests=${todo}`);
+              process.exit(1);
+            }
+          '
+
+  godot:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install dependencies
+        run: npm ci
+      - name: Install Godot 4.7.1
+        run: |
+          set -euo pipefail
+          url="https://github.com/godotengine/godot-builds/releases/download/4.7.1-stable"
+          curl -fsSL -o "$RUNNER_TEMP/SHA512-SUMS.txt" "$url/SHA512-SUMS.txt"
+          curl -fsSL -o "$RUNNER_TEMP/Godot_v4.7.1-stable_linux.x86_64.zip" "$url/Godot_v4.7.1-stable_linux.x86_64.zip"
+          (cd "$RUNNER_TEMP" && grep 'Godot_v4.7.1-stable_linux.x86_64.zip$' SHA512-SUMS.txt | sha512sum -c -)
+          unzip -q "$RUNNER_TEMP/Godot_v4.7.1-stable_linux.x86_64.zip" -d "$RUNNER_TEMP/godot"
+          test -x "$RUNNER_TEMP/godot/Godot_v4.7.1-stable_linux.x86_64" || chmod +x "$RUNNER_TEMP/godot/Godot_v4.7.1-stable_linux.x86_64"
+          echo "GODOT=$RUNNER_TEMP/godot/Godot_v4.7.1-stable_linux.x86_64" >> "$GITHUB_ENV"
+      - name: Godot cross-checks
+        run: xvfb-run -a npm run test:godot

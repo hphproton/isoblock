@@ -46,8 +46,10 @@ function body(spec: CheckSpec, r: CheckResult): string {
     case "lane_reaches": {
       const s = spec as LaneReachesCheck;
       if (r.value === null) return `${s.lane}: does not reach ${s.edge} edge`;
-      const [y0, y1] = r.threshold as readonly [number, number];
-      return `${s.lane}: meets ${s.edge} edge at y${APPROX}${Math.round(r.value)} (${s.region} y ${plain(y0)}-${plain(y1)})`;
+      const horizontal = s.edge === "top" || s.edge === "bottom";
+      const axis = horizontal ? "x" : "y";
+      const [a, b] = r.threshold as readonly [number, number];
+      return `${s.lane}: meets ${s.edge} edge at ${axis}${APPROX}${Math.round(r.value)} (${s.region} ${axis} ${plain(a)}-${plain(b)})`;
     }
     case "visible": {
       const who = r.occluders ?? [];

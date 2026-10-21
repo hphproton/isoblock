@@ -1,7 +1,8 @@
 import { round6 } from "../checks/result";
 import { IsoblockError } from "../errors";
-import { addAt, replaceAt } from "../jsonEdit";
+import { addAt, removeAt, replaceAt } from "../jsonEdit";
 import { pointerOf, pointerTokens, resolvePointer } from "../pointer";
+import { hint } from "../suggest";
 import type { Command } from "./commands";
 
 type Rec = Readonly<Record<string, unknown>>;
@@ -19,11 +20,21 @@ function listAt(doc: unknown, pointer: string): readonly unknown[] {
   return at.found && Array.isArray(at.value) ? at.value : [];
 }
 
+function objectIds(doc: unknown): readonly string[] {
+  return listAt(doc, "/objects").flatMap((o) => (isRecord(o) && typeof o.id === "string" ? [o.id] : []));
+}
+
 /** Index of the object with this id; fails when there is none. */
 function objectIndex(doc: unknown, id: string): number {
   const index = listAt(doc, "/objects").findIndex((o) => isRecord(o) && o.id === id);
-  if (index < 0) throw fail(`unknown object "${id}"`);
+  if (index < 0) throw fail(`unknown object "${id}"${hint(id, objectIds(doc))}`);
   return index;
+}
+
+/** The object index of a pointer `/objects/<j>` or below it, or null. */
+function objectPointerIndex(path: string): number | null {
+  const m = /^\/objects\/(0|[1-9][0-9]*)(?:\/|$)/.exec(path);
+  return m === null ? null : Number(m[1]);
 }
 
 function positionOf(doc: unknown, index: number): readonly [number, number] {
@@ -92,6 +103,61 @@ function relate(doc: unknown, c: Extract<Command, { cmd: "relate" }>): unknown {
   return root.found ? addAt(doc, ["relations", "-"], relation) : addAt(doc, ["relations"], [relation]);
 }
 
+function shiftingPath(doc: unknown, index: number): string | null {
+  for (const a of listAt(doc, "/assumptions")) {
+    if (isRecord(a) && typeof a.path === "string" && (objectPointerIndex(a.path) ?? -1) > index) return a.path;
+  }
+  for (const o of listAt(doc, "/objects")) {
+    if (!isRecord(o) || !Array.isArray(o.locks)) continue;
+    for (const lockName of o.locks) {
+      if (typeof lockName === "string" && (objectPointerIndex(lockName) ?? -1) > index) return lockName;
+    }
+  }
+  return null;
+}
+
+function dropAssumptions(doc: unknown, index: number): unknown {
+  const at = resolvePointer(doc, "/assumptions");
+  if (!at.found || !Array.isArray(at.value)) return doc;
+  const next = at.value.filter((a) => !(isRecord(a) && typeof a.path === "string" && objectPointerIndex(a.path) === index));
+  return next.length === at.value.length ? doc : replaceAt(doc, ["assumptions"], next);
+}
+
+function namesObject(rel: Rec, id: string): boolean {
+  if (rel.a === id || rel.b === id) return true;
+  return Array.isArray(rel.ids) && rel.ids.includes(id);
+}
+
+function dropRelations(doc: unknown, id: string): unknown {
+  const at = resolvePointer(doc, "/relations");
+  if (!at.found || !Array.isArray(at.value)) return doc;
+  const next = at.value.filter((r) => !(isRecord(r) && namesObject(r, id)));
+  return next.length === at.value.length ? doc : replaceAt(doc, ["relations"], next);
+}
+
+function dropHides(doc: unknown, id: string): unknown {
+  const states = resolvePointer(doc, "/states").value;
+  if (!isRecord(states)) return doc;
+  let next = doc;
+  for (const [name, def] of Object.entries(states)) {
+    if (!isRecord(def) || !Array.isArray(def.hide) || !def.hide.includes(id)) continue;
+    next = replaceAt(next, ["states", name, "hide"], def.hide.filter((h) => h !== id));
+  }
+  return next;
+}
+
+function addObject(doc: unknown, c: Extract<Command, { cmd: "add" }>): unknown {
+  if (listAt(doc, "/objects").some((o) => isRecord(o) && o.id === c.id)) throw fail(`object id "${c.id}" is already in use`);
+  return addAt(doc, ["objects", "-"], { id: c.id, type: c.type, pos: [c.pos[0], c.pos[1]], rot: c.rot });
+}
+
+function removeObject(doc: unknown, id: string): unknown {
+  const index = objectIndex(doc, id);
+  const shifted = shiftingPath(doc, index);
+  if (shifted !== null) throw fail(`removing "${id}" would shift the index in "${shifted}"`);
+  return removeAt(dropHides(dropRelations(dropAssumptions(doc, index), id), id), ["objects", String(index)]);
+}
+
 /** Apply one short command to scene data. Returns new data. Throws `E_PATCH`. */
 export function applyCommand(doc: unknown, command: Command): unknown {
   switch (command.cmd) {
@@ -105,5 +171,9 @@ export function applyCommand(doc: unknown, command: Command): unknown {
       return lock(doc, command);
     case "relate":
       return relate(doc, command);
+    case "add":
+      return addObject(doc, command);
+    case "remove":
+      return removeObject(doc, command.id);
   }
 }

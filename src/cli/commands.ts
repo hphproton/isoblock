@@ -39,7 +39,8 @@ function appendLog(io: Io, output: string, patchFile: string, outcome: PatchOutc
  */
 export function runPatchCommand(args: Of<"patch">, io: Io): number {
   const scene = parseScene(io.readText(args.file));
-  const outcome = runPatch(scene, io.readText(args.patchFile));
+  const patchText = args.patchFile === "-" ? io.readStdin() : io.readText(args.patchFile);
+  const outcome = runPatch(scene, patchText);
   const target = args.output ?? args.file;
   const notes: string[] = [];
   if (args.dryRun) {
@@ -69,7 +70,12 @@ export function runDiffCommand(args: Of<"diff">, io: Io): number {
 /** `compare`: measure the scene and its variants side by side. Exits 0 when it completes. */
 export function runCompareCommand(args: Of<"compare">, io: Io): number {
   const scene = parseScene(io.readText(args.file));
-  const comparison = compareVariants(scene, args.variants.map((v) => ({ name: v.name, text: io.readText(v.file) })), args.state);
+  const comparison = compareVariants(
+    scene,
+    args.variants.map((v) => ({ name: v.name, text: io.readText(v.file) })),
+    args.state,
+    args.relations === true,
+  );
   if (args.format === "json") printJson(io, compareJson(comparison));
   else io.out(`${args.format === "md" ? formatCompareMarkdown(comparison) : formatCompareText(comparison)}\n`);
   return 0;

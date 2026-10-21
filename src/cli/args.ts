@@ -11,6 +11,7 @@ export interface VariantArg {
 
 export type Parsed =
   | { readonly kind: "help" }
+  | { readonly kind: "version" }
   | {
       readonly kind: "run";
       readonly command: Command;
@@ -19,6 +20,12 @@ export type Parsed =
       readonly output?: string;
       /** `--state` of `check` and `render`; absent when every object is present. */
       readonly state?: string;
+      /** Check ids of `check --only`; absent when every check runs. */
+      readonly only?: readonly string[];
+      /** `describe --relations`. Absent when the flag is not set. */
+      readonly relations?: boolean;
+      /** `describe --states`. Absent when the flag is not set. */
+      readonly states?: boolean;
     }
   | {
       readonly kind: "patch";
@@ -56,23 +63,30 @@ export type Parsed =
       readonly variants: readonly VariantArg[];
       readonly format: CompareFormat;
       readonly state?: string;
+      /** `compare --relations`. Absent when the flag is not set. */
+      readonly relations?: boolean;
     };
 
 export const USAGE = [
   "isoblock: isometric scene layout as data",
   "",
   "Usage:",
-  "  isoblock validate <scene.json>             schema and reference checks",
-  "  isoblock check    <scene.json> [--json] [--state NAME]  run the scene's checks",
-  "  isoblock render   <scene.json> [--state NAME] -o <out.svg|out.png>  draw the scene as SVG or PNG",
-  "  isoblock describe <scene.json>             compact summary for agents",
+  "  isoblock --version                         print the version",
+  "  isoblock validate <scene.json> [--json]    schema and reference checks",
+  "  isoblock check    <scene.json> [--json] [--state NAME] [--only a,b]",
+  "                                             run the scene's checks",
+  "  isoblock render   <scene.json> [--state NAME] -o <out.svg|out.png>",
+  "                                             draw the scene as SVG or PNG",
+  "  isoblock describe <scene.json> [--relations] [--states]",
+  "                                             compact summary for agents",
   "  isoblock relations <scene.json> [--json]   measure the scene's relations",
   "  isoblock solve    <scene.json> [--only a,b] [-o <proposal.json>] [--patch <moves.patch>] [--json]",
   "                                             propose positions that meet the relations",
-  "  isoblock patch    <scene.json> <patch> [-o <out.json>] [--dry-run] [--json]",
+  "  isoblock patch    <scene.json> <patch|-> [-o <out.json>] [--dry-run] [--json]",
   "                                             apply a patch (JSON Patch or short commands)",
   "  isoblock diff     <a.json> <b.json> [--json]  list the changes from a to b",
-  "  isoblock compare  <scene.json> --variant NAME=FILE... [--state NAME] [--format text|md|json]",
+  "  isoblock compare  <scene.json> --variant NAME=FILE... [--state NAME]",
+  "                    [--format text|md|json] [--relations]",
   "                                             compare the scene with 1 to 4 variants",
   "  isoblock export   <scene.json> --target runtime|gen-bbox [-o <out.json>]",
   "                    [--bbox-units px|norm1000] [--bbox-order xyxy|yxyx] [--state NAME]",
@@ -91,9 +105,11 @@ const BBOX_UNITS: readonly string[] = ["px", "norm1000"];
 const BBOX_ORDERS: readonly string[] = ["xyxy", "yxyx"];
 /** The commands each flag applies to. */
 const FLAG_COMMANDS: Readonly<Record<string, readonly string[]>> = {
-  "--json": ["check", "relations", "solve", "patch", "diff"],
+  "--json": ["validate", "check", "relations", "solve", "patch", "diff"],
   "-o": ["render", "solve", "patch", "export"],
-  "--only": ["solve"],
+  "--only": ["solve", "check"],
+  "--relations": ["describe", "compare"],
+  "--states": ["describe"],
   "--patch": ["solve"],
   "--dry-run": ["patch"],
   "--variant": ["compare"],
@@ -120,6 +136,8 @@ interface Scanned {
   readonly positional: readonly string[];
   readonly json: boolean;
   readonly dryRun: boolean;
+  readonly relations: boolean;
+  readonly states: boolean;
   readonly variants: readonly string[];
   /** The value of each flag that takes one, except `--variant`, which may repeat. */
   readonly values: Readonly<Record<string, string>>;
@@ -131,9 +149,12 @@ function scan(command: string, rest: readonly string[]): Scanned {
   const values: Record<string, string> = {};
   let json = false;
   let dryRun = false;
+  let relations = false;
+  let states = false;
   for (let i = 0; i < rest.length; i++) {
     const [flag, inline] = split(rest[i] as string);
-    if (!flag.startsWith("-")) {
+    // `-` is the patch file name that means standard input, not a flag.
+    if (!flag.startsWith("-") || flag === "-") {
       positional.push(flag);
       continue;
     }
@@ -143,6 +164,8 @@ function scan(command: string, rest: readonly string[]): Scanned {
     if (!applies.includes(command)) throw usage(`flag '${flag}' does not apply to '${command}'`);
     if (flag === "--json") json = true;
     else if (flag === "--dry-run") dryRun = true;
+    else if (flag === "--relations") relations = true;
+    else if (flag === "--states") states = true;
     else {
       const value = inline ?? rest[++i];
       if (value === undefined) throw usage(`flag '${flag}' needs a value`);
@@ -150,13 +173,13 @@ function scan(command: string, rest: readonly string[]): Scanned {
       else values[flag] = value;
     }
   }
-  return { positional, json, dryRun, variants, values };
+  return { positional, json, dryRun, relations, states, variants, values };
 }
 
-/** `--only a,b`: object ids separated by commas, none empty; repeated ids count once. */
-function parseOnly(value: string): readonly string[] {
+/** `--only a,b`: ids separated by commas, none empty; repeated ids count once. */
+function parseOnly(value: string, what: string): readonly string[] {
   const ids = value.split(",").map((id) => id.trim());
-  if (ids.some((id) => id === "")) throw usage(`--only '${value}' must list object ids separated by commas`);
+  if (ids.some((id) => id === "")) throw usage(`--only '${value}' must list ${what} separated by commas`);
   return [...new Set(ids)];
 }
 
@@ -164,7 +187,7 @@ function parseSolve(file: string, s: Scanned): Parsed {
   const { "--only": only, "-o": output, "--patch": patchOutput } = s.values;
   return {
     kind: "solve", file, json: s.json,
-    ...(only === undefined ? {} : { only: parseOnly(only) }),
+    ...(only === undefined ? {} : { only: parseOnly(only, "object ids") }),
     ...(output === undefined ? {} : { output }),
     ...(patchOutput === undefined ? {} : { patchOutput }),
   };
@@ -224,6 +247,7 @@ function files(positional: readonly string[], names: readonly string[]): readonl
 }
 
 export function parseArgs(argv: readonly string[]): Parsed {
+  if (argv.length === 1 && argv[0] === "--version") return { kind: "version" };
   if (argv.includes("--help") || argv.includes("-h")) return { kind: "help" };
   const [command, ...rest] = argv;
   if (command === undefined) throw usage("missing command");
@@ -250,6 +274,7 @@ export function parseArgs(argv: readonly string[]): Parsed {
     return {
       kind: "compare", file, variants: parseVariants(s.variants), format: format as CompareFormat,
       ...(state === undefined ? {} : { state }),
+      ...(s.relations ? { relations: true } : {}),
     };
   }
   if (command === "render") {
@@ -257,5 +282,12 @@ export function parseArgs(argv: readonly string[]): Parsed {
     if (!/\.(svg|png)$/i.test(s.values["-o"])) throw usage("output file must end in .svg or .png");
   }
   const state = s.values["--state"];
-  return { kind: "run", command: command as Command, file, json: s.json, ...output, ...(state === undefined ? {} : { state }) };
+  const only = command === "check" && s.values["--only"] !== undefined ? parseOnly(s.values["--only"], "check ids") : undefined;
+  return {
+    kind: "run", command: command as Command, file, json: s.json, ...output,
+    ...(state === undefined ? {} : { state }),
+    ...(only === undefined ? {} : { only }),
+    ...(s.relations ? { relations: true } : {}),
+    ...(s.states ? { states: true } : {}),
+  };
 }
