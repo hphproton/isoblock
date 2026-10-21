@@ -1,5 +1,6 @@
 import { laneRefId, parseAnchorRef } from "./checks/points";
 import { resolvePointer } from "./pointer";
+import { hint } from "./suggest";
 import type { CheckSpec, PointRef, Scene } from "./types";
 
 function duplicates(label: string, ids: readonly string[]): string[] {
@@ -39,39 +40,67 @@ function targetExists(names: Names, target: string): boolean {
   return names.objects.has(target);
 }
 
-function relationErrors(scene: Scene, names: Names): string[] {
+function relationErrors(scene: Scene, names: Names, pools: Pools): string[] {
   const out: string[] = [];
   for (const r of scene.relations ?? []) {
     const targets = [r.a, r.b, ...(r.ids ?? [])].filter((t): t is string => t !== undefined);
     for (const t of targets) {
-      if (!targetExists(names, t)) out.push(`relation "${r.id}" refers to unknown target "${t}"`);
+      if (!targetExists(names, t)) out.push(`relation "${r.id}" refers to unknown target "${t}"${hint(t, pools.target)}`);
     }
   }
   return out;
 }
 
-function need(set: ReadonlySet<string>, kind: string, id: string, owner: string): string[] {
-  return set.has(id) ? [] : [`${owner} refers to unknown ${kind} "${id}"`];
+interface Pools {
+  readonly object: readonly string[];
+  readonly region: readonly string[];
+  readonly strip: readonly string[];
+  readonly zone: readonly string[];
+  readonly lane: readonly string[];
+  /** Object ids, then `zone:`, `lane:` and `strip:` targets, in file order (SPEC section 6). */
+  readonly target: readonly string[];
+  readonly type: readonly string[];
+}
+
+function poolsOf(scene: Scene): Pools {
+  const object = scene.objects.map((o) => o.id);
+  const region = scene.frame.regions.map((r) => r.id);
+  const strip = (scene.strips ?? []).map((s) => s.id);
+  const zone = (scene.zones ?? []).map((z) => z.id);
+  const lane = (scene.lanes ?? []).map((l) => l.id);
+  return {
+    object, region, strip, zone, lane, type: Object.keys(scene.types),
+    target: [
+      ...object,
+      ...zone.map((id) => `zone:${id}`),
+      ...lane.map((id) => `lane:${id}`),
+      ...strip.flatMap((id) => [`strip:${id}.v0`, `strip:${id}.v1`]),
+    ],
+  };
+}
+
+function need(set: ReadonlySet<string>, pool: readonly string[], kind: string, id: string, owner: string): string[] {
+  return set.has(id) ? [] : [`${owner} refers to unknown ${kind} "${id}"${hint(id, pool)}`];
 }
 
 /** A point parameter: a `[u, v]` point, `lane:<id>` or `anchor:<object id>/<anchor id>` (SPEC section 9.2). */
-function pointErrors(scene: Scene, names: Names, ref: PointRef, owner: string): string[] {
+function pointErrors(scene: Scene, names: Names, pools: Pools, ref: PointRef, owner: string): string[] {
   const lane = laneRefId(ref);
-  if (lane !== null) return need(names.lanes, "lane", lane, owner);
+  if (lane !== null) return need(names.lanes, pools.lane, "lane", lane, owner);
   if (typeof ref === "string" && parseAnchorRef(scene, ref) === null) return [`${owner} refers to unknown anchor "${ref}"`];
   return [];
 }
 
-function checkErrors(scene: Scene, check: CheckSpec, names: Names): string[] {
+function checkErrors(scene: Scene, check: CheckSpec, names: Names, pools: Pools): string[] {
   const owner = `check "${check.id}"`;
   const objects = (ids: readonly string[] | undefined) =>
-    (ids ?? []).flatMap((id) => need(names.objects, "object", id, owner));
+    (ids ?? []).flatMap((id) => need(names.objects, pools.object, "object", id, owner));
   switch (check.check) {
     case "in_region": {
       const c = check as Extract<CheckSpec, { check: "in_region" }>;
       return [
-        ...need(names.regions, "region", c.region, owner),
-        ...(c.strip === undefined ? [] : need(names.strips, "strip", c.strip, owner)),
+        ...need(names.regions, pools.region, "region", c.region, owner),
+        ...(c.strip === undefined ? [] : need(names.strips, pools.strip, "strip", c.strip, owner)),
         ...objects(c.ids),
       ];
     }
@@ -85,19 +114,19 @@ function checkErrors(scene: Scene, check: CheckSpec, names: Names): string[] {
     }
     case "lane_clear": {
       const c = check as Extract<CheckSpec, { check: "lane_clear" }>;
-      return [...need(names.lanes, "lane", c.lane, owner), ...objects(c.ignore)];
+      return [...need(names.lanes, pools.lane, "lane", c.lane, owner), ...objects(c.ignore)];
     }
     case "lane_reaches": {
       const c = check as Extract<CheckSpec, { check: "lane_reaches" }>;
-      return [...need(names.lanes, "lane", c.lane, owner), ...need(names.regions, "region", c.region, owner)];
+      return [...need(names.lanes, pools.lane, "lane", c.lane, owner), ...need(names.regions, pools.region, "region", c.region, owner)];
     }
     case "lane_apart": {
       const c = check as Extract<CheckSpec, { check: "lane_apart" }>;
       const zone = c.target.startsWith("zone:");
       const id = c.target.slice(5);
       return [
-        ...need(names.lanes, "lane", c.lane, owner),
-        ...need(zone ? names.zones : names.lanes, zone ? "zone" : "lane", id, owner),
+        ...need(names.lanes, pools.lane, "lane", c.lane, owner),
+        ...need(zone ? names.zones : names.lanes, zone ? pools.zone : pools.lane, zone ? "zone" : "lane", id, owner),
       ];
     }
     case "visible": {
@@ -107,9 +136,9 @@ function checkErrors(scene: Scene, check: CheckSpec, names: Names): string[] {
     case "reachable": {
       const c = check as Extract<CheckSpec, { check: "reachable" }>;
       return [
-        ...pointErrors(scene, names, c.from, owner),
-        ...pointErrors(scene, names, c.to, owner),
-        ...(c.area === undefined ? [] : need(names.zones, "zone", c.area, owner)),
+        ...pointErrors(scene, names, pools, c.from, owner),
+        ...pointErrors(scene, names, pools, c.to, owner),
+        ...(c.area === undefined ? [] : need(names.zones, pools.zone, "zone", c.area, owner)),
         ...objects(c.ignore),
       ];
     }
@@ -123,7 +152,7 @@ function checkErrors(scene: Scene, check: CheckSpec, names: Names): string[] {
     }
     case "sort_consistency": {
       const c = check as Extract<CheckSpec, { check: "sort_consistency" }>;
-      return [...(c.area === undefined ? [] : need(names.zones, "zone", c.area, owner)), ...objects(c.ids)];
+      return [...(c.area === undefined ? [] : need(names.zones, pools.zone, "zone", c.area, owner)), ...objects(c.ids)];
     }
     default:
       return [];
@@ -133,6 +162,7 @@ function checkErrors(scene: Scene, check: CheckSpec, names: Names): string[] {
 /** Reference checks of SPEC section 6. Returns one message per problem. */
 export function referenceErrors(scene: Scene): string[] {
   const names = namesOf(scene);
+  const pools = poolsOf(scene);
   const out: string[] = [
     ...duplicates("region", scene.frame.regions.map((r) => r.id)),
     ...duplicates("strip", (scene.strips ?? []).map((s) => s.id)),
@@ -147,13 +177,15 @@ export function referenceErrors(scene: Scene): string[] {
     out.push(...duplicates(`anchor of type "${name}"`, (type.anchors ?? []).map((a) => a.id)));
   }
   for (const o of scene.objects) {
-    if (!Object.hasOwn(scene.types, o.type)) out.push(`object "${o.id}" uses unknown type "${o.type}"`);
+    if (!Object.hasOwn(scene.types, o.type)) {
+      out.push(`object "${o.id}" uses unknown type "${o.type}"${hint(o.type, pools.type)}`);
+    }
   }
-  out.push(...relationErrors(scene, names));
-  for (const c of scene.checks ?? []) out.push(...checkErrors(scene, c, names));
+  out.push(...relationErrors(scene, names, pools));
+  for (const c of scene.checks ?? []) out.push(...checkErrors(scene, c, names, pools));
   for (const [state, def] of Object.entries(scene.states ?? {})) {
     for (const id of def.hide ?? []) {
-      if (!names.objects.has(id)) out.push(`state "${state}" hides unknown object "${id}"`);
+      if (!names.objects.has(id)) out.push(`state "${state}" hides unknown object "${id}"${hint(id, pools.object)}`);
     }
   }
   for (const a of scene.assumptions ?? []) {
