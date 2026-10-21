@@ -86,7 +86,8 @@ function execute(args: RunArgs, io: Io): number {
     case "check": {
       const selected = selectChecks(scene, args.only);
       const results = args.state === undefined ? runChecks(selected) : runChecksInState(selected, args.state);
-      io.out(args.json ? `${JSON.stringify(checkReportJson(scene, results), null, 2)}\n` : `${formatCheckReport(scene, results, args.state)}\n`);
+      const shown = args.failing === true ? results.filter((r) => r.status === "fail" || r.status === "skip") : results;
+      io.out(args.json ? `${JSON.stringify(checkReportJson(scene, shown), null, 2)}\n` : `${formatCheckReport(scene, results, args.state, shown)}\n`);
       return checkExitCode(results);
     }
     case "describe":

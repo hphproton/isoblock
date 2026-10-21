@@ -5,7 +5,7 @@ import { run } from "../../src/cli/run";
 import { VERSION } from "../../src/cli/version";
 import { runChecks } from "../../src/core/checks";
 import { describeScene } from "../../src/core/describe";
-import { fixturePath, loadScene, repoRoot } from "../helpers/fixtures";
+import { expectMatchesExpected, fixtureNames, fixturePath, loadExpected, loadScene, repoRoot } from "../helpers/fixtures";
 import { memoryIo } from "../helpers/cli";
 
 const yard = fixturePath("yard");
@@ -102,6 +102,35 @@ describe("cli: check --only and describe flags", () => {
     const r = exec(["describe", yard, "--states", "--relations"]);
     expect(r.code).toBe(0);
     expect(r.out).toBe(`${text}\n`);
+  });
+});
+
+describe("cli: check --failing", () => {
+  for (const name of fixtureNames()) {
+    it(`${name}: prints the fail and skip rows in order and keeps the full exit code`, () => {
+      const file = fixturePath(name);
+      const full = exec(["check", "--json", file]);
+      const failing = exec(["check", "--json", "--failing", file]);
+      expect(failing.code, name).toBe(full.code);
+      expect(failing.err, name).toBe("");
+      const expected = loadExpected(name);
+      const rows = expected.results.filter((row) => row.status === "fail" || row.status === "skip");
+      expectMatchesExpected(JSON.parse(failing.out).results, { ...expected, results: rows });
+      const text = exec(["check", "--failing", file]);
+      const lines = text.out.trimEnd().split("\n");
+      expect(lines[0], name).toBe(exec(["check", file]).out.trimEnd().split("\n")[0]);
+      expect(lines.slice(1).every((line) => /^(FAIL|SKIP) /.test(line)), name).toBe(true);
+      expect(lines.length - 1, name).toBe(rows.length);
+    });
+  }
+
+  it("limits the rows to the checks named by --only", () => {
+    const selected = exec(["check", yard, "--only", "c4,c1", "--failing"]);
+    const lines = selected.out.trimEnd().split("\n");
+    expect(lines[0]).toBe("scene yard: 2 checks, 1 pass, 1 fail, 0 warn, 0 skip");
+    expect(lines).toHaveLength(2);
+    expect(lines[1]).toMatch(/^FAIL c4 /);
+    expect(selected.code).toBe(1);
   });
 });
 

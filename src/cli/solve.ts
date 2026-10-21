@@ -14,13 +14,14 @@ function usage(message: string): IsoblockError {
   return new IsoblockError("E_USAGE", message, ["Try 'isoblock --help'."]);
 }
 
-/** The input file is never written, and the two outputs are different files. */
+/** The input file is never written, and the two outputs are different files. `--patch -` is standard output. */
 function checkOutputs(args: SolveArgs): void {
   const input = resolve(args.file);
-  for (const out of [args.output, args.patchOutput]) {
+  const patchFile = args.patchOutput === "-" ? undefined : args.patchOutput;
+  for (const out of [args.output, patchFile]) {
     if (out !== undefined && resolve(out) === input) throw usage("solve never writes its input file: choose another output name");
   }
-  if (args.output !== undefined && args.patchOutput !== undefined && resolve(args.output) === resolve(args.patchOutput)) {
+  if (args.output !== undefined && patchFile !== undefined && resolve(args.output) === resolve(patchFile)) {
     throw usage("-o and --patch must name different files");
   }
 }
@@ -33,14 +34,20 @@ export function runSolveCommand(args: SolveArgs, io: Io): number {
   checkOutputs(args);
   const scene = parseScene(io.readText(args.file));
   const { report, proposal } = solveScene(scene, args.only);
+  const patch = args.patchOutput === undefined ? undefined : solvePatch(report);
+  const toStdout = args.patchOutput === "-";
   const notes: string[] = [];
   if (args.output !== undefined) {
     io.writeText(args.output, serializeScene(proposal));
-    notes.push(`wrote ${args.output}`);
+    if (!toStdout) notes.push(`wrote ${args.output}`);
   }
-  if (args.patchOutput !== undefined) {
-    io.writeText(args.patchOutput, solvePatch(report));
+  if (patch !== undefined && args.patchOutput !== undefined && !toStdout) {
+    io.writeText(args.patchOutput, patch);
     notes.push(`wrote ${args.patchOutput}`);
+  }
+  if (toStdout) {
+    io.out(patch as string);
+    return solveExitCode(report, runChecks(proposal));
   }
   if (args.json) io.out(`${JSON.stringify(solveReportJson(report), null, 2)}\n`);
   else io.out(`${[formatSolveReport(report), ...notes].join("\n")}\n`);

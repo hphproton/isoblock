@@ -1,4 +1,5 @@
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
+import { dirname } from "node:path";
 import { describe, expect, it } from "vitest";
 import { parseArgs } from "../../src/cli/args";
 import { run } from "../../src/cli/run";
@@ -109,6 +110,32 @@ describe("cli: solve", () => {
       expect(r.files.get("s.json")).toBe(files["s.json"]);
     }
     expect(exec(["solve", "bad.json"], { "bad.json": "{ nope" }).code).toBe(2);
+  });
+
+  it("writes the patch to standard output and no report when --patch is -", () => {
+    const dir = dirname(solverScenePath("feasible"));
+    const names = readdirSync(dir).filter((file) => file.endsWith(".scene.json")).map((file) => file.slice(0, -".scene.json".length));
+    expect(names.length).toBeGreaterThan(0);
+    for (const name of names) {
+      const files = { "s.json": solverText(name) };
+      const file = exec(["solve", "s.json", "--patch", "m.patch"], files);
+      const dash = exec(["solve", "s.json", "--patch", "-"], files);
+      expect(dash.code, name).toBe(file.code);
+      expect(dash.err, name).toBe("");
+      expect(dash.out, name).toBe(file.files.get("m.patch"));
+      expect(dash.out.startsWith("# solve proposal\n"), name).toBe(true);
+      expect(dash.out.includes("\nsolve "), name).toBe(false);
+    }
+  });
+
+  it("rejects --json together with --patch - before reading the scene", () => {
+    for (const argv of [["solve", "missing.json", "--patch", "-", "--json"], ["solve", "missing.json", "--json", "--patch=-"]]) {
+      const r = exec(argv);
+      expect(r.code, argv.join(" ")).toBe(2);
+      expect(r.err, argv.join(" ")).toMatch(/^error E_USAGE: /);
+      expect(r.err, argv.join(" ")).toMatch(/--json/);
+      expect(r.out, argv.join(" ")).toBe("");
+    }
   });
 
   it("exits 1 when solved but a check of the proposal fails", () => {
