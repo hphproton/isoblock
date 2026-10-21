@@ -23,6 +23,8 @@ function restrict(scene: Scene, spec: CheckSpec, hidden: ReadonlySet<string>): I
       return [check.a, check.b].find((id) => hidden.has(id)) ?? check;
     case "lane_clear":
       return check.ignore === undefined ? check : { ...check, ignore: keep(check.ignore) };
+    case "lane_apart":
+      return check;
     case "visible":
     case "min_screen_size":
       return hidden.has(check.target) ? check.target : check;

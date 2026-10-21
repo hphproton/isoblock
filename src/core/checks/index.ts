@@ -2,6 +2,7 @@ import type { CheckResult, CheckSpec, ImplementedCheck, Scene } from "../types";
 import { checkCapacity } from "./capacity";
 import { checkClearance } from "./clearance";
 import { checkInRegion, updateInRegion } from "./inRegion";
+import { checkLaneApart } from "./laneApart";
 import { checkLaneClear } from "./laneClear";
 import { checkLaneReaches } from "./laneReaches";
 import { checkMinScreenSize } from "./minScreenSize";
@@ -29,6 +30,8 @@ function evaluate(scene: Scene, spec: CheckSpec): CheckResult {
       return checkLaneClear(scene, implemented);
     case "lane_reaches":
       return checkLaneReaches(scene, implemented);
+    case "lane_apart":
+      return checkLaneApart(scene, implemented);
     case "visible":
       return checkVisible(scene, implemented);
     case "reachable":

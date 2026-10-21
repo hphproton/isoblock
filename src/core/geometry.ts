@@ -105,6 +105,13 @@ export function rectsOverlap(a: Rect, b: Rect): boolean {
   return Math.min(a.u1, b.u1) - Math.max(a.u0, b.u0) > EPS && Math.min(a.v1, b.v1) - Math.max(a.v0, b.v0) > EPS;
 }
 
+/** Area of the intersection of two rectangles. Touching edges give 0. */
+export function rectIntersectionArea(a: Rect, b: Rect): number {
+  const du = Math.min(a.u1, b.u1) - Math.max(a.u0, b.u0);
+  const dv = Math.min(a.v1, b.v1) - Math.max(a.v0, b.v0);
+  return du > 0 && dv > 0 ? du * dv : 0;
+}
+
 /** Edge-to-edge distance between two rectangles (0 when they touch or overlap). */
 export function rectGap(a: Rect, b: Rect): number {
   return Math.hypot(Math.max(0, b.u0 - a.u1, a.u0 - b.u1), Math.max(0, b.v0 - a.v1, a.v0 - b.v1));

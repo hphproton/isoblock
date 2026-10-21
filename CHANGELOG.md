@@ -1,5 +1,23 @@
 # Changelog
 
+## 0.9.0
+
+Stage 9: a polygon with an opacity below 1 is drawn with `fill-opacity` and `stroke-opacity`, and checks can measure a drawn box, the vertical extent of an object, and the gap between a lane and a lane or a zone.
+
+### Changed
+
+- Block images differ from release 0.8.0 along the strokes of semi-transparent polygons. The SVG and the block image carry an opacity below 1 as `fill-opacity` and `stroke-opacity`, never as the group attribute `opacity` (SPEC 14). Where such a stroke covers its own fill, the two now blend. `render -o out.png` writes the block image of `openstrip`, which release 0.8.0 stopped on with `E_INTERNAL` (exit 70). A scene whose polygons are fully opaque is unchanged.
+
+### Added
+
+- `in_region` accepts `measure` (`"footprint"`, the default, or `"drawn"`) and `maxOutside` (0 to 1, default 0). `"drawn"` measures the screen box of every part and fails an object whose share outside the region is over `maxOutside`; the strip rule is unchanged. The result field `outside` lists those shares, rounded to 6 decimals (`[]` when nothing fails). `threshold` stays 0. `maxOutside` without `measure: "drawn"` is a schema error. The footprint measure has no `outside` field.
+- `min_screen_size` accepts `measure` (`"bounds"`, the default, or `"height"`). `"height"` is the vertical extent of the parts on screen, `(highest − lowest) × pxPerUnit × verticalScale × screenWidth / frame.w`, without the footprint's depth.
+- Check `lane_apart`: `lane`, `target` (`lane:<id>` or `zone:<id>`) and optional `min` (default 0). It passes when the shapes do not overlap and the distance is at least `min`. `value` is the distance, `ids` is `[lane, target id]`, and `overlap` is the shared area, both rounded to 6 decimals. Another lane shape, or a zone with fewer than 3 points, is `skip` and has no `overlap`. Two shapes that only touch pass with `min` 0. A state does not change the result.
+- Under `--state`, `in_region` with `"drawn"` and `min_screen_size` with `"height"` follow the other measures: hidden objects leave the lists, and a hidden target is `skip`.
+- `compare` labels `in_region <region>[/<strip>] drawn (objects outside)`, `min_screen_size <target> height (px)` and `lane_apart <lane>×<target id> (<unit>)`. `lane_apart` cells use 2 decimals.
+- The editor's check panel shows these measures like the other checks, and equals `check --json` on the saved file.
+- `docs/AGENT_GUIDE.md` covers the new parameters and `lane_apart`, and what a solver `conflict` means. `conflict` means the search found no layout, not that none exists. Objects that start inside a lane or on top of each other can make the search miss a layout that meets every hard relation, and the conflict set then names more relations than needed. Place the objects roughly, or solve fewer of them with `--only`, and solve again. Do not apply the proposal of a `conflict`.
+
 ## 0.8.0
 
 Stage 8: the Godot adapter draws sprites and actors by the engine rule, applies states and instantiates types; the editor runs grid checks again when a drag ends. The scene file and the runtime file (`isoblock-runtime/2`) do not change.

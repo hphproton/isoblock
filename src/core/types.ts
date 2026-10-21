@@ -99,6 +99,10 @@ export interface InRegionCheck {
   readonly region: string;
   readonly strip?: string;
   readonly ids?: readonly string[];
+  /** `"footprint"` (default) or `"drawn"` (SPEC 9.4). */
+  readonly measure?: "footprint" | "drawn";
+  /** Allowed share of the drawn box outside the region. Only with `measure: "drawn"`. Default 0. */
+  readonly maxOutside?: number;
 }
 
 export interface NoOverlapCheck {
@@ -129,6 +133,16 @@ export interface LaneReachesCheck {
   readonly lane: string;
   readonly edge: "right" | "left" | "top" | "bottom";
   readonly region: string;
+}
+
+export interface LaneApartCheck {
+  readonly id: string;
+  readonly check: "lane_apart";
+  readonly lane: string;
+  /** `lane:<id>` or `zone:<id>`. */
+  readonly target: string;
+  /** Minimum distance. Default 0. */
+  readonly min?: number;
 }
 
 export interface VisibleCheck {
@@ -170,6 +184,8 @@ export interface MinScreenSizeCheck {
   readonly target: string;
   readonly min: number;
   readonly screenWidth?: number;
+  /** `"bounds"` (default) or `"height"` (SPEC 9.4). */
+  readonly measure?: "bounds" | "height";
 }
 
 export interface SortConsistencyCheck {
@@ -189,6 +205,7 @@ export type ImplementedCheck =
   | ClearanceCheck
   | LaneClearCheck
   | LaneReachesCheck
+  | LaneApartCheck
   | VisibleCheck
   | ReachableCheck
   | CapacityCheck
@@ -253,5 +270,9 @@ export interface CheckResult {
   /** `sort_consistency`: the largest area (px squared, 2 decimals) drawn in the wrong order, and the number of actor positions used. */
   readonly worst?: number;
   readonly positions?: number;
+  /** `in_region` with `measure: "drawn"`: share of each failing object's drawn box that lies outside the region. */
+  readonly outside?: readonly number[];
+  /** `lane_apart`: area of the overlap between the lane and its target. Absent when the check is skipped. */
+  readonly overlap?: number;
   readonly message: string;
 }

@@ -4,6 +4,7 @@ import type {
   CheckSpec,
   ClearanceCheck,
   InRegionCheck,
+  LaneApartCheck,
   LaneClearCheck,
   LaneReachesCheck,
   MinScreenSizeCheck,
@@ -17,7 +18,8 @@ export function checkLabel(spec: CheckSpec, base: CheckResult, unit: string): st
   switch (spec.check) {
     case "in_region": {
       const s = spec as InRegionCheck;
-      return `in_region ${s.region}${s.strip === undefined ? "" : `/${s.strip}`} (objects outside)`;
+      const where = `${s.region}${s.strip === undefined ? "" : `/${s.strip}`}`;
+      return `in_region ${where}${s.measure === "drawn" ? " drawn" : ""} (objects outside)`;
     }
     case "no_overlap":
       return "no_overlap (pairs)";
@@ -30,14 +32,21 @@ export function checkLabel(spec: CheckSpec, base: CheckResult, unit: string): st
       return `lane_clear ${(spec as LaneClearCheck).lane} (blocking objects)`;
     case "lane_reaches":
       return `lane_reaches ${(spec as LaneReachesCheck).lane} (y px)`;
+    case "lane_apart": {
+      const s = spec as LaneApartCheck;
+      const target = s.target.replace(/^(?:lane|zone):/, "");
+      return `lane_apart ${s.lane}${TIMES}${target} (${unit})`;
+    }
     case "visible":
       return `visible ${(spec as VisibleCheck).target} (% occluded)`;
     case "reachable":
       return `reachable ${spec.id} (${unit})`;
     case "capacity":
       return `capacity ${spec.id} (usable ${(spec as CapacityCheck).kind})`;
-    case "min_screen_size":
-      return `min_screen_size ${(spec as MinScreenSizeCheck).target} (px)`;
+    case "min_screen_size": {
+      const s = spec as MinScreenSizeCheck;
+      return `min_screen_size ${s.target}${s.measure === "height" ? " height" : ""} (px)`;
+    }
     case "sort_consistency":
       return `sort_consistency ${spec.id} (objects out of order)`;
     default:

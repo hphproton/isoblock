@@ -208,7 +208,7 @@
           "id": { "type": "string", "minLength": 1 },
           "check": {
             "enum": [
-              "in_region", "no_overlap", "clearance", "lane_clear", "lane_reaches", "reachable",
+              "in_region", "no_overlap", "clearance", "lane_clear", "lane_reaches", "lane_apart", "reachable",
               "capacity", "visible", "min_screen_size", "sort_consistency", "state_stable"
             ]
           }
@@ -219,6 +219,7 @@
           { "$ref": "#/definitions/checkClearance" },
           { "$ref": "#/definitions/checkLaneClear" },
           { "$ref": "#/definitions/checkLaneReaches" },
+          { "$ref": "#/definitions/checkLaneApart" },
           { "$ref": "#/definitions/checkVisible" },
           { "$ref": "#/definitions/checkReachable" },
           { "$ref": "#/definitions/checkCapacity" },
@@ -287,8 +288,15 @@
         "check": { "const": "in_region" },
         "region": { "type": "string", "minLength": 1 },
         "strip": { "type": "string", "minLength": 1 },
-        "ids": { "$ref": "#/definitions/idList" }
-      }
+        "ids": { "$ref": "#/definitions/idList" },
+        "measure": { "enum": ["footprint", "drawn"], "default": "footprint" },
+        "maxOutside": { "type": "number", "minimum": 0, "maximum": 1 }
+      },
+      "if": {
+        "properties": { "measure": { "const": "drawn" } },
+        "required": ["measure"]
+      },
+      "else": { "not": { "required": ["maxOutside"] } }
     },
     "checkNoOverlap": {
       "type": "object",
@@ -341,6 +349,19 @@
         "lane": { "type": "string", "minLength": 1 },
         "edge": { "enum": ["right", "left", "top", "bottom"] },
         "region": { "type": "string", "minLength": 1 }
+      }
+    },
+    "checkLaneApart": {
+      "type": "object",
+      "required": ["id", "check", "lane", "target"],
+      "additionalProperties": false,
+      "patternProperties": { "^x-": {} },
+      "properties": {
+        "id": { "type": "string" },
+        "check": { "const": "lane_apart" },
+        "lane": { "type": "string", "minLength": 1 },
+        "target": { "type": "string", "pattern": "^(lane:.+|zone:.+)$" },
+        "min": { "type": "number", "minimum": 0, "default": 0 }
       }
     },
     "checkVisible": {
@@ -410,7 +431,8 @@
         "check": { "const": "min_screen_size" },
         "target": { "type": "string", "minLength": 1 },
         "min": { "type": "number", "minimum": 0 },
-        "screenWidth": { "type": "number", "exclusiveMinimum": 0 }
+        "screenWidth": { "type": "number", "exclusiveMinimum": 0 },
+        "measure": { "enum": ["bounds", "height"], "default": "bounds" }
       }
     },
     "checkSortConsistency": {

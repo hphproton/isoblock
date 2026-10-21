@@ -647,7 +647,7 @@ dist/        build output, not committed
   - fixed seeds;
   - coded errors;
   - TypeScript strict mode.
-- **Size budget (guide):** core about 7,000 lines (6,192 after stage 8); editor 1,500–2,000; each adapter 150–400.
+- **Size budget (guide):** core about 7,000 lines (6,505 after stage 9); editor 1,500–2,000; each adapter 150–400.
 - Engine adapters live in `adapters/<engine>/`. They are not npm code, import nothing from `src/`, and read only the runtime file.
 
 ## 17. Roadmap and acceptance criteria

@@ -126,6 +126,7 @@ wrote yard.png
 - The SVG is rasterized by `@resvg/resvg-wasm`, which is inside `dist/isoblock.mjs`: copy that one file anywhere and `node isoblock.mjs render scene.json -o out.png` works, with no other file and no network.
 - Text is left out (labels are not drawn) and no fonts are loaded, so the image is the same on every machine. Run the command twice and the files are byte-identical.
 - The SVG (`-o out.svg`) keeps its labels.
+- A polygon with an opacity below 1 carries it as `fill-opacity` and `stroke-opacity`, both with that value, never as the group attribute `opacity`. With `opacity`, the rasterizer stops (`E_INTERNAL`, exit 70) on a shape that reaches far outside the frame, such as a strip with an open bound under a semi-transparent region. Where such a stroke covers its own fill, the two blend, so a block image from release 0.8.0 differs along those strokes.
 
 ### `describe`
 
@@ -178,7 +179,7 @@ Select an object (tap or click it) to see its properties, each with its unit:
 
 ### Check panel
 
-The checks of the scene run again after every change, and only the checks that involve the changed objects run again (`in_region` and `no_overlap` even measure only the changed objects). Tapping a row highlights its objects in both views; tapping it again, or `Esc`, clears the highlight. Rows show the same status, id and message as `isoblock check`.
+The checks of the scene run again after every change, and only the checks that involve the changed objects run again (`in_region` and `no_overlap` even measure only the changed objects). Tapping a row highlights its objects in both views; tapping it again, or `Esc`, clears the highlight. Rows show the same status, id and message as `isoblock check`. `in_region` with `measure: "drawn"`, `min_screen_size` with `measure: "height"` and `lane_apart` are rows like the others, and after a save the panel equals `isoblock check --json` on that file. `lane_apart` does not depend on object positions, so moving an object leaves its row as it was.
 
 Checks that search a grid, `reachable` and `sort_consistency`, are too slow to run on every pointer move. While a drag is going on, their rows keep the last result, are dimmed and say `out of date: runs again when the drag ends`; when the object is dropped (or the drag is cancelled) they run again, so the panel then equals `isoblock check --json` on the saved file. Every other edit (a typed value, a lock, undo, redo, opening a file) runs every check it involves at once.
 
@@ -214,7 +215,7 @@ assumptions: tree.size.h=2.40
 - **Header:** scene id, version and status from `meta`, unit, camera (`iso30`, `dimetric21`, or `u<angleU>/v<angleV>`), pixels per unit, frame size, and the first region that does not block the scene.
 - **Object table:** one row per object. `pos` is the footprint's minimum (u, v) corner after rotation. `size` is the type's size `w,d,h` before rotation. `rot` is 0, 90, 180 or 270. `locks` lists locked properties, comma-separated, or `-`.
 - **`*`:** a number that has an entry in `assumptions`. It is provisional: ask before relying on it.
-- **Check lines:** one per `fail`, `warn` or `skip` check, in `checks` order, with the ids involved. The gameplay checks read `FAIL k3 reachable bench2: path of 3.10 u (max 1.00)`, `FAIL s1 capacity seat: 4 usable < 6 (blocked: ...)`, `FAIL m1 min_screen_size walker1: 126 px < 200 px` and `FAIL s1 sort_consistency shed, box, counter, kiosk: drawn out of order, worst 545.60 px2`. With none, the output says `checks: all N pass` (or `checks: none`).
+- **Check lines:** one per `fail`, `warn` or `skip` check, in `checks` order, with the ids involved. The gameplay checks read `FAIL k3 reachable bench2: path of 3.10 u (max 1.00)`, `FAIL s1 capacity seat: 4 usable < 6 (blocked: ...)`, `FAIL m1 min_screen_size walker1: 126 px < 200 px` and `FAIL s1 sort_consistency shed, box, counter, kiosk: drawn out of order, worst 545.60 px2`. A drawn region reads `FAIL drawn in_region tower: outside view`, a height reads `FAIL size_height min_screen_size tower: 192 px tall < 200 px`, and a lane separation reads `FAIL walks_near lane_apart walk1×walk2: 0.30 < 0.50` or `FAIL walks_cross lane_apart walk1×walk3: overlap 0.60`. With none, the output says `checks: all N pass` (or `checks: none`).
 - **Numbers:** 2 decimals (up to 4 when 2 would lose information), whole pixels after `≈`, whole percentages.
 - **Assumptions:** `<type>.size.<w|d|h>`, `<type>.<part>.<u0|v0|h0|u1|v1|h1>`, or the JSON Pointer for other paths. `-` when there are none.
 
@@ -224,23 +225,24 @@ Parameters marked optional can be left out. A check with a wrong or unknown para
 
 | `check` | Parameters | Passes when | `value` |
 |---|---|---|---|
-| `in_region` | `region`; optional `strip`, `ids` | Every footprint corner (projected at height 0) is inside the region rectangle, edges included, and the footprint's v range is inside the strip's v range | Number of failing objects |
+| `in_region` | `region`; optional `strip`, `ids`, `measure` (`footprint` or `drawn`), `maxOutside` (only with `drawn`) | With `footprint` (default): every footprint corner (projected at height 0) is inside the region rectangle, edges included, and the footprint's v range is inside the strip's v range. With `drawn`: the share of the screen box of the parts that lies outside the region is at most `maxOutside`, and the strip rule still holds | Number of failing objects. With `drawn`, also `outside` |
 | `no_overlap` | optional `ids`, `allow` (pairs, either order) | No two footprints overlap by more than 1e-9 along both axes, except allowed pairs. Touching is not overlap | Number of overlapping pairs |
 | `clearance` | `a`, `b`, `min` | Edge-to-edge distance between the two footprints is at least `min` | The distance |
 | `lane_clear` | `lane`; optional `ignore` | No object outside `ignore` has a footprint that overlaps the lane | Number of blocking objects |
 | `lane_reaches` | `lane`, `edge` (`right`, `left`), `region` | The lane meets the frame edge, and the whole meeting segment lies inside the region's y range | Largest y of the meeting segment, in px. `null` and `fail` when the lane does not reach the edge |
+| `lane_apart` | `lane`, `target` (`lane:<id>` or `zone:<id>`); optional `min` (default 0) | The lane does not overlap the target, and the distance between them is at least `min` | The distance. Also `overlap`, the area they share |
 | `visible` | `target`, `maxOccluded`; optional `from` (default 0.55) | The share of the target's camera-facing faces hidden by other objects is at most `maxOccluded` | Occluded fraction, 0 to 1 |
 | `reachable` | `from`, `to` (points); optional `area`, `radius` (0.2), `step` (0.1), `ignore`, `max` | A walkable path exists from `from` to `to` on a grid of free cells, and with `max` it is at most that long | Path length in units (moves times `step`). `null` and `fail` when there is no path |
 | `capacity` | `kind`, `min`; optional `body` (`[0.5, 0.5]`), `ids`, `allow` (object ids) | At least `min` anchors of `kind` can be used at once | Number of usable anchors |
-| `min_screen_size` | `target`, `min` (pixels); optional `screenWidth` (default: the frame width) | The target is at least `min` pixels tall on screen | Pixels |
+| `min_screen_size` | `target`, `min` (pixels); optional `screenWidth` (default: the frame width), `measure` (`bounds` or `height`) | The target is at least `min` pixels tall on screen. `bounds` (default) is the screen box of the parts; `height` is only their vertical extent | Pixels |
 | `sort_consistency` | `actor` (`[w, d, h]`); optional `step` (0.1), `reach` (1), `maxPixels` (0), `area` (zone id), `ids` | An engine that sorts one key per sprite draws a test actor and the objects in their geometric order, to within `maxPixels` of wrong area for every examined object | Number of examined objects over `maxPixels`. Also `worst` (px squared) and `positions` |
 
 Notes:
 
-- `ids` in a result: failing objects (`in_region`), involved objects sorted alphabetically (`no_overlap`), blocking objects (`lane_clear`), `[a, b]` in file order (`clearance`), `[lane]` (`lane_reaches`), `[target]` (`visible`).
+- `ids` in a result: failing objects (`in_region`), involved objects sorted alphabetically (`no_overlap`), blocking objects (`lane_clear`), `[a, b]` in file order (`clearance`), `[lane]` (`lane_reaches`), `[lane, target id]` (`lane_apart`), `[target]` (`visible`).
 - `visible` samples the top face and the side faces from `from` times the height up to the full height, 64 points per face, and casts a ray toward the camera from each point through the parts of every other object. `occluders` lists the objects that hide at least one point.
 - Footprints always use the type's `size` rectangle, even when parts stick out. Parts matter for `visible` and for drawing.
-- **`lane_clear` and `lane_reaches` support one lane shape:** exactly 2 points, parallel to u or v. Other shapes return `skip`. `lane_reaches` also returns `skip` for the `top` and `bottom` edges.
+- **`lane_clear`, `lane_reaches` and `lane_apart` support one lane shape:** exactly 2 points, parallel to u or v. Other shapes return `skip`. `lane_reaches` also returns `skip` for the `top` and `bottom` edges. A `lane_apart` zone with fewer than 3 points is `skip` too. A skipped `lane_apart` has no `overlap`.
 - **`skip` is not a pass.** It means the tool could not evaluate the check: the check is not implemented in this stage (`state_stable`), or its input has an unsupported shape (for example `reachable` in a scene with no walkable zone), or the check names an object that the chosen state hides. A skipped check has `value: null` and `threshold: null`, and `check` exits 1.
 
 ### The gameplay checks
@@ -257,7 +259,24 @@ A point in `reachable` is `[u, v]`, `lane:<id>` (the first point of the lane for
 
 **`capacity`** counts seats and the like. Candidates are the anchors with the given `kind`, objects in file order and anchors in type order (`ids` limits the objects). The body of a candidate is a rectangle `body` (`[w along u, d along v]`, never rotated) centered on the anchor's ground point. In order, a candidate is accepted when its body overlaps neither the footprint of another object (except those in `allow`) nor the body of a candidate accepted before. `accepted` and `rejected` list `<object id>/<anchor id>` labels.
 
-**`min_screen_size`** projects the 8 corners of every part of the target and takes the height of their screen bounds, times `screenWidth / frame.w` (so a scene drawn at 1000 px wide can be checked as if the screen were 1920 px wide).
+**`min_screen_size`** projects the 8 corners of every part of the target and takes the height of their screen bounds, times `screenWidth / frame.w` (so a scene drawn at 1000 px wide can be checked as if the screen were 1920 px wide). That box includes the footprint's depth. `measure: "height"` leaves the depth out: `(highest part − lowest part) × pxPerUnit × verticalScale × screenWidth / frame.w`, which is how tall a character looks. Both are rounded to 6 decimals.
+
+### Drawn boxes and lanes kept apart
+
+**`in_region` with `measure: "drawn"`** uses the same screen box as `min_screen_size`, instead of the footprint at height 0. The share outside is `1 − area(drawn box ∩ region) / area(drawn box)`. A drawn box with no area has share 0 when the whole box lies inside the region (edges included) and 1 otherwise. An object fails when its share is over `maxOutside` (0 to 1, default 0), or when `strip` is set and the footprint fails the strip rule. `threshold` stays 0 whatever `maxOutside` is. `outside` lists the shares of the failing objects, in the same order as `ids`, rounded to 6 decimals (`[]` when none fails). The footprint measure has no `outside` field.
+
+`maxOutside` without `measure: "drawn"` is a schema error. A tall object can stand on a footprint that is inside the view while its top leaves the screen: `"drawn"` reports that, and `maxOutside` allows a chosen share to stick out.
+
+**`lane_apart`** keeps a lane off another lane or off a zone:
+
+```json
+{ "id": "gap", "check": "lane_apart", "lane": "walk", "target": "lane:road", "min": 0.5 }
+{ "id": "dry", "check": "lane_apart", "lane": "walk", "target": "zone:pond", "min": 0.4 }
+```
+
+The overlap of two lanes is the area of the two rectangles. The overlap of a lane and a zone is the area of the zone clipped to the lane rectangle, so the order of the zone's points does not matter. The distance is 0 when a corner of one shape lies inside the other or two edges cross; otherwise it is the smallest distance between an edge of one and an edge of the other. For two lanes that distance is the `clearance` distance. The check passes when the overlap is 0 and the distance is at least `min`. Two shapes that only touch have distance 0 and overlap 0: they pass with `min` 0 and fail with any larger `min`. `value` is the distance and `overlap` is the area, both rounded to 6 decimals. `ids` is `[lane, target id]`.
+
+Lanes and zones are never hidden by a state, so `lane_apart` gives the same result in every state. On `tests/fixtures/measures/measures.scene.json`, `drawn` fails because 0.137931 of the tower's drawn box lies above the view, `size_height` is 192 px against a minimum of 200, and `walks_near` finds the two walk lanes 0.3 apart.
 
 ### `sort_consistency` and sprites
 
@@ -307,8 +326,9 @@ A state is a named set of hidden objects (tents put up for an event, a closed ga
 A state only hides objects (and may carry `x-` keys); states that move objects are not scheduled. `--state NAME` works on `check`, `render`, `compare` and `export --target gen-bbox`; without it every object is present. In a state:
 
 - hidden objects are not drawn, get no generation box, and do not overlap, block, occlude or count anywhere (lanes, paths, seats, rays);
-- a check that names a hidden object by itself is `skip` (`clearance` `a` or `b`, the `target` of `visible` and `min_screen_size`, an anchor in `reachable` `from` or `to`), with a message that says which object and which state;
-- the lists `ids`, `allow` and `ignore` of a check lose the hidden objects; a list that loses all of them checks no object (it does not fall back to all objects);
+- a check that names a hidden object by itself is `skip` (`clearance` `a` or `b`, the `target` of `visible` and `min_screen_size`, including `measure: "height"`, an anchor in `reachable` `from` or `to`), with a message that says which object and which state;
+- the lists `ids`, `allow` and `ignore` of a check lose the hidden objects; a list that loses all of them checks no object (it does not fall back to all objects). `in_region` with `measure: "drawn"` follows that rule, and a hidden object is not part of any drawn box;
+- `lane_apart` does not change in a state: lanes and zones stay;
 - `sort_consistency` gives hidden objects no sprites and no positions, and does not examine them.
 
 Usage errors (exit 2, `E_USAGE`): a state name the scene does not define (the message lists the states it has), and `--state` with `export --target runtime`: the runtime file carries all states.
@@ -475,8 +495,8 @@ objects moved / total (u)    -       1 / 0.60  1 / 0.40  1 / 1.00
 How to read the table:
 
 - `failing checks`: checks with status `fail` or `skip`. `locks touched`: how many base locks the variant touches, then their labels; any entry marks the variant invalid (variant C above moves the locked tree).
-- One row per check that fails or is skipped in some column, or whose value differs from the base in some column, in the order of `checks`. The label names the check and its unit: `in_region <region>[/<strip>] (objects outside)`, `no_overlap (pairs)`, `clearance <a>×<b> (<unit>)`, `lane_clear <lane> (blocking objects)`, `lane_reaches <lane> (y px)`, `visible <target> (% occluded)`, `reachable <check id> (<unit>)`, `capacity <check id> (usable <kind>)`, `min_screen_size <target> (px)`, `sort_consistency <check id> (objects out of order)`; other checks show as `<check> <id>`.
-- Cells: counts as integers, clearance with 2 decimals, `lane_reaches` in whole pixels (`none` when the lane does not reach the edge), `visible` in whole percent, `reachable` with 2 decimals (`none` when there is no path), `capacity` and `sort_consistency` as integers, `min_screen_size` in whole pixels (halves up), `skip` for a skipped check. A trailing ` ✗` marks a value whose status is `fail` or `skip`.
+- One row per check that fails or is skipped in some column, or whose value differs from the base in some column, in the order of `checks`. The label names the check and its unit: `in_region <region>[/<strip>] (objects outside)`, `in_region <region>[/<strip>] drawn (objects outside)` for `measure: "drawn"`, `no_overlap (pairs)`, `clearance <a>×<b> (<unit>)`, `lane_clear <lane> (blocking objects)`, `lane_reaches <lane> (y px)`, `lane_apart <lane>×<target id> (<unit>)`, `visible <target> (% occluded)`, `reachable <check id> (<unit>)`, `capacity <check id> (usable <kind>)`, `min_screen_size <target> (px)`, `min_screen_size <target> height (px)` for `measure: "height"`, `sort_consistency <check id> (objects out of order)`; other checks show as `<check> <id>`.
+- Cells: counts as integers, clearance, `lane_apart` and distances with 2 decimals, `lane_reaches` in whole pixels (`none` when the lane does not reach the edge), `visible` in whole percent, `reachable` with 2 decimals (`none` when there is no path), `capacity` and `sort_consistency` as integers, `min_screen_size` in whole pixels (halves up), `skip` for a skipped check. A trailing ` ✗` marks a value whose status is `fail` or `skip`.
 - `objects moved / total`: objects present in both scenes whose `pos` differs, and the sum of their ground distances.
 
 A `sort_consistency` row counts the examined objects drawn out of order, so a variant that moves the `box` clear of the `shed` shows `3 ✗` against the base `4 ✗` in check `s1` (`isoblock compare tests/fixtures/sort/court.scene.json --variant A=tests/fixtures/sort/compare/court.A.patch --variant B=tests/fixtures/sort/compare/court.B.patch`):
@@ -577,7 +597,8 @@ Proposes positions that meet the relations. It **never writes the input file**: 
 - **Grid:** every coordinate the solver changes is a multiple of 0.05. A coordinate it does not change keeps its exact value.
 - **Objective, in this order:** every hard relation satisfied and every constraint met; then the smallest soft penalty; then the smallest total ground distance moved.
 - **Deterministic:** the same file gives the same output, byte for byte.
-- **Outcome:** `solved` when every hard relation that is not skipped is satisfied and the constraints hold. Otherwise `conflict`, with a **minimal conflict set**: the hard relations that cannot hold together. To find it, the solver starts from all hard relations and, in file order, drops each one without which it still finds no solution. Remove or relax one relation of the set (or a lock) and solve again. Every relation in the set is needed: without it, the solver found a solution for the rest. The set relies on the solver, though: when a search misses a solution, the set can, rarely, hold together after all.
+- **Outcome:** `solved` when every hard relation that is not skipped is satisfied and the constraints hold. Otherwise `conflict`, with a **minimal conflict set** found by deletion filtering: start from all hard relations that are not skipped; in file order, drop a relation when the solver still finds no solution without it. The relations left are the set. The set is empty when the constraints alone cannot be met.
+- **`conflict` is not a proof that no layout exists.** It means this search found none. Objects that start inside a lane, or on top of each other, give the search a poor start, and it can miss a layout that meets every hard relation. The conflict set then names more relations than are actually in the way. Do not delete those relations on the strength of the report. Place the objects roughly where they should stand, or solve fewer of them with `--only`, and solve again. The proposal printed for a `conflict` is the best layout the search found and may break constraints; do not apply it.
 
 ```
 $ isoblock solve yard2.scene.json --patch moves.patch
@@ -626,7 +647,7 @@ Outputs:
    wrote yard2.scene.json
    ```
 
-3. Let the solver propose positions as a patch: `isoblock solve yard2.scene.json --patch moves.patch` (output above). On `conflict`, change the relations in the conflict set and solve again.
+3. Let the solver propose positions as a patch: `isoblock solve yard2.scene.json --patch moves.patch` (output above). On `conflict`, do not apply the proposal. Move the objects into a rough layout, or solve a subset with `--only`, and solve again. The conflict set is the search's report of what it could not satisfy, not a proof that those relations cannot hold together.
 4. Review and apply the proposal like any other patch, so locks are checked and the log records it:
 
    ```

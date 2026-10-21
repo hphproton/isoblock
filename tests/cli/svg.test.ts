@@ -33,6 +33,15 @@ describe("svg output", () => {
     expect(svg).toContain('clip-path="url(#frame)"');
   });
 
+  it("writes an opacity below 1 as fill-opacity and stroke-opacity, never as opacity", () => {
+    expect(svg).toContain('fill-opacity="0.7" stroke-opacity="0.7"');
+    expect(svg).toContain('fill-opacity="0.3" stroke-opacity="0.3"');
+    expect(svg).not.toMatch(/ opacity="/);
+    const open = toSvg(buildDisplayList(loadScene("export/openstrip")));
+    expect(open).toContain('fill-opacity="0.3" stroke-opacity="0.3"');
+    expect(open).not.toMatch(/ opacity="/);
+  });
+
   it("rounds coordinates to 2 decimals", () => {
     const numbers = [...svg.matchAll(/points="([^"]+)"/g)].flatMap((m) => (m[1] as string).split(/[ ,]/));
     expect(numbers.length).toBeGreaterThan(0);

@@ -73,6 +73,8 @@ export function involves(spec: CheckSpec, changed: ReadonlySet<string>): boolean
       const ignored = new Set(check.ignore ?? []);
       return [...changed].some((id) => !ignored.has(id));
     }
+    case "lane_apart":
+      return false;
     case "visible":
     case "reachable":
     case "capacity":

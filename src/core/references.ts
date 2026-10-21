@@ -91,6 +91,15 @@ function checkErrors(scene: Scene, check: CheckSpec, names: Names): string[] {
       const c = check as Extract<CheckSpec, { check: "lane_reaches" }>;
       return [...need(names.lanes, "lane", c.lane, owner), ...need(names.regions, "region", c.region, owner)];
     }
+    case "lane_apart": {
+      const c = check as Extract<CheckSpec, { check: "lane_apart" }>;
+      const zone = c.target.startsWith("zone:");
+      const id = c.target.slice(5);
+      return [
+        ...need(names.lanes, "lane", c.lane, owner),
+        ...need(zone ? names.zones : names.lanes, zone ? "zone" : "lane", id, owner),
+      ];
+    }
     case "visible": {
       const c = check as Extract<CheckSpec, { check: "visible" }>;
       return objects([c.target]);

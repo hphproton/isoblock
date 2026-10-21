@@ -80,6 +80,10 @@ export function expectMatchesExpected(
     for (const key of ["pairs", "occluders", "accepted", "rejected"]) {
       if (key in exp) expect(act[key], `${tag} ${key}`).toEqual(exp[key]);
     }
+    for (const key of ["outside", "overlap"] as const) {
+      if (key in exp) near(act[key], exp[key], expected.tolerance.value, `${tag} ${key}`);
+      else expect(key in act, `${tag} has no ${key}`).toBe(false);
+    }
     if (exp.check === "sort_consistency") {
       // SPEC 17: `status`, `value` and `ids` exactly, `worst` within the pixel tolerance, `positions` exactly.
       expect(act.value, `${tag} value is exact`).toBe(exp.value);
