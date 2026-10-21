@@ -94,8 +94,16 @@ describe("parseArgs", () => {
     expect(usageError(["export", "a.json", "--target", "runtime", "--state", "night"])).toMatch(/--state applies to the gen-bbox target only/);
   });
 
-  it("names a flag that does not apply to a command", () => {
-    expect(usageError(["check", "a.json", "--only", "a"])).toMatch(/'--only' does not apply to 'check'/);
+  it("parses --version, check --only and the describe and compare flags", () => {
+    expect(parseArgs(["--version"])).toEqual({ kind: "version" });
+    expect(parseArgs(["check", "a.json", "--only", "c1, c2,c1"])).toMatchObject({ command: "check", only: ["c1", "c2"] });
+    expect(usageError(["check", "a.json", "--only", "a,,b"])).toMatch(/check ids/);
+    expect(usageError(["describe", "a.json", "--only", "a"])).toMatch(/'--only' does not apply to 'describe'/);
+    expect(parseArgs(["describe", "a.json", "--relations", "--states"])).toEqual({
+      kind: "run", command: "describe", file: "a.json", json: false, relations: true, states: true,
+    });
+    expect(parseArgs(["compare", "a.json", "--variant", "A=a.patch", "--relations"])).toMatchObject({ relations: true });
+    expect(parseArgs(["patch", "a.json", "-"])).toMatchObject({ patchFile: "-" });
   });
 
   it("parses patch, diff and compare", () => {
@@ -154,7 +162,8 @@ describe("parseArgs", () => {
 
   it("rejects unknown flags, flags of other commands and a bad output name", () => {
     expect(usageError(["check", "a.json", "--nope"])).toMatch(/unknown flag '--nope'/);
-    expect(usageError(["validate", "a.json", "--json"])).toMatch(/'--json' does not apply to 'validate'/);
+    expect(parseArgs(["validate", "a.json", "--json"])).toEqual({ kind: "run", command: "validate", file: "a.json", json: true });
+    expect(usageError(["render", "a.json", "-o", "o.svg", "--json"])).toMatch(/'--json' does not apply to 'render'/);
     expect(usageError(["check", "a.json", "-o", "x.svg"])).toMatch(/'-o' does not apply to 'check'/);
     expect(usageError(["render", "a.json"])).toMatch(/render needs -o/);
     expect(usageError(["render", "a.json", "-o"])).toMatch(/'-o' needs a value/);

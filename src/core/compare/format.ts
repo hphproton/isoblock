@@ -28,10 +28,15 @@ function worthShowing(c: CompareCheck): boolean {
 /** The table as rows of cells: the header, then one row per measure. */
 function tableRows(c: Comparison): readonly (readonly string[])[] {
   const checks = c.checks.filter(worthShowing).map((k) => [k.label, ...k.values.map((v, i) => valueCell(k.check, v, k.status[i] as CheckStatus))]);
+  const relations = c.hardViolated === undefined || c.softPenalty === undefined ? [] : [
+    ["hard relations violated", ...c.hardViolated.map((ids) => (ids.length === 0 ? "0" : `${ids.length} ${CROSS}`))],
+    ["soft penalty", ...c.softPenalty.map((n) => n.toFixed(2))],
+  ];
   return [
     ["metric", ...c.variants.map((v) => v.name)],
     ["failing checks", ...c.failing.map(String)],
     ["locks touched", ...c.locksTouched.map((l) => (l.length === 0 ? "0" : `${l.length} ${CROSS} (${l.join(", ")})`))],
+    ...relations,
     ...checks,
     [`objects moved / total (${c.unit})`, ...c.moved.map((m) => (m === null ? "-" : `${m.count} / ${m.distance.toFixed(2)}`))],
   ];
@@ -74,6 +79,9 @@ export function compareJson(c: Comparison) {
     variants: c.variants,
     failing: c.failing,
     locksTouched: c.locksTouched,
+    ...(c.hardViolated === undefined || c.softPenalty === undefined
+      ? {}
+      : { hardViolated: c.hardViolated, softPenalty: c.softPenalty }),
     moved: c.moved,
     checks: c.checks,
   };

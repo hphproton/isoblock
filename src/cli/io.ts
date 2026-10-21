@@ -4,6 +4,8 @@ export type Rasterize = (svg: string) => Uint8Array;
 /** File and terminal access. The only thing the CLI needs from the outside world. */
 export interface Io {
   readText(path: string): string;
+  /** The whole of standard input, for `patch <scene> -`. */
+  readStdin(): string;
   writeText(path: string, text: string): void;
   /** Write a binary file, such as a PNG image. */
   writeBytes(path: string, bytes: Uint8Array): void;
