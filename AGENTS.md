@@ -12,7 +12,7 @@ Check these before you start, and say in your log which you have:
 - **Node 20 or newer** and access to the npm registry (`npm ci`).
 - **Chromium**, for the editor tests: set `ISOBLOCK_CHROMIUM` to the binary if it is not found by itself (`tests/helpers/browser.ts`). Without one, the editor tests are skipped: a skipped test is not a passed test, so report the number skipped.
 - **Godot 4.7.1 and Xvfb**, for `npm run test:godot` (SPEC 13.8): download Godot from the GitHub release `4.7.1-stable`, check it against its `SHA512-SUMS.txt`, keep it outside the repository and set `GODOT`. Without them, say so in your log; the maintainer runs it at review.
-- **Your git identity:** a no-reply email address for author and committer (SPEC section 20): one whose local part is `noreply` or `no-reply`, one at a no-reply domain such as GitHub's `users.noreply.github.com`, or `builder@noreply.invalid`. If `git config user.email` shows a personal address, set a no-reply one for this clone before your first commit.
+- **Your commit identity:** the one your environment sets up for its agent, signed the way the environment signs (SPEC section 20). Do not create an identity of your own and do not change `user.name`, `user.email` or the signing settings: an invented identity is not verified and does not credit the agent. A person who builds commits with their GitHub no-reply address. If `npm run check:publish` reports your environment's identity as unknown, stop and ask the owner; do not change the identity to make the check pass.
 
 ## Start of session
 
@@ -30,7 +30,10 @@ Check these before you start, and say in your log which you have:
 - **Clean code:** pure functions; immutable data; one file per check, at most 150 lines; no global state; coded errors.
 - **Language:** everything you write to the repository is plain technical English: code, comments, CLI messages, test names, docs, logs, commit messages.
 - **Neutral content:** never add names, scenes, measurements or criteria from any specific game or client project. New test data is synthetic.
-- **Commits:** small, imperative subject line in English, for example `Add clearance check`. No URLs in commit messages. At most one `Co-Authored-By:` line, with the name of your agent or model and a no-reply address; every address in a message is a no-reply address.
+- **Commit messages** (SPEC section 20):
+  - Subject: one line in English, in the imperative mood, starting with a capital letter, at most 72 characters, no period at the end, no prefix such as `feat:` or `[stage 9]`, for example `Add clearance check`. One topic per commit.
+  - Body: after one blank line, plain sentences wrapped at 72 columns that say what changed and why. Leave it out only when the subject says everything. No URLs, no Markdown headings, no account of how the session went.
+  - Trailers: after one more blank line, only `Co-authored-by:` and `Signed-off-by:` lines, one per address, each with an address that the identity rule accepts. Keep the `Co-authored-by:` lines your environment adds for the person who started the session or for the model; add one for the model only when your identity does not name it and its vendor has a no-reply address. No other trailers.
 - **No agent traces** (SPEC section 20): nothing you commit or push links to or names your session, task, run or chat: no session or task URLs, no `*-Session:` lines, no "generated with" footers that point to a session. Many environments add such lines to commit messages or descriptions by themselves; remove them before you push. Every commit you push is public and cannot be taken back.
 - **Versions:** do not change `version` in `package.json`; the maintainer sets it in the release commit.
 
