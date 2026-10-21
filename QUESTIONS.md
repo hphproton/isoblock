@@ -265,3 +265,9 @@ Template:
   - A row that waits keeps its status, message and highlight ids, is dimmed, and shows `out of date: runs again when the drag ends`; the count in the panel header counts it with its last status.
   - The frame-time tests drag `barrier1` on `walk` and `crate` on `court` in the isometric view on the phone profile (390x844 at pixel ratio 2, one pointer move per animation frame, 4x CPU slowdown), along the path of the `crowd` tests. The condition is the SPEC 17 criterion only: the 95th-percentile interval at most 18.4 ms in one of up to 3 runs; work time and the median are printed.
 - Answer (maintainer): Approved as written. SPEC 10 now says that a cancelled drag re-runs the waiting checks too; the wording of a waiting row stays free.
+
+## Q-026 · CI runner for Chromium
+- Spec section: 16
+- Question: The workflow must install Chromium with `node node_modules/playwright-core/cli.js install chromium`. `playwright-core` 1.56.1, the pinned release, refuses that command on `ubuntu-latest`, which is now Ubuntu 26.04 (`Playwright does not support chromium on ubuntu26.04-x64`). The spec does not name the runner image.
+- Reading chosen for now: Both jobs run on `ubuntu-24.04`, where that install command works. Playwright is not upgraded, and the workflow installs nothing else.
+- Answer (maintainer): …

@@ -16,7 +16,7 @@ Stage 10: an agent can ask for the version, a JSON validation report, a subset o
 - `compare --relations` adds the rows `hard relations violated` and `soft penalty`, and the JSON keys `hardViolated` and `softPenalty`. Without the flag the output is unchanged.
 - `lane_reaches` evaluates `top` and `bottom`. The value is the largest x of the meeting segment, and the compare label is `lane_reaches <lane> (x px)`.
 - `npm run build` copies `THIRD_PARTY_NOTICES.md` to `dist/` and writes a header line into `dist/isoblock.mjs` and `dist/editor.html`.
-- `.github/workflows/ci.yml` runs the test suite on Node 20 and 22, with Chromium from `playwright-core`, and the Godot cross-checks with Godot 4.7.1 under Xvfb.
+- `.github/workflows/ci.yml` runs the test suite on Node 20 and 22, with Chromium from `playwright-core`, and the Godot cross-checks with Godot 4.7.1 under Xvfb. The jobs use Ubuntu 24.04, because that Playwright release cannot install Chromium on the current `ubuntu-latest` image.
 
 ## 0.9.0
 
