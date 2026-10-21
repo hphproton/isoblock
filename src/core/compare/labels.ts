@@ -30,8 +30,11 @@ export function checkLabel(spec: CheckSpec, base: CheckResult, unit: string): st
     }
     case "lane_clear":
       return `lane_clear ${(spec as LaneClearCheck).lane} (blocking objects)`;
-    case "lane_reaches":
-      return `lane_reaches ${(spec as LaneReachesCheck).lane} (y px)`;
+    case "lane_reaches": {
+      const s = spec as LaneReachesCheck;
+      const axis = s.edge === "top" || s.edge === "bottom" ? "x" : "y";
+      return `lane_reaches ${s.lane} (${axis} px)`;
+    }
     case "lane_apart": {
       const s = spec as LaneApartCheck;
       const target = s.target.replace(/^(?:lane|zone):/, "");
