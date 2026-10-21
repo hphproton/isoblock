@@ -53,13 +53,22 @@ function restrict(scene: Scene, spec: CheckSpec, hidden: ReadonlySet<string>): I
  * removed from the scene and from the lists of the checks (`ids`, `allow`, `ignore`); a check that
  * names a hidden object by itself is `skip`. `state` only names the state in the messages.
  */
+/** One check with `hidden` objects removed. `visible` is `scene` without those objects. */
+export function checkInState(
+  scene: Scene,
+  spec: CheckSpec,
+  hidden: ReadonlySet<string>,
+  state: string,
+  visible: Scene = withoutObjects(scene, hidden),
+): CheckResult {
+  const restricted = restrict(scene, spec, hidden);
+  if (typeof restricted === "string") return canonical(skipResult(spec, `object "${restricted}" is hidden in state "${state}"`));
+  return runCheck(visible, restricted);
+}
+
 export function runChecksHiding(scene: Scene, hidden: ReadonlySet<string>, state: string): readonly CheckResult[] {
   const visible = withoutObjects(scene, hidden);
-  return (scene.checks ?? []).map((spec) => {
-    const restricted = restrict(scene, spec, hidden);
-    if (typeof restricted === "string") return canonical(skipResult(spec, `object "${restricted}" is hidden in state "${state}"`));
-    return runCheck(visible, restricted);
-  });
+  return (scene.checks ?? []).map((spec) => checkInState(scene, spec, hidden, state, visible));
 }
 
 /** Run every check of the scene as it is in a state. An unknown state is `E_USAGE`. */

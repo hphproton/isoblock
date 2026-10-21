@@ -16,6 +16,7 @@ import { dirtyRects, type Painted } from "./dirty";
 import { createDrawCache, drawView, type DrawReport } from "./draw";
 import type { Frameable } from "./frames";
 import type { FrameStats } from "./stats";
+import { sceneShown } from "./shown";
 import { currentScene, type EditorStore } from "./store";
 
 export type ViewKind = "iso" | "plan";
@@ -198,9 +199,10 @@ export class SceneView implements Frameable {
   draw(): boolean {
     if (!this.dirty || !this.visible()) return false;
     const state = this.store.get();
-    const scene = currentScene(state);
+    const full = currentScene(state);
+    const scene = full === null ? null : sceneShown(full, state.shownState);
     this.dirty = false;
-    if (scene === null) {
+    if (scene === null || full === null) {
       this.ctx.setTransform(1, 0, 0, 1, 0, 0);
       this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
       this.items = [];
@@ -214,7 +216,7 @@ export class SceneView implements Frameable {
       this.needsFit = true;
       this.fullPaint = true;
     }
-    if (this.needsFit) this.computeFit(scene);
+    if (this.needsFit) this.computeFit(full);
     const list = this.stats.time("list", () =>
       buildDisplayList(scene, {
         camera: this.cameraFor(scene),

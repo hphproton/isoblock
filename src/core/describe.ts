@@ -78,7 +78,8 @@ function table(scene: Scene): { lines: string[]; provisional: boolean } {
   return { lines, provisional: rows.some((r) => (r[2] as string).includes("*") || (r[3] as string).includes("*")) };
 }
 
-function shortPath(scene: Scene, path: string): string {
+/** Assumption path as `describe` prints it (Appendix B). */
+export function shortAssumptionPath(scene: Scene, path: string): string {
   const t = pointerTokens(path);
   if (t[0] === "types" && t[2] === "size" && t.length === 4) return `${t[1]}.size.${SIZE_NAMES[Number(t[3])]}`;
   if (t[0] === "types" && t[2] === "parts" && t[4] === "box" && t.length === 6) {
@@ -91,7 +92,7 @@ function shortPath(scene: Scene, path: string): string {
 function assumptionLine(scene: Scene): string {
   const list = (scene.assumptions ?? []).map((a) => {
     const value = typeof a.value === "number" ? fmt(a.value) : JSON.stringify(a.value);
-    return `${shortPath(scene, a.path)}=${value}`;
+    return `${shortAssumptionPath(scene, a.path)}=${value}`;
   });
   return `assumptions: ${list.length > 0 ? list.join(` ${DOT} `) : "-"}`;
 }

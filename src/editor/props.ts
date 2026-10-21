@@ -209,6 +209,30 @@ function buildProps(store: EditorStore, scene: Scene, object: SceneObject): { ro
     },
   });
 
+  const stateNames = Object.keys(scene.states ?? {});
+  if (stateNames.length > 0) {
+    const boxes = new Map<string, HTMLInputElement>();
+    const labels = stateNames.map((name) => {
+      const box = el("input", { type: "checkbox", "aria-label": `Hidden in ${name}` });
+      box.addEventListener("change", () => {
+        store.applyLine(`${box.checked ? "hide" : "show"} ${name} ${id}`);
+        const now = currentScene(store.get());
+        box.checked = now?.states?.[name]?.hide?.includes(id) === true;
+      });
+      boxes.set(name, box);
+      return el("label", {}, box, `Hidden in ${name}`);
+    });
+    rows.push({
+      node: el("div", { class: "hides" }, ...labels),
+      update(s) {
+        for (const [name, box] of boxes) {
+          const on = s.states?.[name]?.hide?.includes(id) === true;
+          if (box.checked !== on) box.checked = on;
+        }
+      },
+    });
+  }
+
   rows.push({ node: el("div", { class: "group-title" }, `Size of type ${typeName}`), update: () => undefined });
   for (const k of [0, 1, 2] as const) {
     const label = SIZE_NAMES[k];
@@ -236,7 +260,7 @@ function buildProps(store: EditorStore, scene: Scene, object: SceneObject): { ro
 
 /** The property panel: shows the selected object, with a lock toggle and provisional mark per number. */
 export function mountProps(root: HTMLElement, store: EditorStore): void {
-  let current: { id: string; type: string; update(scene: Scene): void } | null = null;
+  let current: { id: string; type: string; states: string; update(scene: Scene): void } | null = null;
   const render = (): void => {
     const state = store.get();
     const scene = currentScene(state);
@@ -246,9 +270,10 @@ export function mountProps(root: HTMLElement, store: EditorStore): void {
       root.replaceChildren(el("p", { class: "hint" }, scene === null ? "No scene is open." : "Select an object in a view."));
       return;
     }
-    if (current === null || current.id !== object.id || current.type !== object.type) {
+    const states = Object.keys(scene.states ?? {}).join("\0");
+    if (current === null || current.id !== object.id || current.type !== object.type || current.states !== states) {
       const built = buildProps(store, scene, object);
-      current = { id: object.id, type: object.type, update: built.update };
+      current = { id: object.id, type: object.type, states, update: built.update };
       root.replaceChildren(built.root);
       return;
     }
