@@ -165,7 +165,7 @@ Not in stage 8: generated engine scenes, Phaser and Tiled adapters, a `@tool` sc
 
 **Done when:** all tests pass, `npm run test:godot` passes, earlier fixtures still match, and the stage 8 criteria in SPEC section 17 hold.
 
-## Stage 9 · open
+## Stage 9 · done (0.9.0)
 
 Fixes and measures (SPEC sections 8, 9.4, 11.1, 14, 17, 20). From this stage a builder session may run in any coding agent; `AGENTS.md` says what the environment needs, and `npm run check:publish` checks what the branch would publish. Fixtures: `tests/fixtures/measures/` (scene `measures`, its results in the default state and in state `no_tower`), `tests/fixtures/export/openstrip.scene.json`, and the block images of this release in `tests/fixtures/export/` and `tests/fixtures/states/`.
 
@@ -183,5 +183,9 @@ Fixes and measures (SPEC sections 8, 9.4, 11.1, 14, 17, 20). From this stage a b
 Not in stage 9: heights for zones and lanes, a camera elevation parameter, states that hide a part of an object or a frame region, `x-` keys in the runtime file, better start positions for the solver (SPEC sections 17 and 18).
 
 **Done when:** every case of `tests/fixtures/measures/cases.json` meets its expected results; the branch is named `builder/stage-9`, and its session log names the tool and model, gives the test counts with skipped tests and ends with the pull request's title and description; every case of `tests/fixtures/export/cases.json` and of `tests/fixtures/states/cases.json` meets its expected files, the PNG of `openstrip` included; `npm run check:publish` reports nothing; all tests pass, with no test skipped where Chromium is available; earlier fixtures still match, except the block images that this stage replaces.
+
+## After stage 9
+
+No further stage is open. The owner has scheduled a stage 10 (agent protocol, round 2, and distribution); the maintainer opens it from a maintainer branch once it is specified against this repository.
 
 One builder task is waiting for a session before a build is distributed: the build carries the third-party notices (`MAINTAINING.md`, Before distributing a build).

@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.9.0
 
 Stage 9: a polygon with an opacity below 1 is drawn with `fill-opacity` and `stroke-opacity`, and checks can measure a drawn box, the vertical extent of an object, and the gap between a lane and a lane or a zone.
 
