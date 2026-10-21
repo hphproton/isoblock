@@ -1,0 +1,304 @@
+{
+  "cases": [
+    {
+      "name": "e01-nudge",
+      "scene": "tests/fixtures/yard.scene.json",
+      "snap": 0.1,
+      "steps": [
+        {
+          "select": "crate2"
+        },
+        {
+          "key": "ArrowRight"
+        },
+        {
+          "key": "ArrowRight"
+        },
+        {
+          "key": "ArrowRight"
+        },
+        {
+          "key": "Shift+ArrowDown"
+        }
+      ],
+      "patch": "move crate2 u+0.1\nmove crate2 u+0.1\nmove crate2 u+0.1\nmove crate2 v+1\n",
+      "expected": "e01-nudge.expected.json",
+      "refused": false,
+      "panelState": null,
+      "hidden": []
+    },
+    {
+      "name": "e02-nudge-locked",
+      "scene": "tests/fixtures/yard.scene.json",
+      "snap": 0.1,
+      "steps": [
+        {
+          "select": "tree"
+        },
+        {
+          "key": "ArrowLeft"
+        }
+      ],
+      "patch": null,
+      "expected": null,
+      "refused": true,
+      "panelState": null,
+      "hidden": []
+    },
+    {
+      "name": "e03-nudge-axis-lock",
+      "scene": "tests/fixtures/crowd.scene.json",
+      "snap": 0.1,
+      "steps": [
+        {
+          "select": "o020"
+        },
+        {
+          "key": "ArrowRight"
+        },
+        {
+          "key": "ArrowDown"
+        }
+      ],
+      "patch": "move o020 v+0.1\n",
+      "expected": "e03-nudge-axis-lock.expected.json",
+      "refused": false,
+      "panelState": null,
+      "hidden": []
+    },
+    {
+      "name": "e04-add",
+      "scene": "tests/fixtures/yard.scene.json",
+      "snap": 0.1,
+      "steps": [
+        {
+          "press": "Add",
+          "type": "crate"
+        }
+      ],
+      "patch": "add crate3 crate 4.9,2\n",
+      "expected": "e04-add.expected.json",
+      "refused": false,
+      "panelState": null,
+      "hidden": []
+    },
+    {
+      "name": "e05-duplicate",
+      "scene": "tests/fixtures/yard.scene.json",
+      "snap": 0.1,
+      "steps": [
+        {
+          "select": "bench"
+        },
+        {
+          "press": "Duplicate"
+        }
+      ],
+      "patch": "add bench1 bench 4.6,2.6 0\n",
+      "expected": "e05-duplicate.expected.json",
+      "refused": false,
+      "panelState": null,
+      "hidden": []
+    },
+    {
+      "name": "e06-delete-named-by-check",
+      "scene": "tests/fixtures/yard.scene.json",
+      "snap": 0.1,
+      "steps": [
+        {
+          "select": "crate1"
+        },
+        {
+          "key": "Delete"
+        }
+      ],
+      "patch": null,
+      "expected": null,
+      "refused": true,
+      "panelState": null,
+      "hidden": []
+    },
+    {
+      "name": "e07-delete-locked",
+      "scene": "tests/fixtures/yard.scene.json",
+      "snap": 0.1,
+      "steps": [
+        {
+          "select": "tree"
+        },
+        {
+          "press": "Delete"
+        }
+      ],
+      "patch": null,
+      "expected": null,
+      "refused": true,
+      "panelState": null,
+      "hidden": []
+    },
+    {
+      "name": "e08-delete",
+      "scene": "tests/fixtures/objects/shelf.scene.json",
+      "snap": 0.1,
+      "steps": [
+        {
+          "select": "d"
+        },
+        {
+          "press": "Delete"
+        }
+      ],
+      "patch": "remove d\n",
+      "expected": "e08-delete.expected.json",
+      "refused": false,
+      "panelState": null,
+      "hidden": []
+    },
+    {
+      "name": "e09-delete-shifts-assumption",
+      "scene": "tests/fixtures/objects/shelf.scene.json",
+      "snap": 0.1,
+      "steps": [
+        {
+          "select": "a"
+        },
+        {
+          "key": "Delete"
+        }
+      ],
+      "patch": null,
+      "expected": null,
+      "refused": true,
+      "panelState": null,
+      "hidden": []
+    },
+    {
+      "name": "e10-delete-undo",
+      "scene": "tests/fixtures/objects/shelf.scene.json",
+      "snap": 0.1,
+      "steps": [
+        {
+          "select": "d"
+        },
+        {
+          "press": "Delete"
+        },
+        {
+          "undo": 1
+        }
+      ],
+      "patch": null,
+      "expected": null,
+      "refused": false,
+      "panelState": null,
+      "hidden": []
+    },
+    {
+      "name": "e11-state",
+      "scene": "tests/fixtures/yard.scene.json",
+      "snap": 0.1,
+      "steps": [
+        {
+          "state": "closed"
+        }
+      ],
+      "patch": null,
+      "expected": null,
+      "refused": false,
+      "panelState": "closed",
+      "hidden": [
+        "bench"
+      ]
+    },
+    {
+      "name": "e12-hide",
+      "scene": "tests/fixtures/yard.scene.json",
+      "snap": 0.1,
+      "steps": [
+        {
+          "select": "crate2"
+        },
+        {
+          "toggle": "Hidden in closed"
+        }
+      ],
+      "patch": "hide closed crate2\n",
+      "expected": "e12-hide.expected.json",
+      "refused": false,
+      "panelState": null,
+      "hidden": []
+    },
+    {
+      "name": "e13-show",
+      "scene": "tests/fixtures/yard.scene.json",
+      "snap": 0.1,
+      "steps": [
+        {
+          "select": "bench"
+        },
+        {
+          "toggle": "Hidden in closed"
+        }
+      ],
+      "patch": "show closed bench\n",
+      "expected": "e13-show.expected.json",
+      "refused": false,
+      "panelState": null,
+      "hidden": []
+    },
+    {
+      "name": "e14-settle",
+      "scene": "tests/fixtures/yard.scene.json",
+      "snap": 0.1,
+      "steps": [
+        {
+          "settle": "/types/tree/size/2"
+        }
+      ],
+      "patch": null,
+      "expected": "e14-settle.expected.json",
+      "refused": false,
+      "panelState": null,
+      "hidden": []
+    },
+    {
+      "name": "e15-add-in-state",
+      "scene": "tests/fixtures/yard.scene.json",
+      "snap": 0.1,
+      "steps": [
+        {
+          "state": "closed"
+        },
+        {
+          "press": "Add",
+          "type": "crate"
+        }
+      ],
+      "patch": "add crate3 crate 4.9,2\n",
+      "expected": "e15-add-in-state.expected.json",
+      "refused": false,
+      "panelState": "closed",
+      "hidden": [
+        "bench"
+      ]
+    },
+    {
+      "name": "e16-hide-second-object",
+      "scene": "tests/fixtures/objects/shelf.scene.json",
+      "snap": 0.1,
+      "steps": [
+        {
+          "select": "c"
+        },
+        {
+          "toggle": "Hidden in bare"
+        }
+      ],
+      "patch": "hide bare c\n",
+      "expected": "e16-hide-second-object.expected.json",
+      "refused": false,
+      "panelState": null,
+      "hidden": []
+    }
+  ]
+}

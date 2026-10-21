@@ -1,0 +1,134 @@
+{
+  "schema": "isoblock/1",
+  "id": "shelf",
+  "units": {
+    "name": "u",
+    "note": "abstract unit"
+  },
+  "camera": {
+    "angleU": 30,
+    "angleV": 150,
+    "pxPerUnit": 80,
+    "verticalScale": 1,
+    "origin": [
+      300,
+      300
+    ]
+  },
+  "frame": {
+    "w": 1000,
+    "h": 1000,
+    "regions": [
+      {
+        "id": "hud",
+        "rect": [
+          0,
+          0,
+          1000,
+          150
+        ],
+        "blocksScene": true
+      },
+      {
+        "id": "view",
+        "rect": [
+          0,
+          150,
+          1000,
+          1000
+        ]
+      }
+    ]
+  },
+  "types": {
+    "box": {
+      "size": [
+        1,
+        1,
+        1
+      ]
+    },
+    "crate": {
+      "size": [
+        0.6,
+        0.6,
+        0.6
+      ]
+    }
+  },
+  "objects": [
+    {
+      "id": "a",
+      "type": "box",
+      "pos": [
+        0,
+        0
+      ],
+      "rot": 0
+    },
+    {
+      "id": "b",
+      "type": "box",
+      "pos": [
+        2,
+        0
+      ],
+      "rot": 0
+    },
+    {
+      "id": "c",
+      "type": "crate",
+      "pos": [
+        4,
+        0
+      ],
+      "rot": 0
+    }
+  ],
+  "relations": [
+    {
+      "id": "r1",
+      "a": "a",
+      "rel": "left_of",
+      "b": "b",
+      "hard": false,
+      "weight": 1
+    }
+  ],
+  "checks": [
+    {
+      "id": "c1",
+      "check": "in_region",
+      "region": "view"
+    },
+    {
+      "id": "c2",
+      "check": "no_overlap"
+    },
+    {
+      "id": "c3",
+      "check": "clearance",
+      "a": "a",
+      "b": "b",
+      "min": 0.5
+    }
+  ],
+  "states": {
+    "bare": {
+      "hide": []
+    }
+  },
+  "assumptions": [
+    {
+      "path": "/objects/1/pos/0",
+      "value": 2,
+      "note": "u of b not given in the brief"
+    }
+  ],
+  "meta": {
+    "version": 1,
+    "status": "draft",
+    "approvedBy": null,
+    "approvedAt": null
+  }
+}
