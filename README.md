@@ -15,8 +15,8 @@ IsoBlock makes the scene file the single source of truth, checks it with exact r
 ## Features
 
 - **Scene file** in world units: types with parts, objects, strips, zones, lanes, relations, checks, states, per-property locks and recorded assumptions. The camera sets the projection: true isometric, 2:1 pixel art, or any pair of axis angles.
-- **Checks**: `in_region`, `no_overlap`, `clearance`, `lane_clear`, `lane_reaches`, `visible` (occlusion), `reachable`, `capacity`, `min_screen_size` and `sort_consistency`. Each result states pass or fail, the measured value, the threshold and the objects involved.
-- **For agents**: `describe` prints a short text summary; `patch` applies short commands or JSON Patch and rejects changes to locked properties; `diff` and `compare` report changes and variants by measured values.
+- **Checks**: `in_region`, `no_overlap`, `clearance`, `lane_clear`, `lane_reaches`, `lane_apart`, `visible` (occlusion), `reachable`, `capacity`, `min_screen_size` and `sort_consistency`. Each result states pass or fail, the measured value, the threshold and the objects involved.
+- **For agents**: `describe` prints a short text summary; `patch` applies short commands or JSON Patch, also from standard input, and rejects changes to locked properties; `diff` and `compare` report changes and variants by measured values; `validate --json` and `check --only` keep the output short, and a misspelled name gets a suggestion.
 - **Relations and solver**: `relations` measures every relation; `solve` places objects from them and, when they cannot all hold, reports a minimal set of conflicting hard relations.
 - **Render**: SVG and PNG, with no native dependencies.
 - **Export**: a runtime file (`isoblock-runtime/2`) for engines, and bounding boxes for image generation (`gen-bbox`).
@@ -35,20 +35,21 @@ node dist/isoblock.mjs check tests/fixtures/yard.scene.json
 
 The sample scene `yard` contains three deliberate mistakes: two crates closer than allowed, a lane that leaves the frame through the bottom edge instead of the right edge, and a figure hidden behind a tree. `check` reports them and exits with code 1.
 
-`npm run build` writes two files: `dist/isoblock.mjs`, the command line tool (no runtime dependencies beyond Node), and `dist/editor.html`, the editor. Open the editor by double-clicking it; it needs no server and makes no network request.
+`npm run build` writes three files: `dist/isoblock.mjs`, the command line tool (no runtime dependencies beyond Node), `dist/editor.html`, the editor, and `dist/THIRD_PARTY_NOTICES.md`, the notices of the third-party code in both, which travel with them. Open the editor by double-clicking it; it needs no server and makes no network request.
 
 ## Commands
 
 ```
-isoblock validate  <scene.json>
-isoblock check     <scene.json> [--json] [--state NAME]
+isoblock --version
+isoblock validate  <scene.json> [--json]
+isoblock check     <scene.json> [--json] [--state NAME] [--only a,b]
 isoblock render    <scene.json> [--state NAME] -o <out.svg|out.png>
-isoblock describe  <scene.json>
+isoblock describe  <scene.json> [--relations] [--states]
 isoblock relations <scene.json> [--json]
 isoblock solve     <scene.json> [--only a,b] [-o <proposal.json>] [--patch <moves.patch>] [--json]
-isoblock patch     <scene.json> <patch> [-o <out.json>] [--dry-run] [--json]
+isoblock patch     <scene.json> <patch|-> [-o <out.json>] [--dry-run] [--json]
 isoblock diff      <a.json> <b.json> [--json]
-isoblock compare   <scene.json> --variant NAME=FILE... [--state NAME] [--format text|md|json]
+isoblock compare   <scene.json> --variant NAME=FILE... [--state NAME] [--format text|md|json] [--relations]
 isoblock export    <scene.json> --target runtime|gen-bbox [-o <out.json>]
                    [--bbox-units px|norm1000] [--bbox-order xyxy|yxyx] [--state NAME]
 ```

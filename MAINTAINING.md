@@ -58,7 +58,7 @@ Write the result in `log/<yyyy-mm-dd>-maintainer-<n>.md`: steps run, outcomes, d
 
 ## Release
 
-1. On the reviewed builder branch, make one release commit: set `version` in `package.json` (stage N → `0.N.0`); rename `Unreleased` in `CHANGELOG.md` to that version; mark the stage done in `ROADMAP.md` and open the next one with the fixtures and expected results it needs (SPEC section 17). When those are not ready, leave the next stage closed and open it later from a maintainer branch; add your review log. Push the branch.
+1. On the reviewed builder branch, make one release commit: set `version` in `package.json` (stage N → `0.N.0`) and the same version on the status line of `README.md` (a repository test compares them); rename `Unreleased` in `CHANGELOG.md` to that version; mark the stage done in `ROADMAP.md` and open the next one with the fixtures and expected results it needs (SPEC section 17). When those are not ready, leave the next stage closed and open it later from a maintainer branch; add your review log. Push the branch.
 2. Comment on the builder's pull request: the review result and a squash commit message without session links. Use a comment, not a formal approval. Read the comment back: if your environment added a link to your session, delete the comment and post it again without the link (a deleted comment leaves no history; an edited one does).
 3. Tell the owner the pull request is ready. The owner squash-merges it. Do not merge or push to `main` yourself.
 4. After the merge, check that the new commit on `main` carries the owner's identity, and write the outcome in your next log.
