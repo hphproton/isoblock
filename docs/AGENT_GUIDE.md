@@ -27,11 +27,11 @@ Every command takes a scene file (`*.scene.json`, format `isoblock/1`) and reads
 ```
 isoblock --version
 isoblock validate <scene.json> [--json]
-isoblock check    <scene.json> [--json] [--state NAME] [--only a,b]
+isoblock check    <scene.json> [--json] [--state NAME] [--only a,b] [--failing]
 isoblock render   <scene.json> [--state NAME] -o <out.svg|out.png>
 isoblock describe <scene.json> [--relations] [--states]
 isoblock relations <scene.json> [--json]
-isoblock solve    <scene.json> [--only a,b] [-o <proposal.json>] [--patch <moves.patch>] [--json]
+isoblock solve    <scene.json> [--only a,b] [-o <proposal.json>] [--patch <moves.patch|->] [--json]
 isoblock patch    <scene.json> <patch|-> [-o <out.json>] [--dry-run] [--json]
 isoblock diff     <a.json> <b.json> [--json]
 isoblock compare  <scene.json> --variant NAME=FILE... [--state NAME] [--format text|md|json] [--relations]
@@ -98,6 +98,8 @@ SKIP c7 reachable: the scene has no zone with kind "walkable"
 `--json` prints `{ "scene": "<id>", "results": [...] }` instead. Each result has `id`, `check`, `status` (`pass`, `fail`, `warn` or `skip`), `value`, `threshold`, `ids` and `message`; `no_overlap` adds `pairs`, `visible` adds `occluders`, `capacity` adds `accepted` and `rejected`; `sort_consistency` adds `worst` and `positions`. Keys are always in this order. `message` is one line meant for people; read `status`, `value` and `ids` instead of parsing it.
 
 `--state NAME` checks the scene as it is in one of its states, with the objects that state hides taken out (see [States](#states)). The summary line then reads `scene walk (state open): ...`; `--json` keeps the same shape. An unknown state name exits 2 (`E_USAGE`) and lists the states the scene has.
+
+`--failing` prints only the results whose status is `fail` or `skip`, in `checks` order: the check lines of the text output, and the `results` of `--json`. The summary line and the exit code still cover every check that ran. With `--only`, both the selection and `--failing` apply.
 
 ```
 $ isoblock check walk.scene.json --state open
@@ -180,7 +182,7 @@ Export targets `godot`, `phaser` and `tiled` are not scheduled (the Godot adapte
 - The scene file is the only state. There is no autosave and nothing is kept in the browser: the overlays, the snap step and the view mode are forgotten when the page closes.
 - **Save** downloads the scene under the name of the file that was opened (or `<id>.scene.json`). The same scene always gives the same bytes: two-space indentation, keys in the order of the opened file, one final newline. Saving twice gives byte-identical files, and the saved file parses to the same data as the file that was opened. Numbers are written the JSON way, so `2.0` becomes `2`.
 - `(unsaved)` next to the file name marks changes since the file was opened or saved. Closing the page then asks for confirmation.
-- Keys: Ctrl or Cmd with `S` saves, with `Z` undoes, with `Shift+Z` or `Y` redoes. `Esc` clears the selection and the check highlight.
+- Keys: Ctrl or Cmd with `S` saves, with `Z` undoes, with `Shift+Z` or `Y` redoes. `Esc` clears the selection and the check highlight. Arrow keys nudge the selection (see below). Delete and Backspace remove it, while a text field or select is not focused.
 
 ### Views
 
@@ -199,13 +201,32 @@ Select an object (tap or click it) to see its properties, each with its unit:
 
 - `type`, `pos` (u and v), `rot`, and the size `w`, `d`, `h` of its type. Type the new number and leave the field. A size belongs to the type, so it changes every object of that type.
 - Every property has a lock toggle: `pos` (both axes), `pos.u`, `pos.v`, `rot`, `type`, and for each size a JSON Pointer lock `/types/<type>/size/<0|1|2>`. A locked property cannot be changed from the panel, and the status line says why. Locks are saved in the object's `locks` list.
-- A yellow `*` marks a number that has an entry in `assumptions` (it is provisional); point at it to read the note and the owner. Editing such a number keeps the entry and updates its `value`.
+- A yellow `*` marks a number that has an entry in `assumptions` (it is provisional); point at it to read the note and the owner. Editing such a number keeps the entry and updates its `value`. Only a person settles an assumption, from the Assumptions section below. No patch command removes one.
+- One checkbox per state, **Hidden in \<state\>**, checked when that state hides the object. Checking it is `hide <state> <id>`; clearing it is `show <state> <id>`.
 
 ### Check panel
 
-The checks of the scene run again after every change, and only the checks that involve the changed objects run again (`in_region` and `no_overlap` even measure only the changed objects). Tapping a row highlights its objects in both views; tapping it again, or `Esc`, clears the highlight. Rows show the same status, id and message as `isoblock check`. `in_region` with `measure: "drawn"`, `min_screen_size` with `measure: "height"` and `lane_apart` are rows like the others, and after a save the panel equals `isoblock check --json` on that file. `lane_apart` does not depend on object positions, so moving an object leaves its row as it was.
+The checks of the scene run again after every change, and only the checks that involve the changed objects run again (`in_region` and `no_overlap` even measure only the changed objects). Tapping a row highlights its objects in both views; tapping it again, or `Esc`, clears the highlight. Rows show the same status, id and message as `isoblock check`. `in_region` with `measure: "drawn"`, `min_screen_size` with `measure: "height"` and `lane_apart` are rows like the others, and after a save the panel equals `isoblock check --json` on that file (with `--state <name>` while a state is shown). `lane_apart` does not depend on object positions, so moving an object leaves its row as it was.
 
 Checks that search a grid, `reachable` and `sort_consistency`, are too slow to run on every pointer move. While a drag is going on, their rows keep the last result, are dimmed and say `out of date: runs again when the drag ends`; when the object is dropped (or the drag is cancelled) they run again, so the panel then equals `isoblock check --json` on the saved file. Every other edit (a typed value, a lock, undo, redo, opening a file) runs every check it involves at once.
+
+### State
+
+**State** lists `default`, then the states of the scene. `default` shows every object, unless the scene has a state of that name, in which case choosing it shows that state, as `--state default` does. In a state, both views leave out the objects it hides: they are not drawn and cannot be selected or dragged, and a hidden object that was selected is cleared. The check panel shows `check --state <name>`. Switching is not an edit: the file does not change, there is no undo step, and the page is not marked unsaved. A newly opened file shows `default`. If the state being shown disappears, the select returns to `default`.
+
+### Adding, copying and deleting
+
+- **Type to add** lists the keys of `types`. **Add** appends an object of that type, as `add <id> <type> <u>,<v>`. The id is `<type><n>` with the smallest integer n ≥ 1 that no object uses. `pos` is the ground point under the center of the view region (the first frame region without `blocksScene`), each coordinate snapped to the nearest multiple of the snap step, a tie rounding up, then rounded to 6 decimals. `rot` is 0. The new object is selected.
+- **Duplicate**, enabled while an object is selected, appends a copy as `add <id> <type> <u>,<v> <rot>`: the same type and rotation, the id by the rule of Add, and `pos` with u increased by the footprint's extent along u. Nothing else is copied. The copy is selected.
+- **Delete**, and the Delete and Backspace keys while no text field or select has the focus, removes the selected object as `remove` does. A locked object, an object a check names, and a removal that would shift a later object index are refused: the scene stays as it is and the status line gives the reason.
+
+### Nudging
+
+While an object is selected and no text field or select has the focus, the arrow keys move it by the snap step, as `move <id> u±<step>` or `move <id> v±<step>`: right and left along u, down and up along v. Shift moves by 1 unit. Each press is one undo step. A locked axis does not move; the status line gives the reason `patch` would give.
+
+### Assumptions
+
+**Assumptions** lists every entry, in file order: the path shortened as in `describe`, the value, the owner and the note, and a button **Settle \<path\>**. **Settle** replaces itself with **Confirm** and **Cancel** (there is no browser dialog). **Confirm** removes that one entry. The list stays in the file, also when it is empty, and the number keeps its value. **Cancel** leaves the entry. Settling is a person's decision: the editor never adds an assumption, and no patch command removes one.
 
 ### Overlays
 
@@ -403,13 +424,15 @@ relate bench in_front_of tree gap 1..1.5 hard
 | `relate <a> <rel> <b> [gap <min>..<max>] [axis <u\|v>] [t <min>..<max>] [min <n>] [hard] [weight <n>] [id=<id>] [source="<text>"]` | Appends a relation. `hard` is always written (`false` when not given). Without `id=` the id is the first free `r1`, `r2`, ... |
 | `add <id> <type> <u>,<v> [<rot>]` | Appends an object `{ "id", "type", "pos": [u, v], "rot" }`. `rot` is 0, 90, 180 or 270, and 0 when it is left out. An id already in use, or a position or rotation that is not in that form, is `E_PATCH`. An unknown type is `E_REF` after the patch is applied |
 | `remove <id>` | Removes the object, every relation whose `a`, `b` or `ids` names it, its entries in each state's `hide` list, and every assumption whose path is that object's index or below it. If an assumption or a pointer lock sits at a later object index, the index would shift and the command is `E_PATCH`. Checks are left as they are: a check that still names the object makes the result `E_REF`, so change the check in the same patch first |
+| `hide <state> <id>` | Appends the object to `states.<state>.hide`, creating `states`, the state and its `hide` list when they are missing. An object already in that list is `E_PATCH` |
+| `show <state> <id>` | Removes the object from that list. The state stays, also when the list is empty. An unknown state, or an object the state does not hide, is `E_PATCH`. The object is checked before the state |
 | `solve ...` | Not a patch command: a patch that contains it is invalid with `E_USAGE`. Run `isoblock solve --patch` and apply the patch it writes |
 
 - There is no `unlock`: people remove locks in the editor or in the file.
-- A command that names an object the scene does not have is `E_PATCH`. When another object id is within two edits, the message ends with ` (did you mean "<id>"?)`.
+- A command that names an object the scene does not have is `E_PATCH`. When another object id is within two edits, the message ends with ` (did you mean "<id>"?)`. A `show` of an unknown state gets the same suggestion from the state's names. `hide` creates a missing state instead of reporting it.
+- After the last command, every `assumptions[].value` is set to the value its `path` points to. A provisional number stays provisional until a person settles it in the editor. No patch command removes an assumption.
 - `move` and `rot` round the coordinates they compute to 6 decimals. `rot` leaves `pos` as it is when the footprint keeps its shape (0 to 180).
 - `relate` does not check its names: an unknown object in `a` or `b` is `E_REF` and an unknown relation name is `E_SCHEMA`, both reported after the patch applied.
-- After the last command, every `assumptions[].value` is set to the value its `path` points to. A provisional number stays provisional: only a person removes the entry.
 
 ### Locks
 
@@ -619,7 +642,7 @@ BAD r3 clear_of: hard; distance 0.20, wanted >= 0.50 (violation 0.30)
 ## `solve`
 
 ```
-isoblock solve <scene.json> [--only a,b] [-o <proposal.json>] [--patch <moves.patch>] [--json]
+isoblock solve <scene.json> [--only a,b] [-o <proposal.json>] [--patch <moves.patch|->] [--json]
 ```
 
 Proposes positions that meet the relations. It **never writes the input file**: it proposes, and a person or agent accepts the proposal by applying its patch.
@@ -652,7 +675,8 @@ Outputs:
 
 - `-o <proposal.json>`: the scene with the new positions, in the saved format. Every `assumptions[].value` follows its path, as after `patch`.
 - `--patch <moves.patch>`: the proposal as short commands: the line `# solve proposal`, then one `move` per moved object, in object order (an axis without an offset is left out). `patch` applies it with lock checks and the log, and gives the same file as `-o`.
-- `-o` and `--patch` must name different files, and neither can be the input file.
+- `--patch -` writes that same patch to standard output and prints no report, so it can be applied directly: `isoblock solve scene.json --patch - | isoblock patch scene.json -`. `--json` together with `--patch -` is a usage error (`E_USAGE`).
+- `-o` and `--patch` must name different files, and neither can be the input file. `--patch -` is standard output, not a file.
 - `--json` prints `{ "scene", "status", "hardViolated", "softPenalty", "distance", "moved": [{ "id", "from", "to" }], "conflict", "relations" }`: `hardViolated` lists the hard relations violated in the proposal, `relations` the results of `relations` for the proposal, `softPenalty` and `distance` are rounded to 6 decimals. For a `conflict` the proposal is the best layout found and may break constraints; do not apply it.
 
 | Code | Meaning |
@@ -679,7 +703,7 @@ Outputs:
    wrote yard2.scene.json
    ```
 
-3. Let the solver propose positions as a patch: `isoblock solve yard2.scene.json --patch moves.patch` (output above). On `conflict`, do not apply the proposal. Move the objects into a rough layout, or solve a subset with `--only`, and solve again. The conflict set is the search's report of what it could not satisfy, not a proof that those relations cannot hold together.
+3. Let the solver propose positions as a patch: `isoblock solve yard2.scene.json --patch moves.patch` (output above). `isoblock solve yard2.scene.json --patch - | isoblock patch yard2.scene.json -` writes the patch to standard output and applies it in one step. On `conflict`, do not apply the proposal. Move the objects into a rough layout, or solve a subset with `--only`, and solve again. The conflict set is the search's report of what it could not satisfy, not a proof that those relations cannot hold together.
 4. Review and apply the proposal like any other patch, so locks are checked and the log records it:
 
    ```

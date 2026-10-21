@@ -213,20 +213,20 @@ Not in stage 10: `compare --render` and layout indicators, patches and variant s
 
 Editor, round 2 (SPEC sections 8, 10, 11, 12, 16, 17). Editor and CLI; no engine work, no scene format change, no new dependency. Fixtures: `tests/fixtures/hide/` (the patches 31 to 37, for `hide` and `show`) and `tests/fixtures/editor/` (`cases.json` with 16 editor cases and the expected file of each case that changes the scene).
 
-- [ ] Short commands `hide <state> <id>` and `show <state> <id>` (SPEC section 12), with the suggestion of SPEC section 6 for an unknown object or state
-- [ ] `check --failing` (SPEC section 11)
-- [ ] `solve --patch -` writes the patch to standard output and no report; with `--json` it is `E_USAGE` (SPEC section 8)
-- [ ] Editor, state switch: the `State` select; hidden objects neither drawn nor selectable; the check panel in that state (SPEC section 10)
-- [ ] Editor, Add and Duplicate: ids, positions and selection as SPEC section 10 says
-- [ ] Editor, Delete: as `remove`; refused for a locked object, an object a check names and an index shift, with a notice
-- [ ] Editor, nudge with the arrow keys by the snap step, Shift by 1 unit; locked axes stay
-- [ ] Editor, `Hidden in <state>` checkboxes in the property panel
-- [ ] Editor, the `Assumptions` section with `Settle`, `Confirm` and `Cancel`
-- [ ] Every edit is one history step; the saved file equals the file the equivalent patch writes
-- [ ] Tests load `tests/fixtures/editor/cases.json` and `tests/fixtures/hide/`, and compare with the expected files; the stage 2 and stage 8 frame-time tests still pass
-- [ ] `CHANGELOG.md` lists the new commands, flags and editor controls
-- [ ] `docs/AGENT_GUIDE.md` covers `hide`, `show`, `check --failing` and `solve --patch -`, and says that only a person settles an assumption
-- [ ] Session log says `branch ready for review`
+- [x] Short commands `hide <state> <id>` and `show <state> <id>` (SPEC section 12), with the suggestion of SPEC section 6 for an unknown object or state
+- [x] `check --failing` (SPEC section 11)
+- [x] `solve --patch -` writes the patch to standard output and no report; with `--json` it is `E_USAGE` (SPEC section 8)
+- [x] Editor, state switch: the `State` select; hidden objects neither drawn nor selectable; the check panel in that state (SPEC section 10)
+- [x] Editor, Add and Duplicate: ids, positions and selection as SPEC section 10 says
+- [x] Editor, Delete: as `remove`; refused for a locked object, an object a check names and an index shift, with a notice
+- [x] Editor, nudge with the arrow keys by the snap step, Shift by 1 unit; locked axes stay
+- [x] Editor, `Hidden in <state>` checkboxes in the property panel
+- [x] Editor, the `Assumptions` section with `Settle`, `Confirm` and `Cancel`
+- [x] Every edit is one history step; the saved file equals the file the equivalent patch writes
+- [x] Tests load `tests/fixtures/editor/cases.json` and `tests/fixtures/hide/`, and compare with the expected files; the stage 2 and stage 8 frame-time tests still pass
+- [x] `CHANGELOG.md` lists the new commands, flags and editor controls
+- [x] `docs/AGENT_GUIDE.md` covers `hide`, `show`, `check --failing` and `solve --patch -`, and says that only a person settles an assumption
+- [x] Session log says `branch ready for review`
 
 Not in stage 11: a relation panel, relation overlays and a Solve button in the editor, sort-point and occlusion-ray overlays (planned for a later stage); creating, renaming or deleting states and moving objects per state; selecting several objects; patches and variant switching in the editor; `compare --render` and layout indicators, an `unlock` command, `state_stable`, generated engine scenes (not scheduled). The Rust crate license texts in `THIRD_PARTY_NOTICES.md` are a maintainer task (`MAINTAINING.md`, Before distributing a build).
 

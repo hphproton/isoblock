@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- Short commands `hide <state> <id>` and `show <state> <id>`. `hide` appends the object to that state's `hide` list and creates the state when it is missing. `show` removes it and leaves the state in place, also when the list is empty. An unknown object, and an unknown state of `show`, gains a suggestion within two edits. The object is checked before the state.
+- `check --failing` prints only results whose status is `fail` or `skip`. The summary line and the exit code still cover every check that ran, including with `--only`.
+- `solve --patch -` writes the patch to standard output and prints no report, so it can be piped into `patch`. `--json` together with `--patch -` is `E_USAGE`.
+- Editor: a State select, Add, Duplicate, Delete, nudging with the arrow keys, a Hidden in \<state\> checkbox per state, and an Assumptions section with Settle, Confirm and Cancel. Each edit is one undo step and changes the scene as the matching short command would. A command that would not apply is refused, with the reason on the status line. Switching state is not an edit. Only a person settles an assumption; no patch command removes one.
+
 ## 0.10.0
 
 Stage 10: an agent can ask for the version, a JSON validation report, a subset of checks, relation and state lines in `describe`, patches from standard input, and relation rows in `compare`. Patches can add and remove objects. `lane_reaches` evaluates the top and bottom edges. The build carries the third-party notices, and a workflow runs the tests.
