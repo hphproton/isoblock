@@ -9,7 +9,9 @@ export type Command =
   | { readonly cmd: "lock"; readonly id: string; readonly locks: readonly string[] }
   | { readonly cmd: "relate"; readonly id?: string; readonly fields: Readonly<Record<string, unknown>> }
   | { readonly cmd: "add"; readonly id: string; readonly type: string; readonly pos: readonly [number, number]; readonly rot: Rot }
-  | { readonly cmd: "remove"; readonly id: string };
+  | { readonly cmd: "remove"; readonly id: string }
+  | { readonly cmd: "hide"; readonly state: string; readonly id: string }
+  | { readonly cmd: "show"; readonly state: string; readonly id: string };
 
 const NUMBER = /^-?(?:\d+(?:\.\d*)?|\.\d+)$/;
 const OFFSET = /^([uv])([+-])((?:\d+(?:\.\d*)?|\.\d+))$/;
@@ -143,6 +145,14 @@ function parseRemove(args: readonly string[]): Command {
   return { cmd: "remove", id };
 }
 
+function parseVisibility(cmd: "hide" | "show", args: readonly string[]): Command {
+  const [state, id, extra] = args;
+  if (state === undefined || state === "" || id === undefined || id === "" || extra !== undefined) {
+    throw fail(`usage: ${cmd} <state> <id>`);
+  }
+  return { cmd, state, id };
+}
+
 /** Parse the tokens of one command line. Throws `E_PATCH`, or `E_USAGE` for a command of a later stage. */
 export function parseCommand(tokens: readonly string[]): Command {
   const [name, ...args] = tokens;
@@ -161,6 +171,10 @@ export function parseCommand(tokens: readonly string[]): Command {
       return parseAdd(args);
     case "remove":
       return parseRemove(args);
+    case "hide":
+      return parseVisibility("hide", args);
+    case "show":
+      return parseVisibility("show", args);
     case "solve":
       throw new IsoblockError("E_USAGE", "'solve' is not a patch command: run 'isoblock solve <scene> --patch <file>' and apply the patch it writes");
     default:
