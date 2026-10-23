@@ -12,6 +12,10 @@
 // - Every line the branch adds to a text file: no link to an agent session, task, run or chat,
 //   and no email address that is not a no-reply address.
 // - The branch name (`--branch`, else the current branch): `builder/<topic>` or `maintainer/<topic>`.
+//   A branch `builder/stage-<N>` builds the stage that `ROADMAP.md` on the base marks open, and starts
+//   at or after the commit that opened it.
+// - The remote branch `origin/<name>`, when git knows it: the branch contains it, so pushing needs
+//   no force-push.
 // - With --title and --body-file: a pull request's title and description, as added lines.
 // Exit 0 when nothing is found, 1 with a list of findings, 2 on a usage or git error.
 // Maintained by the maintainer; builders run it and do not edit it.
@@ -54,6 +58,13 @@ const BODY_MAX = 72;
  */
 export const AGENT_IDENTITIES = new Set(["cursoragent@cursor.com"]);
 const BRANCH = /^(?:builder|maintainer)\/[a-z0-9][a-z0-9._-]*$/;
+const STAGE_BRANCH = /^builder\/stage-(\d+)$/;
+
+/** The number of the stage that a `ROADMAP.md` marks open (heading `## Stage <N>`, a middle dot, `open`), or null. */
+export function openStage(roadmap) {
+  const m = /^## Stage (\d+) \u00b7 open\b/m.exec(roadmap);
+  return m === null ? null : Number(m[1]);
+}
 
 /** No-reply: the local part is `noreply` or `no-reply` (a `+tag` allowed), or the domain is a no-reply or reserved one. */
 export function isNoReply(email) {
@@ -200,6 +211,54 @@ function parseArgs(argv) {
   return opts;
 }
 
+/** The text of a file at a commit, or null when the commit has no such file. */
+function fileAt(ref, path) {
+  try {
+    return git(["show", `${ref}:${path}`]);
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * A branch `builder/stage-<N>` builds the stage open on the base and starts after that stage was
+ * opened: a session that starts from an outdated copy of the base finds out before it pushes.
+ */
+function stageFindings(branch, base) {
+  const m = STAGE_BRANCH.exec(branch);
+  if (m === null) return [];
+  const n = Number(m[1]);
+  const out = [];
+  const onBase = fileAt(base, "ROADMAP.md");
+  if (onBase !== null && openStage(onBase) !== n) {
+    const open = openStage(onBase);
+    out.push(`branch "${branch}": ROADMAP.md on ${base} marks ${open === null ? "no stage" : `stage ${open}`} open; build the open stage, from the latest ${base}`);
+  }
+  const start = git(["merge-base", base, "HEAD"]).trim();
+  const atStart = fileAt(start, "ROADMAP.md");
+  if (atStart !== null && openStage(atStart) !== n) {
+    out.push(`branch "${branch}": it starts at ${start.slice(0, 7)}, where stage ${n} is not open; start again from the latest ${base}`);
+  }
+  return out;
+}
+
+/** The branch must contain what is already pushed under its name: a push never overwrites commits. */
+function remoteFindings(branch) {
+  if (branch === "HEAD") return [];
+  const remote = `refs/remotes/origin/${branch}`;
+  try {
+    git(["rev-parse", "--verify", "--quiet", `${remote}^{commit}`]);
+  } catch {
+    return [];
+  }
+  try {
+    git(["merge-base", "--is-ancestor", remote, "HEAD"]);
+    return [];
+  } catch {
+    return [`branch "${branch}": origin/${branch} has commits that this branch does not contain; pushing would overwrite them. Do not force-push; tell the owner`];
+  }
+}
+
 /** Files the branch adds or changes, without the two that hold the patterns on purpose. */
 const EXEMPT = new Set(["scripts/check-publish.mjs", "tests/repo/checkPublish.test.ts"]);
 
@@ -208,6 +267,7 @@ function run(opts) {
   const findings = [];
   const branch = opts.branch ?? git(["rev-parse", "--abbrev-ref", "HEAD"]).trim();
   if (branch !== "HEAD" && !BRANCH.test(branch)) findings.push(`branch "${branch}": name it builder/<topic> or maintainer/<topic>`);
+  findings.push(...stageFindings(branch, base), ...remoteFindings(branch));
   const shas = git(["rev-list", `${base}..HEAD`]).split("\n").filter(Boolean);
   for (const sha of shas) {
     const [author, committer, message] = git(["log", "-1", "--format=%ae%x00%ce%x00%B", sha]).split("\0");

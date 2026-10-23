@@ -140,6 +140,46 @@ describe("publication check (SPEC 20)", () => {
     expect(r.out).toMatch(/name it builder\/<topic> or maintainer\/<topic>/);
   });
 
+  it("checks that a stage branch builds the stage open on the base, from after its opening", () => {
+    const dir = repo();
+    git(dir, ["checkout", "-q", "main"]);
+    commit(dir, "ROADMAP.md", "# Roadmap\n\n## Stage 2 \u00b7 open\n", "Open stage 2");
+    git(dir, ["checkout", "-q", "-b", "builder/stage-2"]);
+    commit(dir, "b.txt", "x\n", "Add b");
+    expect(check(dir).code).toBe(0);
+    // main moves on: stage 2 done, stage 3 open. The old branch, renamed, no longer passes.
+    git(dir, ["checkout", "-q", "main"]);
+    commit(dir, "ROADMAP.md", "# Roadmap\n\n## Stage 2 \u00b7 done (0.2.0)\n\n## Stage 3 \u00b7 open\n", "Open stage 3");
+    git(dir, ["checkout", "-q", "builder/stage-2"]);
+    let r = check(dir);
+    expect(r.code).toBe(1);
+    expect(r.out).toMatch(/ROADMAP\.md on main marks stage 3 open; build the open stage/);
+    git(dir, ["branch", "-q", "-m", "builder/stage-3"]);
+    r = check(dir);
+    expect(r.code).toBe(1);
+    expect(r.out).toMatch(/where stage 3 is not open; start again from the latest main/);
+    expect(r.out).not.toMatch(/marks stage 3 open/);
+    // started from the latest main: passes
+    git(dir, ["checkout", "-q", "-b", "builder/stage-3b", "main"]);
+    git(dir, ["branch", "-q", "-D", "builder/stage-3"]);
+    git(dir, ["branch", "-q", "-m", "builder/stage-3"]);
+    commit(dir, "c.txt", "x\n", "Add c");
+    expect(check(dir).code).toBe(0);
+  });
+
+  it("finds a push that would overwrite the remote branch", () => {
+    const dir = repo();
+    commit(dir, "b.txt", "x\n", "Add b");
+    git(dir, ["update-ref", "refs/remotes/origin/builder/work", "HEAD"]);
+    commit(dir, "c.txt", "x\n", "Add c");
+    expect(check(dir).code).toBe(0);
+    git(dir, ["reset", "-q", "--hard", "HEAD~2"]);
+    commit(dir, "d.txt", "x\n", "Add d");
+    const r = check(dir);
+    expect(r.code).toBe(1);
+    expect(r.out).toMatch(/origin\/builder\/work has commits that this branch does not contain; pushing would overwrite them/);
+  });
+
   it("checks a pull request title and description", () => {
     const dir = repo();
     commit(dir, "b.txt", "x\n", "Add b");
