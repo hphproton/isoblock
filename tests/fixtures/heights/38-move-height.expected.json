@@ -1,0 +1,29 @@
+{
+  "base": "tests/fixtures/yard.scene.json",
+  "tolerance": {
+    "value": 0.01,
+    "valuePx": 1,
+    "coordinate": 0.000001
+  },
+  "exit": 1,
+  "status": "applied",
+  "error": null,
+  "locks": [],
+  "diff": [
+    {
+      "op": "replace",
+      "path": "/objects/crate2/pos",
+      "from": [
+        6.8,
+        0.5
+      ],
+      "to": [
+        6.8,
+        0.5,
+        0.6
+      ]
+    }
+  ],
+  "checks": [],
+  "failing": 3
+}

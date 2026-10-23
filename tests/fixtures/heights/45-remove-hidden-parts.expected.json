@@ -1,0 +1,55 @@
+{
+  "base": "tests/fixtures/levels/levels.scene.json",
+  "tolerance": {
+    "value": 0.01,
+    "valuePx": 1,
+    "coordinate": 0.000001
+  },
+  "exit": 1,
+  "status": "applied",
+  "error": null,
+  "locks": [],
+  "diff": [
+    {
+      "op": "replace",
+      "path": "/checks/mast_size/target",
+      "from": "mast",
+      "to": "figure"
+    },
+    {
+      "op": "remove",
+      "path": "/objects/mast",
+      "from": {
+        "id": "mast",
+        "type": "mast",
+        "pos": [
+          12.5,
+          4
+        ],
+        "tags": [
+          "static"
+        ]
+      }
+    },
+    {
+      "op": "remove",
+      "path": "/states/bare/hideParts/mast",
+      "from": [
+        "body"
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "id": "mast_size",
+      "check": "min_screen_size",
+      "from": "pass",
+      "to": "fail",
+      "value": [
+        183.450271,
+        90.687477
+      ]
+    }
+  ],
+  "failing": 12
+}

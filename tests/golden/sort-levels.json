@@ -1,0 +1,415 @@
+{
+  "note": "Sort keys with base heights and view-form cameras, and slices weighted by the camera (SPEC 13.4, stage 12). Footprints and part boxes are world values; parts carry their painter's order.",
+  "tolerance": 1e-06,
+  "keys": [
+    {
+      "camera": {
+        "angleU": 30,
+        "angleV": 150,
+        "pxPerUnit": 100,
+        "verticalScale": 1,
+        "origin": [
+          0,
+          0
+        ]
+      },
+      "footprint": [
+        0,
+        0,
+        1,
+        1
+      ],
+      "key": 4,
+      "base": 1
+    },
+    {
+      "camera": {
+        "angleU": 30,
+        "angleV": 150,
+        "pxPerUnit": 100,
+        "verticalScale": 1,
+        "origin": [
+          0,
+          0
+        ]
+      },
+      "footprint": [
+        2,
+        1,
+        4,
+        1.5
+      ],
+      "key": 13.5,
+      "base": 2.5
+    },
+    {
+      "camera": {
+        "elevation": 30,
+        "direction": 120,
+        "scale": 50,
+        "origin": [
+          0,
+          0
+        ]
+      },
+      "footprint": [
+        1,
+        2,
+        3,
+        3
+      ],
+      "key": 4.035898
+    },
+    {
+      "camera": {
+        "elevation": 30,
+        "direction": 120,
+        "scale": 50,
+        "origin": [
+          0,
+          0
+        ]
+      },
+      "footprint": [
+        1,
+        2,
+        3,
+        3
+      ],
+      "key": 9.035898,
+      "base": 2.5
+    },
+    {
+      "camera": {
+        "elevation": 30,
+        "direction": 30,
+        "scale": 50,
+        "origin": [
+          0,
+          0
+        ]
+      },
+      "footprint": [
+        0,
+        0,
+        2,
+        6
+      ],
+      "key": 5.196152,
+      "base": -1.5
+    },
+    {
+      "camera": {
+        "elevation": 90,
+        "direction": 0,
+        "scale": 50,
+        "origin": [
+          0,
+          0
+        ]
+      },
+      "footprint": [
+        0,
+        0,
+        2,
+        1
+      ],
+      "key": 4,
+      "base": 2
+    }
+  ],
+  "slices": [
+    {
+      "name": "weighted-u",
+      "camera": {
+        "elevation": 30,
+        "direction": 120,
+        "scale": 50,
+        "origin": [
+          0,
+          0
+        ]
+      },
+      "footprint": [
+        3,
+        1,
+        11,
+        3
+      ],
+      "parts": [
+        {
+          "id": "body",
+          "box": [
+            3,
+            1,
+            2.5,
+            11,
+            3,
+            3
+          ],
+          "order": 0
+        }
+      ],
+      "sprites": [
+        {
+          "key": 2.339746,
+          "footprint": [
+            3,
+            1,
+            7,
+            3
+          ],
+          "pieces": [
+            {
+              "part": "body",
+              "box": [
+                3,
+                1,
+                2.5,
+                7,
+                3,
+                3
+              ]
+            }
+          ]
+        },
+        {
+          "key": -4.588457,
+          "footprint": [
+            7,
+            1,
+            11,
+            3
+          ],
+          "pieces": [
+            {
+              "part": "body",
+              "box": [
+                7,
+                1,
+                2.5,
+                11,
+                3,
+                3
+              ]
+            }
+          ]
+        }
+      ],
+      "base": 2.5
+    },
+    {
+      "name": "weighted-v",
+      "camera": {
+        "elevation": 30,
+        "direction": 30,
+        "scale": 50,
+        "origin": [
+          0,
+          0
+        ]
+      },
+      "footprint": [
+        0,
+        0,
+        2,
+        6
+      ],
+      "parts": [
+        {
+          "id": "body",
+          "box": [
+            0,
+            0,
+            0,
+            2,
+            6,
+            0.5
+          ],
+          "order": 0
+        }
+      ],
+      "sprites": [
+        {
+          "key": 5.598076,
+          "footprint": [
+            0,
+            0,
+            2,
+            3
+          ],
+          "pieces": [
+            {
+              "part": "body",
+              "box": [
+                0,
+                0,
+                0,
+                2,
+                3,
+                0.5
+              ]
+            }
+          ]
+        },
+        {
+          "key": 10.794229,
+          "footprint": [
+            0,
+            3,
+            2,
+            6
+          ],
+          "pieces": [
+            {
+              "part": "body",
+              "box": [
+                0,
+                3,
+                0,
+                2,
+                6,
+                0.5
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "square-but-skewed",
+      "camera": {
+        "elevation": 30,
+        "direction": 120,
+        "scale": 50,
+        "origin": [
+          0,
+          0
+        ]
+      },
+      "footprint": [
+        0,
+        0,
+        2,
+        2
+      ],
+      "parts": [
+        {
+          "id": "body",
+          "box": [
+            0,
+            0,
+            0,
+            2,
+            2,
+            0.5
+          ],
+          "order": 0
+        }
+      ],
+      "sprites": [
+        {
+          "key": -0.232051,
+          "footprint": [
+            0,
+            0,
+            2,
+            1
+          ],
+          "pieces": [
+            {
+              "part": "body",
+              "box": [
+                0,
+                0,
+                0,
+                2,
+                1,
+                0.5
+              ]
+            }
+          ]
+        },
+        {
+          "key": 2.767949,
+          "footprint": [
+            0,
+            1,
+            2,
+            2
+          ],
+          "pieces": [
+            {
+              "part": "body",
+              "box": [
+                0,
+                1,
+                0,
+                2,
+                2,
+                0.5
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "top-down",
+      "camera": {
+        "elevation": 90,
+        "direction": 0,
+        "scale": 50,
+        "origin": [
+          0,
+          0
+        ]
+      },
+      "footprint": [
+        0,
+        0,
+        6,
+        1
+      ],
+      "parts": [
+        {
+          "id": "body",
+          "box": [
+            0,
+            0,
+            1,
+            6,
+            1,
+            1.5
+          ],
+          "order": 0
+        }
+      ],
+      "sprites": [
+        {
+          "key": 2,
+          "footprint": [
+            0,
+            0,
+            6,
+            1
+          ],
+          "pieces": [
+            {
+              "part": "body",
+              "box": [
+                0,
+                0,
+                1,
+                6,
+                1,
+                1.5
+              ]
+            }
+          ]
+        }
+      ],
+      "base": 1
+    }
+  ]
+}

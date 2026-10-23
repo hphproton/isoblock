@@ -1,0 +1,651 @@
+{
+  "schema": "isoblock/1",
+  "id": "levels",
+  "units": {
+    "name": "u",
+    "note": "synthetic unit"
+  },
+  "camera": {
+    "elevation": 0,
+    "direction": 120,
+    "scale": 50,
+    "origin": [
+      170,
+      420
+    ]
+  },
+  "frame": {
+    "w": 1200,
+    "h": 900,
+    "regions": [
+      {
+        "id": "view",
+        "rect": [
+          0,
+          0,
+          1200,
+          760
+        ]
+      },
+      {
+        "id": "band",
+        "rect": [
+          0,
+          300,
+          1200,
+          760
+        ]
+      },
+      {
+        "id": "board",
+        "rect": [
+          0,
+          760,
+          1200,
+          900
+        ],
+        "blocksScene": true,
+        "x-layer": "interface"
+      }
+    ]
+  },
+  "types": {
+    "post": {
+      "size": [
+        0.4,
+        0.4,
+        2.5
+      ]
+    },
+    "deck": {
+      "size": [
+        8,
+        2,
+        0.5
+      ]
+    },
+    "crate": {
+      "size": [
+        1,
+        1,
+        1
+      ]
+    },
+    "mat": {
+      "size": [
+        2,
+        1,
+        0
+      ]
+    },
+    "wall": {
+      "size": [
+        14,
+        0.3,
+        1.5
+      ]
+    },
+    "kiosk": {
+      "size": [
+        2,
+        1,
+        2.2
+      ],
+      "parts": [
+        {
+          "id": "counter",
+          "box": [
+            0,
+            0,
+            0,
+            2,
+            1,
+            1
+          ]
+        },
+        {
+          "id": "shutter",
+          "box": [
+            0.9,
+            0.4,
+            1,
+            1.1,
+            0.6,
+            2.2
+          ]
+        },
+        {
+          "id": "awning",
+          "box": [
+            -0.3,
+            -0.3,
+            2,
+            2.3,
+            1.3,
+            2.2
+          ]
+        }
+      ]
+    },
+    "figure": {
+      "size": [
+        0.5,
+        0.5,
+        1.7
+      ]
+    },
+    "plinth": {
+      "size": [
+        1,
+        1,
+        0.2
+      ]
+    },
+    "vase": {
+      "size": [
+        0.6,
+        0.4,
+        0.4
+      ]
+    },
+    "mast": {
+      "size": [
+        0.3,
+        0.3,
+        4
+      ]
+    }
+  },
+  "objects": [
+    {
+      "id": "post_a",
+      "type": "post",
+      "pos": [
+        3.2,
+        1
+      ]
+    },
+    {
+      "id": "post_b",
+      "type": "post",
+      "pos": [
+        10.4,
+        2.6
+      ]
+    },
+    {
+      "id": "deck",
+      "type": "deck",
+      "pos": [
+        3,
+        1,
+        2.5
+      ],
+      "locks": [
+        "pos.h"
+      ]
+    },
+    {
+      "id": "crate_up",
+      "type": "crate",
+      "pos": [
+        7,
+        1.5,
+        3
+      ]
+    },
+    {
+      "id": "mat",
+      "type": "mat",
+      "pos": [
+        5,
+        1.5
+      ]
+    },
+    {
+      "id": "crate2",
+      "type": "crate",
+      "pos": [
+        9.8,
+        2.2
+      ]
+    },
+    {
+      "id": "crate",
+      "type": "crate",
+      "pos": [
+        12,
+        1.6
+      ]
+    },
+    {
+      "id": "side_wall",
+      "type": "wall",
+      "pos": [
+        0,
+        7.2,
+        -1.5
+      ]
+    },
+    {
+      "id": "kiosk",
+      "type": "kiosk",
+      "pos": [
+        4,
+        5
+      ]
+    },
+    {
+      "id": "figure",
+      "type": "figure",
+      "pos": [
+        4.8,
+        4.2
+      ]
+    },
+    {
+      "id": "plinth",
+      "type": "plinth",
+      "pos": [
+        8,
+        4.5
+      ]
+    },
+    {
+      "id": "vase",
+      "type": "vase",
+      "pos": [
+        8.2,
+        4.8,
+        0.2
+      ],
+      "x-tint": "grey"
+    },
+    {
+      "id": "mast",
+      "type": "mast",
+      "pos": [
+        12.5,
+        4
+      ],
+      "tags": [
+        "static"
+      ]
+    }
+  ],
+  "zones": [
+    {
+      "id": "ground",
+      "kind": "walkable",
+      "points": [
+        [
+          0,
+          0
+        ],
+        [
+          14,
+          0
+        ],
+        [
+          14,
+          7.2
+        ],
+        [
+          0,
+          7.2
+        ]
+      ]
+    },
+    {
+      "id": "cutting",
+      "kind": "road",
+      "h": -1.5,
+      "points": [
+        [
+          0,
+          7.5
+        ],
+        [
+          14,
+          7.5
+        ],
+        [
+          14,
+          9.5
+        ],
+        [
+          0,
+          9.5
+        ]
+      ],
+      "x-surface": "gravel"
+    },
+    {
+      "id": "far_side",
+      "kind": "walkable",
+      "points": [
+        [
+          0,
+          9.5
+        ],
+        [
+          14,
+          9.5
+        ],
+        [
+          14,
+          10.5
+        ],
+        [
+          0,
+          10.5
+        ]
+      ]
+    },
+    {
+      "id": "deck_top",
+      "kind": "walkable",
+      "h": 3,
+      "points": [
+        [
+          3,
+          1
+        ],
+        [
+          11,
+          1
+        ],
+        [
+          11,
+          3
+        ],
+        [
+          3,
+          3
+        ]
+      ]
+    }
+  ],
+  "lanes": [
+    {
+      "id": "walk",
+      "kind": "walk",
+      "width": 1.2,
+      "points": [
+        [
+          0.5,
+          2
+        ],
+        [
+          30,
+          2
+        ]
+      ],
+      "x-speed": 1.2
+    },
+    {
+      "id": "deck_walk",
+      "kind": "walk",
+      "width": 1,
+      "h": 3,
+      "points": [
+        [
+          3.5,
+          2
+        ],
+        [
+          10.5,
+          2
+        ]
+      ]
+    },
+    {
+      "id": "steps",
+      "kind": "walk",
+      "width": 1,
+      "points": [
+        [
+          13,
+          2,
+          0
+        ],
+        [
+          11,
+          2,
+          3
+        ]
+      ]
+    },
+    {
+      "id": "carts",
+      "kind": "vehicle",
+      "width": 1,
+      "h": -1.5,
+      "points": [
+        [
+          -12,
+          8.5
+        ],
+        [
+          14,
+          8.5
+        ]
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "id": "overlap",
+      "check": "no_overlap"
+    },
+    {
+      "id": "walk_clear",
+      "check": "lane_clear",
+      "lane": "walk",
+      "height": 2.2
+    },
+    {
+      "id": "walk_clear_all",
+      "check": "lane_clear",
+      "lane": "walk"
+    },
+    {
+      "id": "deck_clear",
+      "check": "lane_clear",
+      "lane": "deck_walk"
+    },
+    {
+      "id": "steps_clear",
+      "check": "lane_clear",
+      "lane": "steps"
+    },
+    {
+      "id": "reach_deck",
+      "check": "reachable",
+      "from": [
+        3.5,
+        2
+      ],
+      "to": [
+        10.5,
+        2
+      ],
+      "level": 3,
+      "radius": 0.25
+    },
+    {
+      "id": "reach_ground",
+      "check": "reachable",
+      "from": [
+        0.5,
+        2
+      ],
+      "to": [
+        13.5,
+        2
+      ],
+      "height": 2.2
+    },
+    {
+      "id": "reach_ground_all",
+      "check": "reachable",
+      "from": [
+        0.5,
+        2
+      ],
+      "to": [
+        13.5,
+        2
+      ]
+    },
+    {
+      "id": "vase_seen",
+      "check": "visible",
+      "target": "vase",
+      "from": 0,
+      "maxOccluded": 0.05
+    },
+    {
+      "id": "figure_seen",
+      "check": "visible",
+      "target": "figure",
+      "maxOccluded": 0.1
+    },
+    {
+      "id": "up_in_band",
+      "check": "in_region",
+      "region": "band",
+      "ids": [
+        "crate_up",
+        "vase"
+      ]
+    },
+    {
+      "id": "mat_on_board",
+      "check": "in_region",
+      "region": "board",
+      "ids": [
+        "mat"
+      ]
+    },
+    {
+      "id": "walk_reaches",
+      "check": "lane_reaches",
+      "lane": "walk",
+      "edge": "right",
+      "region": "view"
+    },
+    {
+      "id": "carts_reach",
+      "check": "lane_reaches",
+      "lane": "carts",
+      "edge": "left",
+      "region": "view"
+    },
+    {
+      "id": "figure_tall",
+      "check": "min_screen_size",
+      "target": "figure",
+      "measure": "height",
+      "min": 70
+    },
+    {
+      "id": "kiosk_size",
+      "check": "min_screen_size",
+      "target": "kiosk",
+      "min": 120
+    },
+    {
+      "id": "mast_size",
+      "check": "min_screen_size",
+      "target": "mast",
+      "min": 100
+    },
+    {
+      "id": "sort_ground",
+      "check": "sort_consistency",
+      "actor": [
+        0.5,
+        0.5,
+        1.7
+      ],
+      "ids": [
+        "kiosk",
+        "crate2"
+      ]
+    },
+    {
+      "id": "sort_deck",
+      "check": "sort_consistency",
+      "actor": [
+        0.5,
+        0.5,
+        1.7
+      ],
+      "level": 3,
+      "area": "deck_top",
+      "ids": [
+        "deck",
+        "crate_up"
+      ]
+    },
+    {
+      "id": "vase_gap",
+      "check": "clearance",
+      "a": "vase",
+      "b": "figure",
+      "min": 1
+    }
+  ],
+  "states": {
+    "open": {
+      "hideParts": {
+        "kiosk": [
+          "shutter"
+        ]
+      }
+    },
+    "closed": {
+      "hideParts": {
+        "kiosk": [
+          "awning"
+        ]
+      },
+      "x-mood": "quiet"
+    },
+    "cinema": {
+      "hide": [
+        "crate2"
+      ],
+      "hideRegions": [
+        "board"
+      ]
+    },
+    "bare": {
+      "hideParts": {
+        "mast": [
+          "body"
+        ]
+      }
+    }
+  },
+  "assumptions": [
+    {
+      "path": "/objects/2/pos/2",
+      "value": 2.5,
+      "note": "deck height not settled",
+      "owner": "designer"
+    },
+    {
+      "path": "/types/kiosk/parts/2/box/5",
+      "value": 2.2,
+      "note": "awning height guessed",
+      "owner": "translator"
+    }
+  ],
+  "meta": {
+    "version": 1,
+    "status": "draft"
+  },
+  "x-note": "synthetic scene for heights, levels and a view-form camera"
+}

@@ -1,0 +1,42 @@
+{
+  "actorLimit": 10,
+  "cases": [
+    {
+      "name": "levels",
+      "scene": "tests/fixtures/levels/levels.scene.json",
+      "states": [
+        null,
+        "open",
+        "closed",
+        "cinema",
+        "bare"
+      ],
+      "instantiate": null,
+      "unmapped": null,
+      "actor": {
+        "size": [
+          0.5,
+          0.5,
+          1.7
+        ],
+        "path": [
+          [
+            4,
+            2.5,
+            3
+          ],
+          [
+            5.5,
+            2.7,
+            3
+          ],
+          [
+            9,
+            2.5,
+            3
+          ]
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,144 @@
+{
+  "schema": "isoblock-genbbox/1",
+  "scene": "levels",
+  "frame": {
+    "w": 1200,
+    "h": 900
+  },
+  "units": "px",
+  "order": "xyxy",
+  "boxes": [
+    {
+      "id": "post_a",
+      "type": "post",
+      "box": [
+        333.56,
+        288.4,
+        360.88,
+        410.31
+      ],
+      "clipped": false
+    },
+    {
+      "id": "post_b",
+      "type": "post",
+      "box": [
+        685.33,
+        233.04,
+        712.65,
+        354.95
+      ],
+      "clipped": false
+    },
+    {
+      "id": "deck",
+      "type": "deck",
+      "box": [
+        324.9,
+        174.25,
+        721.31,
+        339.2
+      ],
+      "clipped": false
+    },
+    {
+      "id": "crate_up",
+      "type": "crate",
+      "box": [
+        510.61,
+        179.27,
+        578.91,
+        256.72
+      ],
+      "clipped": false
+    },
+    {
+      "id": "mat",
+      "type": "mat",
+      "box": [
+        424.01,
+        364.98,
+        535.61,
+        411.63
+      ],
+      "clipped": false
+    },
+    {
+      "id": "crate2",
+      "type": "crate",
+      "box": [
+        649.35,
+        289.33,
+        717.65,
+        366.78
+      ],
+      "clipped": false
+    },
+    {
+      "id": "crate",
+      "type": "crate",
+      "box": [
+        729.62,
+        248.84,
+        797.92,
+        326.29
+      ],
+      "clipped": false
+    },
+    {
+      "id": "side_wall",
+      "type": "wall",
+      "box": [
+        350,
+        400.88,
+        963.72,
+        647.33
+      ],
+      "clipped": false
+    },
+    {
+      "id": "kiosk",
+      "type": "kiosk",
+      "box": [
+        447.71,
+        347.75,
+        600.3,
+        499.9
+      ],
+      "clipped": false
+    },
+    {
+      "id": "figure",
+      "type": "figure",
+      "box": [
+        482.85,
+        371.07,
+        517,
+        461.76
+      ],
+      "clipped": false
+    },
+    {
+      "id": "plinth",
+      "type": "plinth",
+      "box": [
+        628.91,
+        396.27,
+        697.21,
+        439.08
+      ],
+      "clipped": false
+    },
+    {
+      "id": "vase",
+      "type": "vase",
+      "box": [
+        645.07,
+        387.94,
+        681.05,
+        421.42
+      ],
+      "clipped": false
+    }
+  ]
+}

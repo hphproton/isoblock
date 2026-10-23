@@ -1,0 +1,129 @@
+{
+  "cases": [
+    {
+      "name": "e17-height-field",
+      "scene": "tests/fixtures/levels/levels.scene.json",
+      "snap": 0.1,
+      "steps": [
+        {
+          "select": "vase"
+        },
+        {
+          "field": "pos.h (u)",
+          "value": 0.5
+        }
+      ],
+      "patch": "move vase h+0.3\n",
+      "expected": "e17-height-field.expected.json",
+      "refused": false,
+      "panelState": null,
+      "hidden": []
+    },
+    {
+      "name": "e18-height-field-new",
+      "scene": "tests/fixtures/yard.scene.json",
+      "snap": 0.1,
+      "steps": [
+        {
+          "select": "crate2"
+        },
+        {
+          "field": "pos.h (u)",
+          "value": 0.6
+        }
+      ],
+      "patch": "move crate2 h+0.6\n",
+      "expected": "e18-height-field-new.expected.json",
+      "refused": false,
+      "panelState": null,
+      "hidden": []
+    },
+    {
+      "name": "e19-height-locked",
+      "scene": "tests/fixtures/levels/levels.scene.json",
+      "snap": 0.1,
+      "steps": [
+        {
+          "select": "deck"
+        },
+        {
+          "field": "pos.h (u)",
+          "value": 3
+        }
+      ],
+      "patch": null,
+      "expected": null,
+      "refused": true,
+      "panelState": null,
+      "hidden": []
+    },
+    {
+      "name": "e20-nudge-raised",
+      "scene": "tests/fixtures/levels/levels.scene.json",
+      "snap": 0.1,
+      "steps": [
+        {
+          "select": "crate_up"
+        },
+        {
+          "key": "ArrowRight"
+        }
+      ],
+      "patch": "move crate_up u+0.1\n",
+      "expected": "e20-nudge-raised.expected.json",
+      "refused": false,
+      "panelState": null,
+      "hidden": []
+    },
+    {
+      "name": "e21-duplicate-raised",
+      "scene": "tests/fixtures/levels/levels.scene.json",
+      "snap": 0.1,
+      "steps": [
+        {
+          "select": "crate_up"
+        },
+        {
+          "press": "Duplicate"
+        }
+      ],
+      "patch": "add crate1 crate 8,1.5,3 0\n",
+      "expected": "e21-duplicate-raised.expected.json",
+      "refused": false,
+      "panelState": null,
+      "hidden": []
+    },
+    {
+      "name": "e22-state-parts",
+      "scene": "tests/fixtures/levels/levels.scene.json",
+      "snap": 0.1,
+      "steps": [
+        {
+          "state": "closed"
+        }
+      ],
+      "patch": null,
+      "expected": null,
+      "refused": false,
+      "panelState": "closed",
+      "hidden": []
+    },
+    {
+      "name": "e23-state-all-parts",
+      "scene": "tests/fixtures/levels/levels.scene.json",
+      "snap": 0.1,
+      "steps": [
+        {
+          "state": "bare"
+        }
+      ],
+      "patch": null,
+      "expected": null,
+      "refused": false,
+      "panelState": "bare",
+      "hidden": [
+        "mast"
+      ]
+    }
+  ]
+}

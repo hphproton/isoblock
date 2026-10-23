@@ -1,0 +1,30 @@
+{
+  "base": "tests/fixtures/levels/levels.scene.json",
+  "tolerance": {
+    "value": 0.01,
+    "valuePx": 1,
+    "coordinate": 0.000001
+  },
+  "exit": 1,
+  "status": "applied",
+  "error": null,
+  "locks": [],
+  "diff": [
+    {
+      "op": "add",
+      "path": "/objects/box9",
+      "to": {
+        "id": "box9",
+        "type": "crate",
+        "pos": [
+          1,
+          6,
+          0.5
+        ],
+        "rot": 0
+      }
+    }
+  ],
+  "checks": [],
+  "failing": 11
+}
