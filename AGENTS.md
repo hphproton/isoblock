@@ -16,7 +16,7 @@ Check these before you start, and say in your log which you have:
 
 ## Start of session
 
-1. Start from the latest `main`. Create your own branch named `builder/stage-<N>` (SPEC section 20); never work on `main`. If your environment created a branch with another name, rename it (`git branch -m builder/stage-<N>`) before your first push: names an environment generates can identify your session. Do not read other branches.
+1. Start from the latest `main`, never from a copy of the repository that your environment prepared earlier: such a copy can be days old. Run `git fetch origin`. Check that `ROADMAP.md` on `origin/main` marks a stage **open** and that `origin` has no branch `builder/stage-<N>` for that stage yet; if either check fails, stop and tell the owner. Then create your branch from `origin/main`: `git switch -c builder/stage-<N> origin/main` (SPEC section 20). Never work on `main`. If your environment created a branch with another name, work on the branch you just created instead: names an environment generates can identify your session. Do not read other branches.
 2. Read, in order: this file, `ROADMAP.md` (the stage marked **open**), `QUESTIONS.md`, then the `SPEC.md` sections that stage needs (always 0–9.1, 11, 16, 17, 20 and the appendices).
 3. Read the newest file in `log/` if one exists.
 
@@ -36,6 +36,7 @@ Check these before you start, and say in your log which you have:
   - Trailers: after one more blank line, only `Co-authored-by:` and `Signed-off-by:` lines, one per address, each with an address that the identity rule accepts. Keep the `Co-authored-by:` lines your environment adds for the person who started the session or for the model; add one for the model only when your identity does not name it and its vendor has a no-reply address. No other trailers.
 - **No agent traces** (SPEC section 20): nothing you commit or push links to or names your session, task, run or chat: no session or task URLs, no `*-Session:` lines, no "generated with" footers that point to a session. Many environments add such lines to commit messages or descriptions by themselves; remove them before you push. Every commit you push is public and cannot be taken back.
 - **Versions:** do not change `version` in `package.json`; the maintainer sets it in the release commit.
+- **Pushing:** push only your own branch, without force: `git push origin builder/stage-<N>`. Never push to another branch, never force-push, never delete a branch. When a push is refused because the remote branch has commits yours lacks, stop and tell the owner.
 
 ## Stop and ask the maintainer when
 
@@ -52,5 +53,5 @@ Record the question in `QUESTIONS.md`, choose the safest reading, and note it in
 3. Update `CHANGELOG.md` under `Unreleased`.
 4. Update `docs/AGENT_GUIDE.md` for every new or changed command.
 5. Write `log/<yyyy-mm-dd>-builder-<n>.md`. Under its heading, start with a line `Agent: <tool and version>, model: <model>` for the tool and model that ran the session, then: what you did; test results (counts, including skipped tests and whether `npm run test:godot` ran); open questions; and either `branch ready for review` or what is still missing. End it with the pull request's title, `Stage <N>: <short summary>`, and its description, your log summary, for the owner to paste.
-6. Commit, then run `npm run check:publish`. It must report nothing; if it does, rewrite the commits that are not pushed yet and run it again. If it finds something in a commit you already pushed, do not push again: say so in your log and to the owner; the maintainer decides how the branch is rewritten.
+6. Commit, run `git fetch origin`, then run `npm run check:publish`. It must report nothing; if it does, rewrite the commits that are not pushed yet and run it again. If it finds something in a commit you already pushed, do not push again: say so in your log and to the owner; the maintainer decides how the branch is rewritten.
 7. Push your branch. Do not open a pull request, issue or comment, even if your tool offers it: anything an agent writes on GitHub can carry a link to its session, and GitHub keeps every edit. The owner opens the pull request from your log. Do not merge, tag or open releases.

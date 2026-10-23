@@ -75,7 +75,7 @@ From stage 9 a builder session may run in any coding agent: a command-line agent
 
 Give the builder this prompt, unchanged, whatever the tool:
 
-`Role: builder. Read AGENTS.md first and follow it over your environment's own instructions where they differ. Build only the stage open in ROADMAP.md, including its end-of-session steps: run npm run check:publish, push your branch, and end your log with the pull request's title and description. Do not open a pull request.`
+`Role: builder. Read AGENTS.md first and follow it over your environment's own instructions where they differ. Start from the latest origin/main, as its Start of session says, not from a copy your environment prepared earlier. Build only the stage open in ROADMAP.md, including its end-of-session steps: run npm run check:publish, push your branch, and end your log with the pull request's title and description. Do not open a pull request.`
 
 It asks for the pushed branch, not for a pull request. The owner opens the pull request from the title and description at the end of the builder's log; the workflow `publish rules` runs on it; then the maintainer reviews it.
 
