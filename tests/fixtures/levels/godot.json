@@ -3,7 +3,7 @@
   "cases": [
     {
       "name": "levels",
-      "scene": "tests/fixtures/levels/levels.scene.json",
+      "scene": "tests/fixtures/levels/godot.scene.json",
       "states": [
         null,
         "open",
