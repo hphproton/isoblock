@@ -232,7 +232,7 @@ Not in stage 11: a relation panel, relation overlays and a Solve button in the e
 
 **Done when:** all tests pass, `npm run test:godot` passes, earlier fixtures still match, the workflow `ci` passes on the branch, `npm run check:publish` reports nothing, the branch is named `builder/stage-11`, its session log names the tool and model, gives the test counts with skipped tests and ends with the pull request's title and description, and the stage 11 criteria in SPEC section 17 hold.
 
-## Stage 12 · open
+## Stage 12 · done (0.12.0)
 
 Heights and cameras (SPEC sections 5, 6, 7, 8, 9.5, 10, 11.1, 12, 13.3, 13.4, 13.7, 13.8, 14, 17, 18, Appendices B and C). Core, CLI, editor and the Godot adapter. The scene format grows without a break (`isoblock/1` stays); the runtime file becomes `isoblock-runtime/3`. No new dependency. Fixtures, all in new files so that the suite of release 0.11.0 still passes on this branch: `tests/golden/projection.json` (`views`, view-form cameras), `tests/golden/sort-levels.json` (keys with base heights and view-form cameras, weighted slices), `tests/fixtures/levels/` (the scene `levels.scene.json` with base heights, a flat object, zone and lane heights, a view-form camera, states that hide parts and a region and `x-` keys; `cases.json` with its check results and `gen-bbox` files in five states; `levels.describe.txt`; `godot.json`; `editor/` with 7 editor cases; `invalid/` with 6 broken scenes), `tests/fixtures/heights/` (the patches 38 to 46) and `tests/fixtures/runtime3/` (every runtime case as `isoblock-runtime/3`, and `levels`).
 
@@ -245,12 +245,12 @@ Heights and cameras (SPEC sections 5, 6, 7, 8, 9.5, 10, 11.1, 12, 13.3, 13.4, 13
 - [x] `describe`: the view-form camera label and scale, the column `pos(u,v,h)` (SPEC Appendix B)
 - [x] Sort keys with base heights and slices weighted by the camera (SPEC section 13.4); `tests/golden/sort.json` passes
 - [x] Runtime file `isoblock-runtime/3`: `projection`, the camera in its form, `base`, `hideParts`, `hideRegions` and the `x-` keys (SPEC section 13.7)
-- [ ] Godot adapter: reads `/3`, projects with `projection`, draws zones and lanes at their heights, places pivots at base heights, hides parts and records hidden regions in `apply_state`, places actors at a height, `sort_key` with a base height (SPEC section 13.8)
+- [x] Godot adapter: reads `/3`, projects with `projection`, draws zones and lanes at their heights, places pivots at base heights, hides parts and records hidden regions in `apply_state`, places actors at a height, `sort_key` with a base height (SPEC section 13.8)
 - [x] Editor: both camera forms, ground layers by height, objects at their base heights; a drag keeps the base height; the field `pos.h (<unit>)` with its lock; `Duplicate` keeps the base height; a state hides its parts and regions (SPEC section 10)
-- [ ] Tests load `tests/golden/sort-levels.json`, the golden `views`, `tests/fixtures/levels/` (its cases, describe file, Godot, editor and invalid cases), `tests/fixtures/heights/` and `tests/fixtures/runtime3/`, and compare with the expected files; the tests of the `isoblock-runtime/2` files stop; the stage 2 and stage 8 frame-time tests still pass
+- [x] Tests load `tests/golden/sort-levels.json`, the golden `views`, `tests/fixtures/levels/` (its cases, describe file, Godot, editor and invalid cases), `tests/fixtures/heights/` and `tests/fixtures/runtime3/`, and compare with the expected files; the tests of the `isoblock-runtime/2` files stop; the stage 2 and stage 8 frame-time tests still pass
 - [x] `CHANGELOG.md` lists the view form, heights, the new check parameters, states with parts and regions, the checks whose results change for flat objects (`no_overlap`, `lane_clear`, `reachable`, `sort_consistency`), and the upgrade from `isoblock-runtime/2` to `/3`
 - [x] `docs/AGENT_GUIDE.md` covers the view form, base heights and levels, the new check parameters, `hideParts` and `hideRegions`, and heights in `move`, `add` and `lock`
-- [ ] Session log says `branch ready for review`
+- [x] Session log says `branch ready for review` (it named Q-027 as the one open point; the maintainer answered it)
 
 Not in stage 12: paths between levels in `reachable`, a relation that puts an object on another, parts that overhang the footprint above a clear height, slice lengths per type, short commands that hide parts and regions, visibility and coverage reports, generated road markings, pruning to a frame region (asked for, not scheduled: SPEC section 17); a relation panel, relation overlays, a Solve button and sort-point and occlusion-ray overlays in the editor (planned for a later stage); `compare --render`, an `unlock` command, `state_stable`, generated engine scenes (not scheduled). The Rust crate license texts in `THIRD_PARTY_NOTICES.md` are a maintainer task (`MAINTAINING.md`, Before distributing a build).
 

@@ -1,12 +1,13 @@
 # Changelog
 
-## Unreleased
+## 0.12.0
 
 Stage 12: heights and cameras. The scene format stays `isoblock/1`. The runtime file becomes `isoblock-runtime/3`.
 
 ### Changed
 
-- `no_overlap` compares boxes, the footprint from the base height to the base height plus the type height. A flat object (height 0) overlaps nothing, and an object that rests on another does not overlap it. A scene of flat objects on the ground is unchanged, because no earlier fixture puts a flat object in this check.
+- `no_overlap` compares boxes, the footprint from the base height to the base height plus the type height. A flat object (height 0) overlaps nothing, and an object that rests on another does not overlap it. A flat object that shares ground with another object failed this check in 0.11.0 and passes now. No fixture of 0.11.0 has such a pair, so their results do not change.
+- A flat object takes no space: it no longer blocks a lane (`lane_clear`), a walk (`reachable`) or an actor position (`sort_consistency`).
 - `lane_clear` blocks an object only when it takes space at the lane's level. A lane that is not flat is `skip`. `reachable` walks one level. `sort_consistency` stands its actor at a level and overlaps boxes. Where the camera has `|cu|` different from `|cv|`, slices are weighted by the camera, so `sort_consistency` can change; with `|cu| = |cv|` the slices are those of 0.11.0.
 - `in_region` with the footprint measure projects the footprint at the object's base height. At height 0 this is the value of 0.11.0.
 
@@ -28,6 +29,11 @@ Stage 12: heights and cameras. The scene format stays `isoblock/1`. The runtime 
 1. Export every scene again: `isoblock export <scene> --target runtime -o <game>/data/scenes/<id>.json`. The `schema` value is `isoblock-runtime/3`.
 2. In a loader of your own, accept `isoblock-runtime/3` and reject `isoblock-runtime/2` and `isoblock-runtime/1`. Project with `projection` and `camera.origin`. Read `base` when you place a pivot. Read `hideParts` and `hideRegions` when you apply a state.
 3. The Godot adapter in `adapters/godot/` reads `isoblock-runtime/3` and reports every other `schema` value as `E_SCHEMA`. Copy the new `isoblock_runtime.gd` into the game project. `sort_key` takes a base height. `add_actor` takes `[u, v, h]`. `apply_state` hides parts and records hidden regions on the root as `hidden_regions`.
+
+### Tests
+
+- The runtime fixtures of `isoblock-runtime/2` (`tests/fixtures/runtime/`) are removed; `tests/fixtures/runtime3/` has every case as `isoblock-runtime/3`.
+- The Godot cross-check of stage 12 runs on `tests/fixtures/levels/godot.scene.json`, a scene without overlapping objects and without a static mismatch, as SPEC 13.6 requires (Q-027).
 
 ## 0.11.0
 
