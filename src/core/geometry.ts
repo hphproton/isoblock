@@ -30,6 +30,12 @@ export function rotationOf(object: SceneObject): Rot {
   return object.rot ?? 0;
 }
 
+/** The object's base height: the third number of `pos`, or 0 (SPEC section 9.5). */
+export function baseHeight(object: SceneObject): number {
+  const h = (object.pos as readonly number[])[2];
+  return h === undefined ? 0 : h;
+}
+
 export function indexObjects(scene: Scene): ReadonlyMap<string, SceneObject> {
   return new Map(scene.objects.map((o) => [o.id, o]));
 }
@@ -71,32 +77,52 @@ export function footprint(scene: Scene, object: SceneObject): Rect {
   };
 }
 
-/** The whole `size` box of an object in world units. */
+/** The object's box: its footprint from the base height to the base height plus the type height (SPEC 9.5). */
 export function sizeBox(scene: Scene, object: SceneObject): Box {
   const f = footprint(scene, object);
-  return { u0: f.u0, v0: f.v0, h0: 0, u1: f.u1, v1: f.v1, h1: typeSize(scene, object)[2] };
+  const b = baseHeight(object);
+  return { u0: f.u0, v0: f.v0, h0: b, u1: f.u1, v1: f.v1, h1: b + typeSize(scene, object)[2] };
+}
+
+/** Two boxes overlap when their footprints overlap and their height ranges overlap by more than EPS. A flat box overlaps nothing. */
+export function boxesOverlap(a: Box, b: Box): boolean {
+  return rectsOverlap(a, b) && Math.min(a.h1, b.h1) - Math.max(a.h0, b.h0) > EPS;
+}
+
+/**
+ * An object takes space at level `level` up to a clear height `clear` (SPEC 9.5).
+ * Without `clear`, only the lower bound counts.
+ */
+export function takesSpace(box: Box, level: number, clear?: number): boolean {
+  if (!(box.h1 > level + EPS)) return false;
+  return clear === undefined || box.h0 < level + clear - EPS;
 }
 
 /** Parts of an object in world units. A type without parts has one part, the whole size box. */
 export function worldParts(scene: Scene, object: SceneObject): readonly WorldPart[] {
   const type = scene.types[object.type] as NonNullable<Scene["types"][string]>;
-  if (!type.parts || type.parts.length === 0) return [{ id: "body", box: sizeBox(scene, object) }];
+  const hidden = new Set(scene.hiddenParts?.[object.id] ?? []);
+  const raised = baseHeight(object);
+  if (!type.parts || type.parts.length === 0) {
+    return hidden.has("body") ? [] : [{ id: "body", box: sizeBox(scene, object) }];
+  }
   const [w, d] = type.size;
-  return type.parts.map((part) => {
+  return type.parts.flatMap((part) => {
+    if (hidden.has(part.id)) return [];
     const [u0, v0, h0, u1, v1, h1] = part.box;
     const a = toWorld(object, w, d, u0, v0);
     const b = toWorld(object, w, d, u1, v1);
-    return {
+    return [{
       id: part.id,
       box: {
         u0: Math.min(a[0], b[0]),
         v0: Math.min(a[1], b[1]),
-        h0: Math.min(h0, h1),
+        h0: Math.min(h0, h1) + raised,
         u1: Math.max(a[0], b[0]),
         v1: Math.max(a[1], b[1]),
-        h1: Math.max(h0, h1),
+        h1: Math.max(h0, h1) + raised,
       },
-    };
+    }];
   });
 }
 

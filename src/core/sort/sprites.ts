@@ -1,5 +1,5 @@
 import { partOrders } from "../export/partOrder";
-import { EPS, footprint, worldParts, type Box, type Rect } from "../geometry";
+import { baseHeight, EPS, footprint, worldParts, type Box, type Rect } from "../geometry";
 import { orderDirection } from "../projection";
 import { round } from "../round";
 import type { Scene, Vec3 } from "../types";
@@ -29,9 +29,9 @@ export interface OrderedPart {
   readonly order: number;
 }
 
-/** The sort key of a footprint: twice the ground depth of its center, rounded to 6 decimals (SPEC 13.4). */
-export function sortKey(c: Vec3, f: Rect): number {
-  return round(c[0] * (f.u0 + f.u1) + c[1] * (f.v0 + f.v1), DECIMALS);
+/** The sort key of a footprint at base height `base`: twice the depth of its center, rounded to 6 decimals (SPEC 13.4). */
+export function sortKey(c: Vec3, f: Rect, base = 0): number {
+  return round(c[0] * (f.u0 + f.u1) + c[1] * (f.v0 + f.v1) + 2 * base, DECIMALS);
 }
 
 /** The number of slices of a footprint `length` by `width`: the n that brings `length / n` closest to `width`. */
@@ -61,15 +61,20 @@ function cut(box: Box, alongU: boolean, lo: number, hi: number): Box | null {
  * and the part boxes are in world units, already rounded to 6 decimals; `c` is the camera
  * direction of the painter's order.
  */
-export function spritesOf(c: Vec3, foot: Rect, parts: readonly OrderedPart[]): readonly Sprite[] {
+export function spritesOf(c: Vec3, foot: Rect, parts: readonly OrderedPart[], base = 0): readonly Sprite[] {
   const ordered = [...parts].sort((a, b) => a.order - b.order);
+  const whole = (): Sprite[] => [{ key: sortKey(c, foot, base), footprint: foot, pieces: ordered.map((p) => ({ part: p.id, box: p.box })) }];
   const w = foot.u1 - foot.u0;
   const d = foot.v1 - foot.v0;
-  const alongU = w > d;
-  const n = Math.abs(w - d) <= EPS || w <= EPS || d <= EPS ? 1 : sliceCount(alongU ? w : d, alongU ? d : w);
-  if (n === 1) {
-    return [{ key: sortKey(c, foot), footprint: foot, pieces: ordered.map((p) => ({ part: p.id, box: p.box })) }];
-  }
+  const ku = Math.abs(c[0]);
+  const kv = Math.abs(c[1]);
+  const m = Math.max(ku, kv);
+  if (m <= EPS) return whole();
+  const wide = (w * ku) / m;
+  const deep = (d * kv) / m;
+  const alongU = wide > deep;
+  const n = Math.abs(wide - deep) <= EPS || wide <= EPS || deep <= EPS ? 1 : sliceCount(alongU ? wide : deep, alongU ? deep : wide);
+  if (n === 1) return whole();
   const a0 = alongU ? foot.u0 : foot.v0;
   const a1 = alongU ? foot.u1 : foot.v1;
   const t = Array.from({ length: n + 1 }, (_, k) => (k === 0 ? a0 : k === n ? a1 : round(a0 + (k * (a1 - a0)) / n, DECIMALS)));
@@ -82,7 +87,7 @@ export function spritesOf(c: Vec3, foot: Rect, parts: readonly OrderedPart[]): r
       const box = cut(p.box, alongU, k === 0 ? -Infinity : lo, k === n - 1 ? Infinity : hi);
       return box === null ? [] : [{ part: p.id, box }];
     });
-    return { key: sortKey(c, slice), footprint: slice, pieces };
+    return { key: sortKey(c, slice, base), footprint: slice, pieces };
   });
 }
 
@@ -99,6 +104,6 @@ export function sceneSprites(scene: Scene): readonly (readonly Sprite[])[] {
   const orders = partOrders(scene);
   return scene.objects.map((object, i) => {
     const parts = worldParts(scene, object).map((p, k) => ({ id: p.id, box: roundBox(p.box), order: (orders[i] as readonly number[])[k] as number }));
-    return spritesOf(c, roundRect(footprint(scene, object)), parts);
+    return spritesOf(c, roundRect(footprint(scene, object)), parts, baseHeight(object));
   });
 }

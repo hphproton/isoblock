@@ -1,5 +1,5 @@
 import { changedObjects, involves, searchesGrid } from "../incremental";
-import { hiddenIn, withoutObjects } from "../states";
+import { hiddenObjects, sceneInState } from "../states";
 import type { CheckResult, Scene } from "../types";
 import { checkInState, runChecksInState } from "./inState";
 
@@ -42,8 +42,8 @@ export function resultsInState(
   const changed = prev === null ? "all" : changedObjects(prev, next);
   const statesChanged = prev !== null && prev.states !== next.states;
   if (!aligned || changed === "all" || statesChanged) return full(next, state, dragging, aligned ? prevResults : []);
-  const hidden = hiddenIn(next, state);
-  const visible = withoutObjects(next, hidden);
+  const hidden = hiddenObjects(next, state);
+  const visible = sceneInState(next, state);
   const deferred: string[] = [];
   const results = specs.map((spec, i) => {
     const old = prevResults[i] as CheckResult;

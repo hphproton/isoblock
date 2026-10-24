@@ -1,4 +1,5 @@
 import { EPS, indexObjects } from "../geometry";
+import { screenAxes } from "../projection";
 import type { CheckResult, MinScreenSizeCheck, Scene } from "../types";
 import { round6 } from "./result";
 import { partHeightSpan, partScreenBox } from "./screenBounds";
@@ -12,7 +13,7 @@ export function checkMinScreenSize(scene: Scene, spec: MinScreenSizeCheck): Chec
   const scale = (spec.screenWidth ?? scene.frame.w) / scene.frame.w;
   const pixels =
     spec.measure === "height"
-      ? partHeightSpan(scene, target) * scene.camera.pxPerUnit * (scene.camera.verticalScale ?? 1)
+      ? partHeightSpan(scene, target) * Math.abs(screenAxes(scene.camera).up[1])
       : partScreenBox(scene, target).y1 - partScreenBox(scene, target).y0;
   const value = round6(pixels * scale);
   const height = spec.measure === "height";

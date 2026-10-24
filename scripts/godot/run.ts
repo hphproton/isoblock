@@ -22,7 +22,7 @@ export interface GodotCase {
   readonly states: readonly (string | null)[];
   readonly instantiate: readonly string[] | null;
   readonly unmapped: readonly string[] | null;
-  readonly actor: { readonly size: readonly [number, number, number]; readonly path: readonly (readonly [number, number])[] } | null;
+  readonly actor: { readonly size: readonly [number, number, number]; readonly path: readonly (readonly number[])[] } | null;
 }
 
 interface GodotCases {
@@ -153,7 +153,10 @@ export function runGodotChecks(options: Options): number {
     const sample = join(work, "sample.runtime.json");
     isoblock(options.root, ["export", join(fixtures, "gameplay", "walk.scene.json"), "--target", "runtime", "-o", sample]);
     const golden = join(options.root, "tests", "golden");
-    const adapter = runGodot(options, work, "adapter_test", ["--golden", join(golden, "projection.json"), "--sort", join(golden, "sort.json"), "--runtime", sample]);
+    const adapter = runGodot(options, work, "adapter_test", [
+      "--golden", join(golden, "projection.json"), "--sort", join(golden, "sort.json"),
+      "--levels", join(golden, "sort-levels.json"), "--runtime", sample,
+    ]);
     const line = /godot adapter: (\d+) checks, (\d+) failed/.exec(adapter.stdout);
     console.log(line === null ? "adapter tests: no result" : `adapter tests (golden vectors and sort keys included): ${line[1]} checks, ${line[2]} failed`);
     const problems: string[] = [];
@@ -166,6 +169,8 @@ export function runGodotChecks(options: Options): number {
       problems.push(...crossCheck(options, work, `export ${c.name}`, plain, godot.actorLimit));
     }
     for (const c of godot.cases) problems.push(...crossCheck(options, work, `godot ${c.name}`, c, godot.actorLimit));
+    const levels = JSON.parse(readFileSync(join(fixtures, "levels", "godot.json"), "utf8")) as GodotCases;
+    for (const c of levels.cases) problems.push(...crossCheck(options, work, `levels ${c.name}`, c, levels.actorLimit));
     for (const p of problems) console.error(`FAIL ${p}`);
     console.log(problems.length === 0 ? "godot checks passed" : `godot checks failed: ${problems.length} problems`);
     return problems.length === 0 ? 0 : 1;

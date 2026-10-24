@@ -1,4 +1,5 @@
 import { IsoblockError } from "./errors";
+import { isViewCamera } from "./projection";
 import { referenceErrors } from "./references";
 import { schemaDetailLines } from "./schemaErrors";
 import type { Scene } from "./types";
@@ -11,6 +12,7 @@ function capped(lines: readonly string[]): string[] {
 }
 
 function degenerateCamera(scene: Scene): boolean {
+  if (isViewCamera(scene.camera)) return false;
   const diff = (scene.camera.angleU - scene.camera.angleV) % 180;
   return Math.abs(diff) < 1e-9 || Math.abs(Math.abs(diff) - 180) < 1e-9;
 }

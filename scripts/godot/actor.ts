@@ -9,10 +9,11 @@ export const ACTOR_ID = "isoblock-actor";
  * `[w, d, h]`, footprint centered on `at`. The position is rounded to 9 decimals, so that the file
  * does not carry floating-point noise such as 2.1500000000000004.
  */
-export function sceneWithActor(sceneText: string, size: readonly [number, number, number], at: readonly [number, number]): string {
+export function sceneWithActor(sceneText: string, size: readonly [number, number, number], at: readonly number[]): string {
   const scene = JSON.parse(sceneText) as { types: Record<string, unknown>; objects: unknown[] };
   if (ACTOR_ID in scene.types) throw new Error(`the scene already has a type ${ACTOR_ID}`);
-  const pos = [at[0] - size[0] / 2, at[1] - size[1] / 2].map((x) => Number(x.toFixed(9)) + 0);
+  const pos = [at[0] - size[0] / 2, at[1] - size[1] / 2].map((x) => Number((x as number).toFixed(9)) + 0);
+  if (at.length >= 3) pos.push(Number((at[2] as number).toFixed(9)) + 0);
   scene.types = { ...scene.types, [ACTOR_ID]: { size: [...size] } };
   scene.objects = [...scene.objects, { id: ACTOR_ID, type: ACTOR_ID, pos }];
   return `${JSON.stringify(scene, null, 2)}\n`;

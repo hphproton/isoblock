@@ -9,13 +9,28 @@ export interface Units {
   readonly perMeter?: number | null;
 }
 
-export interface Camera {
+/** Axes form of the camera (SPEC section 5): two ground axes and a vertical scale. */
+export interface AxesCamera {
   readonly angleU: number;
   readonly angleV: number;
   readonly pxPerUnit: number;
   readonly verticalScale?: number;
   readonly origin: Vec2;
 }
+
+/** View form of the camera (SPEC section 5): an orthographic view from an elevation and a direction. */
+export interface ViewCamera {
+  readonly elevation: number;
+  /** Degrees from +u toward +v. Default 45. */
+  readonly direction?: number;
+  readonly scale: number;
+  readonly origin: Vec2;
+}
+
+export type Camera = AxesCamera | ViewCamera;
+
+/** A ground position, with an optional base height (SPEC section 6). */
+export type Pos = Vec2 | Vec3;
 
 export interface Region {
   readonly id: string;
@@ -58,7 +73,7 @@ export interface ObjectType {
 export interface SceneObject {
   readonly id: string;
   readonly type: string;
-  readonly pos: Vec2;
+  readonly pos: Pos;
   readonly rot?: Rot;
   readonly locks?: readonly string[];
   readonly tags?: readonly string[];
@@ -68,6 +83,8 @@ export interface Zone {
   readonly id: string;
   readonly kind?: string;
   readonly points?: readonly Vec2[];
+  /** Height of the polygon. Default 0 (SPEC section 6). */
+  readonly h?: number;
 }
 
 export interface Lane {
@@ -75,7 +92,10 @@ export interface Lane {
   readonly kind?: string;
   readonly width: number;
   readonly dir?: string;
-  readonly points: readonly Vec2[];
+  /** Each point is `[u, v]` or `[u, v, h]` (SPEC section 6). */
+  readonly points: readonly (Vec2 | Vec3)[];
+  /** Height of a point that does not give its own. Default 0. */
+  readonly h?: number;
 }
 
 export interface Relation {
@@ -125,6 +145,8 @@ export interface LaneClearCheck {
   readonly check: "lane_clear";
   readonly lane: string;
   readonly ignore?: readonly string[];
+  /** Clear height above the lane. Absent means no upper bound (SPEC 9.5). */
+  readonly height?: number;
 }
 
 export interface LaneReachesCheck {
@@ -166,6 +188,10 @@ export interface ReachableCheck {
   readonly step?: number;
   readonly ignore?: readonly string[];
   readonly max?: number;
+  /** Walkable level. Default 0 (SPEC 9.5). */
+  readonly level?: number;
+  /** Clear height above `level`. Absent means no upper bound. */
+  readonly height?: number;
 }
 
 export interface CapacityCheck {
@@ -197,6 +223,16 @@ export interface SortConsistencyCheck {
   readonly maxPixels?: number;
   readonly area?: string;
   readonly ids?: readonly string[];
+  /** Height the test actor stands on. Default 0 (SPEC 9.5). */
+  readonly level?: number;
+}
+
+/** What one state hides (SPEC section 6). */
+export interface SceneState {
+  readonly hide?: readonly string[];
+  /** Object id to the part ids it hides. */
+  readonly hideParts?: Readonly<Record<string, readonly string[]>>;
+  readonly hideRegions?: readonly string[];
 }
 
 export type ImplementedCheck =
@@ -248,9 +284,15 @@ export interface Scene {
   readonly lanes?: readonly Lane[];
   readonly relations?: readonly Relation[];
   readonly checks?: readonly CheckSpec[];
-  readonly states?: Readonly<Record<string, { readonly hide?: readonly string[] }>>;
+  readonly states?: Readonly<Record<string, SceneState>>;
   readonly assumptions?: readonly Assumption[];
   readonly meta?: Meta;
+  /** Parts hidden in the state being evaluated, by object id. Not stored in the file. */
+  readonly hiddenParts?: Readonly<Record<string, readonly string[]>>;
+  /** Frame regions hidden in the state being evaluated. Not stored in the file. */
+  readonly hiddenRegions?: readonly string[];
+  /** Name of the state being evaluated, for messages. Not stored in the file. */
+  readonly activeState?: string;
 }
 
 export type CheckStatus = "pass" | "fail" | "warn" | "skip";

@@ -37,18 +37,21 @@ function objectPointerIndex(path: string): number | null {
   return m === null ? null : Number(m[1]);
 }
 
-function positionOf(doc: unknown, index: number): readonly [number, number] {
+function positionOf(doc: unknown, index: number): readonly number[] {
   const pos = resolvePointer(doc, `/objects/${index}/pos`).value;
   if (!Array.isArray(pos) || typeof pos[0] !== "number" || typeof pos[1] !== "number") throw fail("the object has no valid pos");
-  return [pos[0], pos[1]];
+  return pos.filter((n): n is number => typeof n === "number");
 }
 
 function move(doc: unknown, c: Extract<Command, { cmd: "move" }>): unknown {
   const index = objectIndex(doc, c.id);
-  const [u, v] = positionOf(doc, index);
-  const at = (axis: number) => ["objects", String(index), "pos", String(axis)];
-  const moved = c.du === undefined ? doc : replaceAt(doc, at(0), round6(u + c.du));
-  return c.dv === undefined ? moved : replaceAt(moved, at(1), round6(v + c.dv));
+  const pos = positionOf(doc, index);
+  const u = c.du === undefined ? (pos[0] as number) : round6((pos[0] as number) + c.du);
+  const v = c.dv === undefined ? (pos[1] as number) : round6((pos[1] as number) + c.dv);
+  const hadH = pos.length >= 3;
+  const h = hadH || c.dh !== undefined ? round6((pos[2] ?? 0) + (c.dh ?? 0)) : undefined;
+  const next = h === undefined ? [u, v] : [u, v, c.dh === undefined && hadH ? (pos[2] as number) : h];
+  return replaceAt(doc, ["objects", String(index), "pos"], next);
 }
 
 /** Footprint (w, d) of an object for a rotation, from its type's size. */
@@ -64,13 +67,15 @@ function rotate(doc: unknown, c: Extract<Command, { cmd: "rot" }>): unknown {
   const now = resolvePointer(doc, `/objects/${index}/rot`);
   const current = now.found && typeof now.value === "number" ? now.value : 0;
   if (current === c.rot) return doc;
-  const [u, v] = positionOf(doc, index);
+  const pos = positionOf(doc, index);
+  const [u, v] = pos;
   const [w0, d0] = footprintOf(doc, index, current);
   const [w1, d1] = footprintOf(doc, index, c.rot);
   const base = ["objects", String(index)];
   const turned = addAt(doc, [...base, "rot"], c.rot);
   if (w0 === w1 && d0 === d1) return turned;
-  return replaceAt(turned, [...base, "pos"], [round6(u + w0 / 2 - w1 / 2), round6(v + d0 / 2 - d1 / 2)]);
+  const next = [round6((u as number) + w0 / 2 - w1 / 2), round6((v as number) + d0 / 2 - d1 / 2)];
+  return replaceAt(turned, [...base, "pos"], pos.length >= 3 ? [...next, pos[2]] : next);
 }
 
 function setValue(doc: unknown, c: Extract<Command, { cmd: "set" }>): unknown {
@@ -140,15 +145,22 @@ function dropHides(doc: unknown, id: string): unknown {
   if (!isRecord(states)) return doc;
   let next = doc;
   for (const [name, def] of Object.entries(states)) {
-    if (!isRecord(def) || !Array.isArray(def.hide) || !def.hide.includes(id)) continue;
-    next = replaceAt(next, ["states", name, "hide"], def.hide.filter((h) => h !== id));
+    if (!isRecord(def)) continue;
+    if (Array.isArray(def.hide) && def.hide.includes(id)) {
+      next = replaceAt(next, ["states", name, "hide"], def.hide.filter((h) => h !== id));
+    }
+    if (isRecord(def.hideParts) && Object.hasOwn(def.hideParts, id)) {
+      const { [id]: _gone, ...rest } = def.hideParts;
+      next = replaceAt(next, ["states", name, "hideParts"], rest);
+    }
   }
   return next;
 }
 
 function addObject(doc: unknown, c: Extract<Command, { cmd: "add" }>): unknown {
   if (listAt(doc, "/objects").some((o) => isRecord(o) && o.id === c.id)) throw fail(`object id "${c.id}" is already in use`);
-  return addAt(doc, ["objects", "-"], { id: c.id, type: c.type, pos: [c.pos[0], c.pos[1]], rot: c.rot });
+  const pos = c.h === undefined ? [c.pos[0], c.pos[1]] : [c.pos[0], c.pos[1], c.h];
+  return addAt(doc, ["objects", "-"], { id: c.id, type: c.type, pos, rot: c.rot });
 }
 
 function removeObject(doc: unknown, id: string): unknown {

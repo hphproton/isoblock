@@ -1,4 +1,4 @@
-import { EPS, rectCorners } from "../geometry";
+import { EPS } from "../geometry";
 import { plain } from "../format";
 import { project } from "../projection";
 import type { CheckResult, LaneReachesCheck, Scene, Vec2 } from "../types";
@@ -29,12 +29,19 @@ function crossing(polygon: readonly Vec2[], axis: 0 | 1, line: number): readonly
 export function checkLaneReaches(scene: Scene, spec: LaneReachesCheck): CheckResult {
   const lane = (scene.lanes ?? []).find((l) => l.id === spec.lane)!;
   const region = scene.frame.regions.find((r) => r.id === spec.region)!;
+  if (scene.hiddenRegions?.includes(spec.region)) {
+    return skipResult(spec, `region "${spec.region}" is hidden in state "${scene.activeState ?? ""}"`);
+  }
   const shape = laneShape(lane);
   if (!shape.ok) return skipResult(spec, shape.reason);
   const vertical = spec.edge === "right" || spec.edge === "left";
   const line = spec.edge === "right" ? scene.frame.w : spec.edge === "bottom" ? scene.frame.h : 0;
   const [start, end] = vertical ? [region.rect[1], region.rect[3]] : [region.rect[0], region.rect[2]];
-  const polygon = rectCorners(shape.rect).map(([u, v]) => project(scene.camera, u, v, 0));
+  const { rect, alongU, hLo, hHi } = shape;
+  const corners: readonly (readonly [number, number, number])[] = alongU
+    ? [[rect.u0, rect.v0, hLo], [rect.u1, rect.v0, hHi], [rect.u1, rect.v1, hHi], [rect.u0, rect.v1, hLo]]
+    : [[rect.u0, rect.v0, hLo], [rect.u1, rect.v0, hLo], [rect.u1, rect.v1, hHi], [rect.u0, rect.v1, hHi]];
+  const polygon = corners.map(([u, v, h]) => project(scene.camera, u, v, h));
   const hit = crossing(polygon, vertical ? 0 : 1, line);
   const base = { id: spec.id, check: spec.check, threshold: [start, end] as const, ids: [lane.id] };
   if (hit === null) return { ...base, status: "fail", value: null, message: "lane does not reach edge" };

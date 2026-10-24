@@ -20,17 +20,10 @@
       }
     },
     "camera": {
-      "type": "object",
-      "required": ["angleU", "angleV", "pxPerUnit", "origin"],
-      "additionalProperties": false,
-      "patternProperties": { "^x-": {} },
-      "properties": {
-        "angleU": { "type": "number" },
-        "angleV": { "type": "number" },
-        "pxPerUnit": { "type": "number", "exclusiveMinimum": 0 },
-        "verticalScale": { "type": "number", "exclusiveMinimum": 0, "default": 1 },
-        "origin": { "$ref": "#/definitions/vec2" }
-      }
+      "oneOf": [
+        { "$ref": "#/definitions/axesCamera" },
+        { "$ref": "#/definitions/viewCamera" }
+      ]
     },
     "frame": {
       "type": "object",
@@ -123,13 +116,13 @@
         "properties": {
           "id": { "type": "string", "minLength": 1 },
           "type": { "type": "string", "minLength": 1 },
-          "pos": { "$ref": "#/definitions/vec2" },
+          "pos": { "oneOf": [{ "$ref": "#/definitions/vec2" }, { "$ref": "#/definitions/vec3" }] },
           "rot": { "enum": [0, 90, 180, 270], "default": 0 },
           "locks": {
             "type": "array",
             "items": {
               "anyOf": [
-                { "enum": ["pos", "pos.u", "pos.v", "rot", "type"] },
+                { "enum": ["pos", "pos.u", "pos.v", "pos.h", "rot", "type"] },
                 { "type": "string", "pattern": "^/" }
               ]
             }
@@ -148,7 +141,8 @@
         "properties": {
           "id": { "type": "string", "minLength": 1 },
           "kind": { "type": "string" },
-          "points": { "type": "array", "items": { "$ref": "#/definitions/vec2" }, "minItems": 3 }
+          "points": { "type": "array", "items": { "$ref": "#/definitions/vec2" }, "minItems": 3 },
+          "h": { "type": "number" }
         }
       }
     },
@@ -164,7 +158,12 @@
           "kind": { "type": "string" },
           "width": { "type": "number", "minimum": 0 },
           "dir": { "type": "string" },
-          "points": { "type": "array", "items": { "$ref": "#/definitions/vec2" }, "minItems": 2 }
+          "h": { "type": "number" },
+          "points": {
+            "type": "array",
+            "minItems": 2,
+            "items": { "oneOf": [{ "$ref": "#/definitions/vec2" }, { "$ref": "#/definitions/vec3" }] }
+          }
         }
       }
     },
@@ -237,7 +236,12 @@
         "additionalProperties": false,
         "patternProperties": { "^x-": {} },
         "properties": {
-          "hide": { "type": "array", "items": { "type": "string" } }
+          "hide": { "type": "array", "items": { "type": "string" } },
+          "hideParts": {
+            "type": "object",
+            "additionalProperties": { "type": "array", "items": { "type": "string", "minLength": 1 } }
+          },
+          "hideRegions": { "type": "array", "items": { "type": "string", "minLength": 1 } }
         }
       }
     },
@@ -271,6 +275,32 @@
   },
   "definitions": {
     "vec2": { "type": "array", "items": { "type": "number" }, "minItems": 2, "maxItems": 2 },
+    "vec3": { "type": "array", "items": { "type": "number" }, "minItems": 3, "maxItems": 3 },
+    "axesCamera": {
+      "type": "object",
+      "required": ["angleU", "angleV", "pxPerUnit", "origin"],
+      "additionalProperties": false,
+      "patternProperties": { "^x-": {} },
+      "properties": {
+        "angleU": { "type": "number" },
+        "angleV": { "type": "number" },
+        "pxPerUnit": { "type": "number", "exclusiveMinimum": 0 },
+        "verticalScale": { "type": "number", "exclusiveMinimum": 0, "default": 1 },
+        "origin": { "$ref": "#/definitions/vec2" }
+      }
+    },
+    "viewCamera": {
+      "type": "object",
+      "required": ["elevation", "scale", "origin"],
+      "additionalProperties": false,
+      "patternProperties": { "^x-": {} },
+      "properties": {
+        "elevation": { "type": "number", "exclusiveMinimum": 0, "maximum": 90 },
+        "direction": { "type": "number", "default": 45 },
+        "scale": { "type": "number", "exclusiveMinimum": 0 },
+        "origin": { "$ref": "#/definitions/vec2" }
+      }
+    },
     "size3": {
       "type": "array",
       "items": { "type": "number", "minimum": 0 },
@@ -335,7 +365,8 @@
         "id": { "type": "string" },
         "check": { "const": "lane_clear" },
         "lane": { "type": "string", "minLength": 1 },
-        "ignore": { "type": "array", "items": { "type": "string" } }
+        "ignore": { "type": "array", "items": { "type": "string" } },
+        "height": { "type": "number" }
       }
     },
     "checkLaneReaches": {
@@ -397,7 +428,9 @@
         "radius": { "type": "number", "minimum": 0, "default": 0.2 },
         "step": { "type": "number", "exclusiveMinimum": 0, "default": 0.1 },
         "ignore": { "type": "array", "items": { "type": "string" } },
-        "max": { "type": "number", "minimum": 0 }
+        "max": { "type": "number", "minimum": 0 },
+        "level": { "type": "number" },
+        "height": { "type": "number" }
       }
     },
     "checkCapacity": {
@@ -448,7 +481,8 @@
         "reach": { "type": "number", "minimum": 0, "default": 1 },
         "maxPixels": { "type": "number", "minimum": 0, "default": 0 },
         "area": { "type": "string", "minLength": 1 },
-        "ids": { "$ref": "#/definitions/idList" }
+        "ids": { "$ref": "#/definitions/idList" },
+        "level": { "type": "number" }
       }
     },
     "checkNotImplemented": {

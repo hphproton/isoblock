@@ -1,5 +1,5 @@
 import { IsoblockError } from "../errors";
-import { footprint, rectsOverlap, type Rect } from "../geometry";
+import { baseHeight, boxesOverlap, footprint, sizeBox, type Rect } from "../geometry";
 import { pointerTokens } from "../pointer";
 import { projector } from "../projection";
 import { prepareRelations, type PreparedRelation } from "../relations/prepare";
@@ -17,8 +17,11 @@ export interface SolverModel {
   readonly relations: readonly PreparedRelation[];
   /** Pixel rectangle `[x0, y0, x1, y1]` of the view region; `null` when every region blocks the scene. */
   readonly view: readonly [number, number, number, number] | null;
-  readonly project: (u: number, v: number) => Vec2;
-  /** Keys `i * n + j` (i < j) of the footprint pairs that overlap before solving. */
+  readonly project: (u: number, v: number, h: number) => Vec2;
+  /** Base height and type height of each object. The solver does not change them. */
+  readonly base: readonly number[];
+  readonly height: readonly number[];
+  /** Keys `i * n + j` (i < j) of the box pairs that overlap before solving. */
   readonly overlappedBefore: ReadonlySet<number>;
 }
 
@@ -38,11 +41,12 @@ function axisFree(scene: Scene, index: number, axis: 0 | 1, pointers: readonly s
   return !pointers.some((p) => pointerLocks(p, index, axis));
 }
 
-function overlapsBefore(origin: readonly Rect[]): ReadonlySet<number> {
-  const n = origin.length;
+function overlapsBefore(scene: Scene): ReadonlySet<number> {
+  const boxes = scene.objects.map((object) => sizeBox(scene, object));
+  const n = boxes.length;
   const keys = new Set<number>();
   for (let i = 0; i < n; i++) {
-    for (let j = i + 1; j < n; j++) if (rectsOverlap(origin[i] as Rect, origin[j] as Rect)) keys.add(i * n + j);
+    for (let j = i + 1; j < n; j++) if (boxesOverlap(boxes[i]!, boxes[j]!)) keys.add(i * n + j);
   }
   return keys;
 }
@@ -69,7 +73,9 @@ export function buildModel(scene: Scene, only?: readonly string[]): SolverModel 
     freeV: free(1),
     relations: prepareRelations(scene),
     view: region ? region.rect : null,
-    project: (u, v) => project(u, v, 0),
-    overlappedBefore: overlapsBefore(origin),
+    project: (u, v, h) => project(u, v, h),
+    base: scene.objects.map((object) => baseHeight(object)),
+    height: scene.objects.map((object) => (scene.types[object.type]?.size[2] ?? 0)),
+    overlappedBefore: overlapsBefore(scene),
   };
 }

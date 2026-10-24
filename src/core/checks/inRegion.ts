@@ -1,4 +1,4 @@
-import { footprint, rectCorners, EPS } from "../geometry";
+import { baseHeight, footprint, rectCorners, EPS } from "../geometry";
 import { project } from "../projection";
 import type { CheckResult, InRegionCheck, Region, Scene, SceneObject, Strip } from "../types";
 import { partScreenBox } from "./screenBounds";
@@ -6,8 +6,9 @@ import { plural, round6, selectObjects } from "./result";
 
 function cornersInside(scene: Scene, object: SceneObject, rect: readonly number[]): boolean {
   const [x0, y0, x1, y1] = rect as readonly [number, number, number, number];
+  const h = baseHeight(object);
   return rectCorners(footprint(scene, object)).every((corner) => {
-    const [x, y] = project(scene.camera, corner[0], corner[1], 0);
+    const [x, y] = project(scene.camera, corner[0], corner[1], h);
     return x >= x0 - EPS && x <= x1 + EPS && y >= y0 - EPS && y <= y1 + EPS;
   });
 }
@@ -121,9 +122,14 @@ function collect(
   return resultOf(spec, target.label, checked.length, failing, shares);
 }
 
+function hiddenRegion(scene: Scene, spec: InRegionCheck): CheckResult | null {
+  if (!scene.hiddenRegions?.includes(spec.region)) return null;
+  return { id: spec.id, check: spec.check, status: "skip", value: null, threshold: null, ids: [], message: `region "${spec.region}" is hidden in state "${scene.activeState ?? ""}"` };
+}
+
 /** Footprints, or drawn boxes, must lie inside the region (SPEC 9.1, 9.4). */
 export function checkInRegion(scene: Scene, spec: InRegionCheck): CheckResult {
-  return collect(scene, spec, targetOf(scene, spec), selectObjects(scene, spec.ids), null, null);
+  return hiddenRegion(scene, spec) ?? collect(scene, spec, targetOf(scene, spec), selectObjects(scene, spec.ids), null, null);
 }
 
 /**
@@ -131,5 +137,5 @@ export function checkInRegion(scene: Scene, spec: InRegionCheck): CheckResult {
  * `changed` differ: only those objects are measured again. Equal to `checkInRegion`.
  */
 export function updateInRegion(scene: Scene, spec: InRegionCheck, prev: CheckResult, changed: ReadonlySet<string>): CheckResult {
-  return collect(scene, spec, targetOf(scene, spec), selectObjects(scene, spec.ids), changed, prev);
+  return hiddenRegion(scene, spec) ?? collect(scene, spec, targetOf(scene, spec), selectObjects(scene, spec.ids), changed, prev);
 }

@@ -1,9 +1,9 @@
 import { runChecks } from "../checks";
 import { runChecksHiding } from "../checks/inState";
 import { round6 } from "../checks/result";
-import { EPS } from "../geometry";
+import { baseHeight, EPS } from "../geometry";
 import { evaluateRelations } from "../relations/evaluate";
-import { hiddenIn, withoutObjects } from "../states";
+import { sceneInState } from "../states";
 import type { CheckResult, CheckSpec, CheckStatus, Scene } from "../types";
 import { failingCount } from "../patch/changes";
 import { applyVariant } from "./variant";
@@ -57,7 +57,7 @@ function movedOf(base: Scene, scene: Scene): Moved {
   for (const o of base.objects) {
     const next = now.get(o.id);
     if (next === undefined) continue;
-    const d = Math.hypot(next.pos[0] - o.pos[0], next.pos[1] - o.pos[1]);
+    const d = Math.hypot(next.pos[0] - o.pos[0], next.pos[1] - o.pos[1], baseHeight(next) - baseHeight(o));
     if (d > EPS) {
       count++;
       distance += d;
@@ -107,12 +107,24 @@ function relationMeasures(base: Scene, scenes: readonly Scene[]): Pick<Compariso
  * those are measured with every object present, whatever the state. Throws like `applyVariant`; an
  * unknown state is `E_USAGE`.
  */
+/** The scene with the base state's hidden objects, parts and regions applied (SPEC 9.5, 11.1). */
+function viewed(base: Scene, scene: Scene, state: string): Scene {
+  const def = base.states?.[state];
+  if (def === undefined) return sceneInState(base, state);
+  return sceneInState({ ...scene, states: { ...(scene.states ?? {}), [state]: def } }, state);
+}
+
 export function compareVariants(base: Scene, variants: readonly VariantInput[], state?: string, relations = false): Comparison {
-  const hidden = state === undefined ? undefined : hiddenIn(base, state);
+  if (state !== undefined) sceneInState(base, state);
   const applied = variants.map((v) => ({ name: v.name, ...applyVariant(base, v.name, v.text) }));
-  const resultsOf = (scene: Scene) =>
-    hidden === undefined ? runChecks(scene) : runChecksHiding(scene, hidden, state as string);
-  const present = (scene: Scene) => (hidden === undefined ? scene : withoutObjects(scene, hidden));
+  const present = (scene: Scene): Scene => (state === undefined ? scene : viewed(base, scene, state));
+  const resultsOf = (scene: Scene) => {
+    if (state === undefined) return runChecks(scene);
+    const view = present(scene);
+    const shown = new Set(view.objects.map((object) => object.id));
+    const hidden = new Set([...scene.objects.map((object) => object.id).filter((id) => !shown.has(id)), ...(base.states?.[state]?.hide ?? [])]);
+    return runChecksHiding(scene, hidden, state, view);
+  };
   const columns = [resultsOf(base), ...applied.map((a) => resultsOf(a.scene))];
   const full = [base, ...applied.map((a) => a.scene)];
   return {

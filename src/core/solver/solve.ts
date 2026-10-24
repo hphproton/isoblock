@@ -2,7 +2,7 @@ import { round6 } from "../checks/result";
 import type { Rect } from "../geometry";
 import { followAssumptions } from "../patch/apply";
 import { evaluateRelations, type RelationResult } from "../relations/evaluate";
-import type { Scene, Vec2 } from "../types";
+import type { Pos, Scene } from "../types";
 import { buildModel, type SolverModel } from "./model";
 import { scoreOf, search } from "./search";
 
@@ -12,8 +12,8 @@ const CONFLICT_PERTURBATIONS = 25;
 
 export interface MovedObject {
   readonly id: string;
-  readonly from: Vec2;
-  readonly to: Vec2;
+  readonly from: Pos;
+  readonly to: Pos;
 }
 
 /** The report of SPEC section 8 (`--json`). */
@@ -57,7 +57,10 @@ export function minimalConflict(model: SolverModel, hard: readonly number[]): nu
 function proposalOf(scene: Scene, rects: readonly Rect[]): Scene {
   const objects = scene.objects.map((o, i) => {
     const r = rects[i] as Rect;
-    return r.u0 === o.pos[0] && r.v0 === o.pos[1] ? o : { ...o, pos: [r.u0, r.v0] as Vec2 };
+    if (r.u0 === o.pos[0] && r.v0 === o.pos[1]) return o;
+    const h = (o.pos as readonly number[])[2];
+    const pos: Pos = h === undefined ? [r.u0, r.v0] : [r.u0, r.v0, h];
+    return { ...o, pos };
   });
   return followAssumptions({ ...scene, objects }) as Scene;
 }

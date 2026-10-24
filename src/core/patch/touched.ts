@@ -31,6 +31,8 @@ function valueChanged(before: Scene, after: unknown, original: SceneObject, next
       return !jsonEqual(original.pos[0], itemAt(next.pos, 0));
     case "pos.v":
       return !jsonEqual(original.pos[1], itemAt(next.pos, 1));
+    case "pos.h":
+      return !jsonEqual((original.pos as readonly number[])[2] ?? null, itemAt(next.pos, 2) ?? null);
     case "rot":
       return !jsonEqual(original.rot ?? 0, next.rot ?? 0);
     case "type":

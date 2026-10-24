@@ -1,4 +1,4 @@
-import { EPS, footprint, type Box, type Rect } from "../geometry";
+import { EPS, footprint, sizeBox, type Box, type Rect } from "../geometry";
 import { orderDirection } from "../projection";
 import { round } from "../round";
 import { actorWorst, prepareActor, prepareSprites, staticWorst, type PreparedSprite } from "../sort/mismatch";
@@ -15,12 +15,14 @@ const DEFAULT_REACH = 1;
  * The ground of the check: any ground without `area`; with `area`, the polygon of that zone minus
  * the blocked zones that have 3 or more points.
  */
-function groundOf(scene: Scene, area: string | undefined): ActorGround | string {
+function groundOf(scene: Scene, area: string | undefined, level: number): ActorGround | string {
   if (area === undefined) return { area: null, blocked: [] };
   const zones = scene.zones ?? [];
   const points = zones.find((z) => z.id === area)?.points ?? [];
   if (points.length < 3) return `zone "${area}" has ${points.length} points; an area needs 3 or more`;
-  const blocked = zones.filter((z) => z.kind === "blocked" && (z.points ?? []).length >= 3).map((z) => z.points as readonly Vec2[]);
+  const blocked = zones
+    .filter((z) => z.kind === "blocked" && Math.abs((z.h ?? 0) - level) <= EPS && (z.points ?? []).length >= 3)
+    .map((z) => z.points as readonly Vec2[]);
   return { area: points, blocked };
 }
 
@@ -30,13 +32,16 @@ function groundOf(scene: Scene, area: string | undefined): ActorGround | string 
  * drawn in the wrong order, against the actor or against another object, exceeds `maxPixels`.
  */
 export function checkSortConsistency(scene: Scene, spec: SortConsistencyCheck): CheckResult {
-  const ground = groundOf(scene, spec.area);
+  const level = spec.level ?? 0;
+  const ground = groundOf(scene, spec.area, level);
   if (typeof ground === "string") return skipResult(spec, ground);
   const step = spec.step ?? DEFAULT_STEP;
   const wanted = spec.ids === undefined ? null : new Set(spec.ids);
   const examined = scene.objects.flatMap((o, i) => (wanted === null || wanted.has(o.id) ? [i] : []));
   const footprints = scene.objects.map((o) => footprint(scene, o));
-  const search: ActorSearch = { actor: spec.actor, step, reach: spec.reach ?? DEFAULT_REACH, ground, obstacles: footprints };
+  const search: ActorSearch = {
+    actor: spec.actor, step, reach: spec.reach ?? DEFAULT_REACH, ground, level, obstacles: scene.objects.map((o) => sizeBox(scene, o)),
+  };
   const tooBig = examined.find((i) => searchCells(footprints[i] as Rect, search) > MAX_CELLS);
   if (tooBig !== undefined) {
     return skipResult(spec, `the search around "${scene.objects[tooBig]?.id}" has more than ${MAX_CELLS} cells; use a larger step`);
@@ -49,8 +54,8 @@ export function checkSortConsistency(scene: Scene, spec: SortConsistencyCheck): 
     let largest = statics[i] as number;
     eachActorPosition(footprints[i] as Rect, search, (f) => {
       positions += 1;
-      const box: Box = { ...f, h0: 0, h1: spec.actor[2] };
-      largest = Math.max(largest, actorWorst(prepared[i] as readonly PreparedSprite[], prepareActor(box, sortKey(c, f), scene.camera, c), c));
+      const box: Box = { ...f, h0: level, h1: level + spec.actor[2] };
+      largest = Math.max(largest, actorWorst(prepared[i] as readonly PreparedSprite[], prepareActor(box, sortKey(c, f, level), scene.camera, c), c));
     });
     return largest;
   });

@@ -10,7 +10,7 @@ interface LanePoint {
   readonly t: number;
 }
 
-function laneLength(points: readonly Vec2[]): number {
+function laneLength(points: readonly (readonly number[])[]): number {
   let total = 0;
   for (let i = 1; i < points.length; i++) {
     const [u0, v0] = points[i - 1] as Vec2;
@@ -21,7 +21,7 @@ function laneLength(points: readonly Vec2[]): number {
 }
 
 /** The point of the polyline nearest to (u, v); the first one along the lane when several are equally near. */
-function nearestOnLane(points: readonly Vec2[], length: number, u: number, v: number): LanePoint {
+function nearestOnLane(points: readonly (readonly number[])[], length: number, u: number, v: number): LanePoint {
   let best = { offset: Infinity, t: 0 };
   let along = 0;
   for (let i = 1; i < points.length; i++) {

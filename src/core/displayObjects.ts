@@ -1,7 +1,7 @@
 import { typeColors, zoneColor } from "./colors";
 import { label, polygon, type DisplayLabel, type DisplayPolygon } from "./displayTypes";
 import { boxInfo, orderInfos, type BoxInfo } from "./drawOrder";
-import { EPS, worldParts, worldPoint, type Box } from "./geometry";
+import { baseHeight, EPS, worldParts, worldPoint, type Box } from "./geometry";
 import { orderDirection, projector } from "./projection";
 import type { Camera, ObjectType, Scene, SceneObject, Vec2, Vec3 } from "./types";
 
@@ -9,6 +9,8 @@ import type { Camera, ObjectType, Scene, SceneObject, Vec2, Vec3 } from "./types
 export interface ObjectEntry {
   /** Definition of the object's type when the entry was built. */
   readonly type: ObjectType | undefined;
+  /** Part ids hidden when the entry was built. */
+  readonly hidden: string;
   readonly infos: readonly BoxInfo[];
   /** Face polygons, one list per part. */
   readonly faces: readonly (readonly DisplayPolygon[])[];
@@ -38,12 +40,16 @@ export function buildEntry(scene: Scene, object: SceneObject, camera: Camera, c:
   const at = projector(camera);
   const parts = worldParts(scene, object);
   const colors = typeColors(object.type);
+  if (parts.length === 0) {
+    return { type: scene.types[object.type], hidden: "", infos: [], faces: [], label: label("object", object.id, object.id, at(0, 0, 0), "middle") };
+  }
   const boxes = parts.map((p) => p.box);
   const u = (Math.min(...boxes.map((b) => b.u0)) + Math.max(...boxes.map((b) => b.u1))) / 2;
   const v = (Math.min(...boxes.map((b) => b.v0)) + Math.max(...boxes.map((b) => b.v1))) / 2;
   const top = Math.max(...boxes.map((b) => b.h1));
   return {
     type: scene.types[object.type],
+    hidden: (scene.hiddenParts?.[object.id] ?? []).join("\0"),
     infos: boxes.map((b) => boxInfo(b, camera, c)),
     faces: boxes.map((b) =>
       boxFaces(at, b, c).map((f) => polygon("object", object.id, f.points, { fill: colors[f.shade], stroke: colors.edge })),
@@ -74,7 +80,8 @@ export function objectItems(
   }
   const entries = scene.objects.map((o) => {
     const known = cache.entries.get(o);
-    if (known !== undefined && known.type === scene.types[o.type]) return known;
+    const hidden = (scene.hiddenParts?.[o.id] ?? []).join("\0");
+    if (known !== undefined && known.type === scene.types[o.type] && known.hidden === hidden) return known;
     const entry = buildEntry(scene, o, camera, c);
     cache.entries.set(o, entry);
     return entry;
@@ -105,7 +112,7 @@ export function anchorItems(
   for (const o of scene.objects) {
     for (const a of scene.types[o.type]?.anchors ?? []) {
       const [u, v] = worldPoint(scene, o, a.at[0], a.at[1]);
-      const [x, y] = at(u, v, a.at[2]);
+      const [x, y] = at(u, v, a.at[2] + baseHeight(o));
       const r = ANCHOR_RADIUS;
       const diamond: Vec2[] = [[x, y - r], [x + r, y], [x, y + r], [x - r, y]];
       marks.push(polygon("anchor", o.id, diamond, { fill: zoneColor(a.kind ?? "anchor"), stroke: "#222222", strokeWidth: 1.5 }));

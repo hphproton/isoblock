@@ -7,7 +7,7 @@ export interface LockedAxes {
 }
 
 /** Canonical order of the lock list; JSON Pointer locks follow, sorted. */
-const ORDER = ["pos", "pos.u", "pos.v", "rot", "type"] as const;
+const ORDER = ["pos", "pos.u", "pos.v", "pos.h", "rot", "type"] as const;
 
 function rank(path: string): number {
   const i = (ORDER as readonly string[]).indexOf(path);
@@ -22,7 +22,7 @@ function compareLocks(a: string, b: string): number {
 export function isPathLocked(object: SceneObject, path: string): boolean {
   const locks = object.locks ?? [];
   if (locks.includes(path)) return true;
-  return (path === "pos.u" || path === "pos.v") && locks.includes("pos");
+  return (path === "pos.u" || path === "pos.v" || path === "pos.h") && locks.includes("pos");
 }
 
 /** Which ground axes of `pos` the object's locks block. */
@@ -53,7 +53,7 @@ export function setLock(scene: Scene, objectId: string, path: string, locked: bo
   const current = object.locks ?? [];
   if (current.includes(path) === locked) return scene;
   const kept = locked ? [...current, path] : current.filter((p) => p !== path);
-  const next = path === "pos" && locked ? kept.filter((p) => p !== "pos.u" && p !== "pos.v") : kept;
+  const next = path === "pos" && locked ? kept.filter((p) => p !== "pos.u" && p !== "pos.v" && p !== "pos.h") : kept;
   const objects = scene.objects.map((o, i) => (i === index ? withLocks(object, [...next].sort(compareLocks)) : o));
   return { ...scene, objects };
 }
