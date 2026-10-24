@@ -134,13 +134,12 @@ describe("sort_consistency: pairs of objects", () => {
     expect(sort(wrong, { area: "away" }).worst).toBe(100);
   });
 
-  it("cuts a footprint that is not square into slices, so that the keys of a stack on a long object differ", () => {
-    // a is 1 x 2, so it has two slices with keys 1 and 3; the cap on it has key 2, between the slices: the second slice is wrong.
+  it("keeps one sprite when a camera weight is 0, so a long footprint is not sliced", () => {
+    // This camera has c = (0, 1, 1), so the weighted width along u is 0. SPEC 13.4 then uses one sprite.
     const stack = { tall: { size: [1, 2, 1] }, cap: { size: [1, 1, 1], parts: [{ id: "cap", box: [0, 0, 1, 1, 1, 2] }] } };
     const s = flatScene({ types: stack, objects: [{ id: "a", type: "tall", pos: [0, 0] }, { id: "b", type: "cap", pos: [0, 0.5] }], ...away });
-    // Second slice: v 1..2, h 0..1 -> y 0..20; cap: y -15..5 -> overlap 5 px x 10 px.
     const r = sort(s, { area: "away" });
-    expect([r.worst, r.ids]).toEqual([50, ["a", "b"]]);
+    expect([r.value, r.worst, r.ids]).toEqual([0, 0, []]);
   });
 });
 

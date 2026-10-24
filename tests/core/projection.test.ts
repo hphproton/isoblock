@@ -1,20 +1,27 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { cameraDirection, depth, inverse, project } from "../../src/core/projection";
-import type { Camera } from "../../src/core/types";
+import { cameraDirection, depth, inverse, project, screenAxes } from "../../src/core/projection";
+import type { Camera, ViewCamera } from "../../src/core/types";
 import { goldenDir } from "../helpers/fixtures";
 
-interface Golden {
+interface Projected {
   camera: Camera;
   cases: { uvh: [number, number, number]; xy: [number, number] }[];
   cameraDir: [number, number, number];
-  dimetric21: {
-    camera: Camera;
-    cases: { uvh: [number, number, number]; xy: [number, number] }[];
-    cameraDir: [number, number, number];
-  };
+}
+
+interface ViewCase extends Omit<Projected, "camera"> {
+  camera: ViewCamera;
+  axisU: [number, number];
+  axisV: [number, number];
+  up: [number, number];
+}
+
+interface Golden extends Projected {
+  dimetric21: Projected;
   inverse: { xyh: [number, number, number]; uv: [number, number] }[];
+  views: ViewCase[];
 }
 
 const golden = JSON.parse(readFileSync(join(goldenDir, "projection.json"), "utf8")) as Golden;
@@ -56,6 +63,25 @@ describe("projection: golden vectors", () => {
     const c = cameraDirection(golden.dimetric21.camera);
     golden.dimetric21.cameraDir.forEach((e, i) => expect(Math.abs((c[i] as number) - e)).toBeLessThan(1e-6));
   });
+
+  for (const view of golden.views) {
+    const name = `elevation ${view.camera.elevation} direction ${"direction" in view.camera ? view.camera.direction ?? 45 : ""}`;
+    it(`projects the view-form camera ${name}`, () => {
+      const axes = screenAxes(view.camera);
+      [axes.axisU, axes.axisV, axes.up].forEach((got, i) => {
+        const want = [view.axisU, view.axisV, view.up][i] as [number, number];
+        expect(Math.abs(got[0] - want[0])).toBeLessThan(1e-5);
+        expect(Math.abs(got[1] - want[1])).toBeLessThan(1e-5);
+      });
+      const dir = cameraDirection(view.camera);
+      view.cameraDir.forEach((e, i) => expect(Math.abs((dir[i] as number) - e)).toBeLessThan(1e-5));
+      for (const c of view.cases) {
+        const [x, y] = project(view.camera, ...c.uvh);
+        expect(Math.abs(x - c.xy[0])).toBeLessThan(PX);
+        expect(Math.abs(y - c.xy[1])).toBeLessThan(PX);
+      }
+    });
+  }
 });
 
 describe("projection: properties", () => {

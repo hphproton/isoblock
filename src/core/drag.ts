@@ -2,7 +2,7 @@ import { IsoblockError } from "./errors";
 import { moveObject, type EditResult } from "./edit";
 import { axisLock, lockedAxes } from "./locks";
 import { inverse } from "./projection";
-import type { Camera, Scene, Vec2 } from "./types";
+import type { Camera, Pos, Scene, Vec2 } from "./types";
 
 /**
  * Ground movement that a pointer move causes, on the plane at height `h`. The difference of two
@@ -25,7 +25,7 @@ export function snapValue(value: number, step: number): number {
 export interface DragStart {
   readonly id: string;
   /** `pos` of the object when it was grabbed. */
-  readonly pos: Vec2;
+  readonly pos: Pos;
   /** Display point where the pointer went down. */
   readonly point: Vec2;
 }

@@ -1,4 +1,4 @@
-import { footprint, rectsOverlap, type Rect } from "../geometry";
+import { boxesOverlap, sizeBox, type Box } from "../geometry";
 import type { CheckResult, NoOverlapCheck, Scene } from "../types";
 import { plural, selectObjects } from "./result";
 
@@ -44,11 +44,11 @@ function resultOf(spec: NoOverlapCheck, pairs: Pair[]): CheckResult {
 export function checkNoOverlap(scene: Scene, spec: NoOverlapCheck): CheckResult {
   const objects = selectObjects(scene, spec.ids);
   const allowed = allowedKeys(spec);
-  const rects = objects.map((o) => footprint(scene, o));
+  const rects = objects.map((o) => sizeBox(scene, o));
   const pairs: Pair[] = [];
   for (let i = 0; i < objects.length; i++) {
     for (let j = i + 1; j < objects.length; j++) {
-      if (!rectsOverlap(rects[i]!, rects[j]!)) continue;
+      if (!boxesOverlap(rects[i]!, rects[j]!)) continue;
       const pair = sortedPair((objects[i] as { id: string }).id, (objects[j] as { id: string }).id);
       if (!allowed.has(pairKey(pair))) pairs.push(pair);
     }
@@ -66,12 +66,12 @@ export function updateNoOverlap(scene: Scene, spec: NoOverlapCheck, prev: CheckR
   const allowed = allowedKeys(spec);
   const pairs = (prev.pairs ?? []).filter(([a, b]) => !changed.has(a) && !changed.has(b));
   const seen = new Set(pairs.map(pairKey));
-  const rects = new Map<string, Rect>(objects.map((o) => [o.id, footprint(scene, o)]));
+  const rects = new Map<string, Box>(objects.map((o) => [o.id, sizeBox(scene, o)]));
   for (const moved of objects) {
     if (!changed.has(moved.id)) continue;
-    const rect = rects.get(moved.id) as Rect;
+    const rect = rects.get(moved.id) as Box;
     for (const other of objects) {
-      if (other.id === moved.id || !rectsOverlap(rect, rects.get(other.id) as Rect)) continue;
+      if (other.id === moved.id || !boxesOverlap(rect, rects.get(other.id) as Box)) continue;
       const pair = sortedPair(moved.id, other.id);
       const key = pairKey(pair);
       if (allowed.has(key) || seen.has(key)) continue;

@@ -28,5 +28,6 @@ export function duplicateLine(scene: Scene, id: string): { readonly id: string; 
   const pos = duplicatePosition(scene, id);
   if (object === undefined || pos === null) return null;
   const copy = freshId(scene, object.type);
-  return { id: copy, line: `add ${copy} ${object.type} ${decimal(pos[0])},${decimal(pos[1])} ${object.rot ?? 0}` };
+  const place = object.pos.length >= 3 ? `${decimal(pos[0])},${decimal(pos[1])},${decimal(object.pos[2] ?? 0)}` : `${decimal(pos[0])},${decimal(pos[1])}`;
+  return { id: copy, line: `add ${copy} ${object.type} ${place} ${object.rot ?? 0}` };
 }

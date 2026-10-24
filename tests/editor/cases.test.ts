@@ -30,6 +30,8 @@ interface Step {
   readonly toggle?: string;
   readonly settle?: string;
   readonly undo?: number;
+  readonly field?: string;
+  readonly value?: number;
 }
 
 interface EditorCase {
@@ -43,7 +45,12 @@ interface EditorCase {
   readonly hidden: readonly string[];
 }
 
-const cases = (JSON.parse(readFileSync(join(repoRoot, "tests", "fixtures", "editor", "cases.json"), "utf8")) as { cases: EditorCase[] }).cases;
+function loadCases(path: string): EditorCase[] {
+  return (JSON.parse(readFileSync(join(repoRoot, path), "utf8")) as { cases: EditorCase[] }).cases;
+}
+
+const cases = loadCases("tests/fixtures/editor/cases.json");
+const levelCases = loadCases("tests/fixtures/levels/editor/cases.json");
 
 let browser: Browser;
 
@@ -98,29 +105,34 @@ async function runSteps(page: Parameters<typeof ev>[0], steps: readonly Step[]):
       await page.getByRole("button", { name: "Confirm", exact: true }).click();
     } else if (step.undo !== undefined) {
       for (let i = 0; i < step.undo; i += 1) await page.getByRole("button", { name: "Undo", exact: true }).click();
+    } else if (step.field !== undefined) {
+      const input = page.locator(`[aria-label="${step.field}"]`);
+      await input.fill(String(step.value));
+      await input.press("Enter");
     }
     await frames(page, 2);
   }
 }
 
-describe.skipIf(!hasBrowser)("editor cases", () => {
-  it("finds the 16 cases", () => {
-    expect(cases).toHaveLength(16);
-  });
+function editorSuite(title: string, list: readonly EditorCase[], expectedDir: string): void {
+  describe.skipIf(!hasBrowser)(title, () => {
+    it(`finds the ${list.length} cases`, () => {
+      expect(list.length).toBeGreaterThan(0);
+    });
 
-  for (const c of cases) {
-    it(`${c.name} follows the steps and saves the expected file`, async () => {
-      const { page, context, errors } = await openEditor(browser, fixtureName(c.scene));
-      expect(await page.locator('figure.view[data-view="plan"]').isVisible()).toBe(true);
-      expect(await page.locator('figure.view[data-view="iso"]').isVisible()).toBe(true);
-      await page.locator("#snap").selectOption(String(c.snap));
-      const before = await ev<string>(page, "window.isoblock.text()");
-      await runSteps(page, c.steps);
-      if (c.refused) expect(((await page.locator("#status").textContent()) ?? "").trim(), c.name).not.toBe("");
-      await page.click("#save");
-      const saved = await ev<string>(page, "window.isoblock.text()");
-      const want = c.expected === null ? before : readFileSync(join(repoRoot, "tests", "fixtures", "editor", c.expected), "utf8");
-      expect(saved, c.name).toBe(want);
+    for (const c of list) {
+      it(`${c.name} follows the steps and saves the expected file`, async () => {
+        const { page, context, errors } = await openEditor(browser, fixtureName(c.scene));
+        expect(await page.locator('figure.view[data-view="plan"]').isVisible()).toBe(true);
+        expect(await page.locator('figure.view[data-view="iso"]').isVisible()).toBe(true);
+        await page.locator("#snap").selectOption(String(c.snap));
+        const before = await ev<string>(page, "window.isoblock.text()");
+        await runSteps(page, c.steps);
+        if (c.refused) expect(((await page.locator("#status").textContent()) ?? "").trim(), c.name).not.toBe("");
+        await page.click("#save");
+        const saved = await ev<string>(page, "window.isoblock.text()");
+        const want = c.expected === null ? before : readFileSync(join(expectedDir, c.expected), "utf8");
+        expect(saved, c.name).toBe(want);
       expect(await page.locator("select[aria-label='State']").inputValue(), c.name).toBe(c.panelState ?? "default");
       const cap = memoryIo({ "scene.json": saved });
       const argv = ["check", "--json", "scene.json", ...(c.panelState === null ? [] : ["--state", c.panelState])];
@@ -134,8 +146,12 @@ describe.skipIf(!hasBrowser)("editor cases", () => {
         await clickFootprint(page, id);
         expect((await ev<{ selected: string | null }>(page, "window.isoblock.state()")).selected, id).not.toBe(id);
       }
-      expect(errors, c.name).toEqual([]);
-      await context.close();
-    }, 60_000);
-  }
-});
+        expect(errors, c.name).toEqual([]);
+        await context.close();
+      }, 60_000);
+    }
+  });
+}
+
+editorSuite("editor cases", cases, join(repoRoot, "tests", "fixtures", "editor"));
+editorSuite("level editor cases", levelCases, join(repoRoot, "tests", "fixtures", "levels", "editor"));

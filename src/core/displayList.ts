@@ -40,7 +40,7 @@ function sameKey(a: readonly unknown[], b: readonly unknown[]): boolean {
 }
 
 function ground(scene: Scene, camera: Camera, extent: GroundExtent, cache: DisplayCache): GroundItems {
-  const key = [scene.id, camera, scene.camera, scene.frame, scene.strips, scene.zones, scene.lanes, ...extent];
+  const key = [scene.id, camera, scene.camera, scene.frame, scene.strips, scene.zones, scene.lanes, scene.hiddenRegions, ...extent];
   if (cache.ground !== null && sameKey(cache.ground.key, key)) return cache.ground.value;
   const value = groundItems(scene, camera, extent);
   cache.ground = { key, value };

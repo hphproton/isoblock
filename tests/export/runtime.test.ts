@@ -14,7 +14,7 @@ function runtimeOf(raw: Record<string, any>): any {
   return JSON.parse(serializeJson(runtimeFile(parseScene(JSON.stringify(raw)))));
 }
 
-describe("runtime file: every case of tests/fixtures/runtime/cases.json", () => {
+describe("runtime file: every case of tests/fixtures/runtime3/cases.json", () => {
   for (const c of cases) {
     it(`${c.name} equals ${c.runtime} (keys in order, numbers within ${tolerance.world})`, () => {
       const text = serializeJson(runtimeFile(loadRuntimeScene(c)));
@@ -48,16 +48,16 @@ describe("runtime file: rules of SPEC 13.7", () => {
 
   it("has the top-level keys in order", () => {
     expect(Object.keys(runtimeFile(yard))).toEqual([
-      "schema", "scene", "meta", "units", "camera", "cameraDir", "frame", "strips", "objects", "zones", "lanes", "states",
+      "schema", "scene", "meta", "units", "camera", "projection", "cameraDir", "frame", "strips", "objects", "zones", "lanes", "states",
     ]);
     expect(Object.keys(runtimeFile(yard).objects[0] as object)).toEqual([
-      "id", "type", "pos", "rot", "footprint", "tags", "parts", "anchors", "sprites",
+      "id", "type", "pos", "rot", "base", "footprint", "tags", "parts", "anchors", "sprites",
     ]);
   });
 
   it("takes scene, version and status from the scene, null when there is no meta", () => {
     const file = runtimeFile(yard);
-    expect(file.schema).toBe("isoblock-runtime/2");
+    expect(file.schema).toBe("isoblock-runtime/3");
     expect(file.scene).toBe("yard");
     expect(file.meta).toEqual({ version: 1, status: "draft" });
     const raw = rawFixture("yard");
@@ -83,7 +83,7 @@ describe("runtime file: rules of SPEC 13.7", () => {
     ]);
   });
 
-  it("writes absent lists as empty lists and copies units, strips, zones and lanes without x- keys", () => {
+  it("writes absent lists as empty lists and copies units, strips, zones and lanes with their x- keys", () => {
     const raw = withoutRules(rawFixture("yard"));
     delete raw.strips;
     delete raw.zones;
@@ -96,10 +96,10 @@ describe("runtime file: rules of SPEC 13.7", () => {
     withX.lanes[0]["x-speed"] = 3;
     withX.zones = [{ id: "z", kind: "walkable", points: [[0, 0], [1, 0], [1, 1]], "x-tag": "a" }];
     const file = runtimeOf(withX);
-    expect(file.units).toEqual({ name: "u", note: "abstract unit" });
-    expect(Object.keys(file.strips[0])).toEqual(["id", "v", "kind", "scale"]);
-    expect(Object.keys(file.lanes[0])).toEqual(["id", "kind", "width", "dir", "points"]);
-    expect(file.zones).toEqual([{ id: "z", kind: "walkable", points: [[0, 0], [1, 0], [1, 1]] }]);
+    expect(file.units).toEqual({ name: "u", note: "abstract unit", "x-note": 1 });
+    expect(Object.keys(file.strips[0])).toEqual(["id", "v", "kind", "scale", "x-flag"]);
+    expect(Object.keys(file.lanes[0])).toEqual(["id", "kind", "width", "dir", "points", "x-speed"]);
+    expect(file.zones).toEqual([{ id: "z", kind: "walkable", points: [[0, 0], [1, 0], [1, 1]], "x-tag": "a" }]);
   });
 
   it("writes the footprint after rotation and parts and anchors in world units", () => {
@@ -262,11 +262,15 @@ describe("runtime file: states (SPEC 13.7)", () => {
     expect(runtimeOf(raw).states).toEqual({});
   });
 
-  it("copies each state in file order with its hide list, without x- keys", () => {
+  it("copies each state in file order with hide, hideParts, hideRegions and its x- keys", () => {
     const raw = rawFixture("yard");
     raw.states = { night: { hide: ["crate1"], "x-note": "dark" }, empty: {}, day: { hide: ["bench", "crate2"] } };
     const states = runtimeOf(raw).states;
     expect(Object.keys(states)).toEqual(["night", "empty", "day"]);
-    expect(states).toEqual({ night: { hide: ["crate1"] }, empty: { hide: [] }, day: { hide: ["bench", "crate2"] } });
+    expect(states).toEqual({
+      night: { hide: ["crate1"], hideParts: {}, hideRegions: [], "x-note": "dark" },
+      empty: { hide: [], hideParts: {}, hideRegions: [] },
+      day: { hide: ["bench", "crate2"], hideParts: {}, hideRegions: [] },
+    });
   });
 });

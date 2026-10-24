@@ -1,5 +1,40 @@
 # Changelog
 
+## 0.12.0
+
+Stage 12: heights and cameras. The scene format stays `isoblock/1`. The runtime file becomes `isoblock-runtime/3`.
+
+### Changed
+
+- `no_overlap` compares boxes, the footprint from the base height to the base height plus the type height. A flat object (height 0) overlaps nothing, and an object that rests on another does not overlap it. A flat object that shares ground with another object failed this check in 0.11.0 and passes now. No fixture of 0.11.0 has such a pair, so their results do not change.
+- A flat object takes no space: it no longer blocks a lane (`lane_clear`), a walk (`reachable`) or an actor position (`sort_consistency`).
+- `lane_clear` blocks an object only when it takes space at the lane's level. A lane that is not flat is `skip`. `reachable` walks one level. `sort_consistency` stands its actor at a level and overlaps boxes. Where the camera has `|cu|` different from `|cv|`, slices are weighted by the camera, so `sort_consistency` can change; with `|cu| = |cv|` the slices are those of 0.11.0.
+- `in_region` with the footprint measure projects the footprint at the object's base height. At height 0 this is the value of 0.11.0.
+
+### Added
+
+- A camera may be a view: `elevation` (greater than 0 and at most 90), `direction` (default 45) and `scale` (greater than 0). The two forms do not mix. Both give the screen vectors `axisU`, `axisV` and `up`.
+- `pos` may have a third number, the base height. Parts and anchors are raised by it. Zones have `h`. A lane has `h`, and a lane point may have a third number.
+- `lane_clear` takes `height`. `reachable` takes `level` and `height`. `sort_consistency` takes `level`. `visible` samples the target's box. `min_screen_size` with `measure: "height"` uses the screen length of `up`.
+- A state may list `hideParts` (object id to part ids) and `hideRegions` (frame region ids). A hidden part is not drawn and occludes nothing. A hidden region is not drawn, and `in_region` and `lane_reaches` that name it are `skip`. An object whose every part is hidden counts as hidden.
+- `move` takes `h±n`. `add` takes `u,v,h`. `lock` takes `pos.h`. `rot` keeps the base height. `remove` also drops the object's `hideParts` entries. `compare` counts a change of base height as a move, and distances are taken in (u, v, h).
+- `describe` prints a view-form camera as `e<elevation>/d<direction>` and, when any object has a base height, the column `pos(u,v,h)`. `describe --states` lists hidden parts and regions.
+- The editor draws both camera forms, zones in ascending height, lanes at their heights and objects at their base heights. A drag keeps the base height. The property panel has `pos.h (<unit>)` and a lock for it. Duplicate keeps the base height. A state hides its parts and regions.
+- Sort keys add twice the base height. Slices are weighted by `|cu|` and `|cv|`.
+
+### Breaking: runtime file `isoblock-runtime/3`
+
+`isoblock export --target runtime` now writes `isoblock-runtime/3`. It adds `projection` (the screen vectors, so an adapter needs no trigonometry), `base` on every object, the camera in its own form, `hideParts` and `hideRegions` in every state, and the scene's `x-` keys. Keys and slices equal those of `isoblock-runtime/2` for a scene without base heights whose camera has `|cu| = |cv|`.
+
+1. Export every scene again: `isoblock export <scene> --target runtime -o <game>/data/scenes/<id>.json`. The `schema` value is `isoblock-runtime/3`.
+2. In a loader of your own, accept `isoblock-runtime/3` and reject `isoblock-runtime/2` and `isoblock-runtime/1`. Project with `projection` and `camera.origin`. Read `base` when you place a pivot. Read `hideParts` and `hideRegions` when you apply a state.
+3. The Godot adapter in `adapters/godot/` reads `isoblock-runtime/3` and reports every other `schema` value as `E_SCHEMA`. Copy the new `isoblock_runtime.gd` into the game project. `sort_key` takes a base height. `add_actor` takes `[u, v, h]`. `apply_state` hides parts and records hidden regions on the root as `hidden_regions`.
+
+### Tests
+
+- The runtime fixtures of `isoblock-runtime/2` (`tests/fixtures/runtime/`) are removed; `tests/fixtures/runtime3/` has every case as `isoblock-runtime/3`.
+- The Godot cross-check of stage 12 runs on `tests/fixtures/levels/godot.scene.json`, a scene without overlapping objects and without a static mismatch, as SPEC 13.6 requires (Q-027).
+
 ## 0.11.0
 
 ### Added

@@ -1,4 +1,4 @@
-import { EPS, rectGap, rectsOverlap, type Rect } from "../geometry";
+import { boxesOverlap, EPS, rectGap, type Box, type Rect } from "../geometry";
 import { insidePolygon } from "../polygon";
 import type { Vec2, Vec3 } from "../types";
 
@@ -13,8 +13,10 @@ export interface ActorSearch {
   readonly step: number;
   readonly reach: number;
   readonly ground: ActorGround;
-  /** The footprints of all objects of the scene: an actor does not stand on any of them. */
-  readonly obstacles: readonly Rect[];
+  /** Height the actor stands on (SPEC 9.5). */
+  readonly level: number;
+  /** The boxes of all objects of the scene: an actor does not overlap any of them. */
+  readonly obstacles: readonly Box[];
 }
 
 /** Grid cells of the search around a footprint; a larger search is not run (use a larger `step`). */
@@ -41,6 +43,8 @@ export function eachActorPosition(target: Rect, search: ActorSearch, visit: (act
   // The actor lies within `reach` of the target and has its own size, so it stays inside `near` grown by that size.
   const room = { u0: near.u0 - w, v0: near.v0 - d, u1: near.u1 + w, v1: near.v1 + d };
   const blocking = search.obstacles.filter((o) => rectGap(o, room) <= EPS);
+  const h0 = search.level;
+  const h1 = h0 + search.actor[2];
   const range = (lo: number, hi: number, size: number): [number, number] => [
     Math.floor((lo - size / 2) / step - 0.5) - 1,
     Math.ceil((hi + size / 2) / step - 0.5) + 1,
@@ -53,7 +57,7 @@ export function eachActorPosition(target: Rect, search: ActorSearch, visit: (act
       const v = (j + 0.5) * step;
       const actor: Rect = { u0: u - w / 2, v0: v - d / 2, u1: u + w / 2, v1: v + d / 2 };
       if (rectGap(actor, target) > reach + EPS) continue;
-      if (blocking.some((o) => rectsOverlap(actor, o))) continue;
+      if (blocking.some((o) => boxesOverlap({ ...actor, h0, h1 }, o))) continue;
       if (onGround(search.ground, u, v)) visit(actor);
     }
   }

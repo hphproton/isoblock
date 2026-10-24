@@ -47,7 +47,7 @@ export function resolvePoint(scene: Scene, ref: PointRef, end: "first" | "last")
   if (laneId !== null) {
     const points = (scene.lanes ?? []).find((l) => l.id === laneId)?.points;
     const at = end === "first" ? points?.[0] : points?.[points.length - 1];
-    return at === undefined ? null : { at, object: null };
+    return at === undefined ? null : { at: [at[0], at[1]], object: null };
   }
   const found = parseAnchorRef(scene, ref);
   if (found === null) return null;

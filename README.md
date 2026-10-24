@@ -2,7 +2,7 @@
 
 IsoBlock keeps the layout of a 2D isometric scene as data. People and AI agents edit one scene file; IsoBlock checks it against the scene's rules, renders it, and exports one approved layout to the game engine, to image generation and to graybox gameplay.
 
-Made by [Forty-Two Twice](https://10101042.xyz), an independent game studio. Status: pre-release, version 0.11.0. Scene format `isoblock/1`. Breaking changes and upgrade steps are listed in [`CHANGELOG.md`](CHANGELOG.md).
+Made by [Forty-Two Twice](https://10101042.xyz), an independent game studio. Status: pre-release, version 0.12.0. Scene format `isoblock/1`. Breaking changes and upgrade steps are listed in [`CHANGELOG.md`](CHANGELOG.md).
 
 ## Why
 
@@ -14,14 +14,14 @@ IsoBlock makes the scene file the single source of truth, checks it with exact r
 
 ## Features
 
-- **Scene file** in world units: types with parts, objects, strips, zones, lanes, relations, checks, states, per-property locks and recorded assumptions. The camera sets the projection: true isometric, 2:1 pixel art, or any pair of axis angles.
+- **Scene file** in world units: types with parts, objects, strips, zones, lanes, relations, checks, states, per-property locks and recorded assumptions. The camera is either two ground axes or a view (elevation, direction and scale). Objects, zones and lanes may stand at a height.
 - **Checks**: `in_region`, `no_overlap`, `clearance`, `lane_clear`, `lane_reaches`, `lane_apart`, `visible` (occlusion), `reachable`, `capacity`, `min_screen_size` and `sort_consistency`. Each result states pass or fail, the measured value, the threshold and the objects involved.
 - **For agents**: `describe` prints a short text summary; `patch` applies short commands or JSON Patch, also from standard input, and rejects changes to locked properties; `diff` and `compare` report changes and variants by measured values; `validate --json` and `check --only` keep the output short, and a misspelled name gets a suggestion.
 - **Relations and solver**: `relations` measures every relation; `solve` places objects from them and, when they cannot all hold, reports a minimal set of conflicting hard relations.
 - **Render**: SVG and PNG, with no native dependencies.
-- **Export**: a runtime file (`isoblock-runtime/2`) for engines, and bounding boxes for image generation (`gen-bbox`).
+- **Export**: a runtime file (`isoblock-runtime/3`) for engines, and bounding boxes for image generation (`gen-bbox`).
 - **Godot 4 adapter** ([`adapters/godot/`](adapters/godot/)): builds a node tree from the runtime file, draws sprites in the tool's draw order, switches states, and places the game's moving actors.
-- **Editor** (`dist/editor.html`): one offline page with dragging on isometric and top-down views, adding, duplicating, deleting and nudging objects, a state switch, locks, settling assumptions, undo and a live check panel.
+- **Editor** (`dist/editor.html`): one offline page with dragging on isometric and top-down views, adding, duplicating, deleting and nudging objects, a base height field, a state switch, locks, settling assumptions, undo and a live check panel.
 
 ## Quick start
 

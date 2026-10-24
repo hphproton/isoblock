@@ -186,21 +186,22 @@ Export targets `godot`, `phaser` and `tiled` are not scheduled (the Godot adapte
 
 ### Views
 
-- **Isometric** draws the scene with its own camera. **Plan** is top-down: u to the right, v downwards, 40 px per unit; it shows the same objects from above and the frame regions as the ground areas they cover. **Iso**, **Plan** and **Both** in the toolbar choose what is shown; a narrow window starts with Iso only.
+- **Isometric** draws the scene with its own camera, either the axes form (`angleU`, `angleV`, `pxPerUnit`) or the view form (`elevation`, `direction`, `scale`). **Plan** is top-down: u to the right, v downwards, 40 px per unit; it shows the same objects from above and the frame regions as the ground areas they cover. Zones are drawn in ascending height under the objects, and lanes at the height of their points. **Iso**, **Plan** and **Both** in the toolbar choose what is shown; a narrow window starts with Iso only.
 - Drag an empty place to pan, use the wheel or two fingers to zoom, and **Fit** to show everything again. A view repaints only when something changed.
 
 ### Moving objects
 
-- Drag an object in either view. The pointer is converted to the ground at the height of the object (h is kept), and `pos` snaps to the grid chosen in **Snap** (off, 0.05, 0.1, 0.25, 0.5 or 1). Only `pos` changes. One drag is one undo step.
-- A locked `pos` cannot be dragged: the object does not move and the status line names the lock. `pos.u` or `pos.v` blocks that axis only; the object still moves along the other one. Every object with a lock shows a lock icon (dark: `pos` locked; orange with `u` or `v`: one axis; grey: another lock).
+- Drag an object in either view. The pointer is converted to the ground at the object's base height, which the drag keeps, and `pos` snaps to the grid chosen in **Snap** (off, 0.05, 0.1, 0.25, 0.5 or 1). Only u and v change. One drag is one undo step.
+- A locked `pos` cannot be dragged: the object does not move and the status line names the lock. `pos.u` or `pos.v` blocks that axis only; the object still moves along the other one. `pos.h` does not block a drag. Every object with a lock shows a lock icon (dark: `pos` locked; orange with `u` or `v`: one axis; grey: another lock).
 - Dragging while a second finger comes down cancels the drag.
 
 ### Property panel
 
 Select an object (tap or click it) to see its properties, each with its unit:
 
-- `type`, `pos` (u and v), `rot`, and the size `w`, `d`, `h` of its type. Type the new number and leave the field. A size belongs to the type, so it changes every object of that type.
-- Every property has a lock toggle: `pos` (both axes), `pos.u`, `pos.v`, `rot`, `type`, and for each size a JSON Pointer lock `/types/<type>/size/<0|1|2>`. A locked property cannot be changed from the panel, and the status line says why. Locks are saved in the object's `locks` list.
+- `type`, `pos` (u, v and h), `rot`, and the size `w`, `d`, `h` of its type. Type the new number and leave the field, or press Enter. A size belongs to the type, so it changes every object of that type.
+- `pos.h (<unit>)` is the object's base height. It shows 0 when `pos` has two numbers. Changing it is `move <id> h±<difference>`, which writes `pos` with three numbers.
+- Every property has a lock toggle: `pos` (the whole position), `pos.u`, `pos.v`, `pos.h`, `rot`, `type`, and for each size a JSON Pointer lock `/types/<type>/size/<0|1|2>`. A locked property cannot be changed from the panel, and the status line says why. Locks are saved in the object's `locks` list. A `pos` lock also locks `pos.h`.
 - A yellow `*` marks a number that has an entry in `assumptions` (it is provisional); point at it to read the note and the owner. Editing such a number keeps the entry and updates its `value`. Only a person settles an assumption, from the Assumptions section below. No patch command removes one.
 - One checkbox per state, **Hidden in \<state\>**, checked when that state hides the object. Checking it is `hide <state> <id>`; clearing it is `show <state> <id>`.
 
@@ -212,12 +213,12 @@ Checks that search a grid, `reachable` and `sort_consistency`, are too slow to r
 
 ### State
 
-**State** lists `default`, then the states of the scene. `default` shows every object, unless the scene has a state of that name, in which case choosing it shows that state, as `--state default` does. In a state, both views leave out the objects it hides: they are not drawn and cannot be selected or dragged, and a hidden object that was selected is cleared. The check panel shows `check --state <name>`. Switching is not an edit: the file does not change, there is no undo step, and the page is not marked unsaved. A newly opened file shows `default`. If the state being shown disappears, the select returns to `default`.
+**State** lists `default`, then the states of the scene. `default` shows every object, unless the scene has a state of that name, in which case choosing it shows that state, as `--state default` does. In a state, both views leave out the objects, parts and frame regions it hides: a hidden object or a hidden part is not drawn and cannot be selected, and a hidden object that was selected is cleared. An object whose every part is hidden counts as hidden. The check panel shows `check --state <name>`. Switching is not an edit: the file does not change, there is no undo step, and the page is not marked unsaved. A newly opened file shows `default`. If the state being shown disappears, the select returns to `default`.
 
 ### Adding, copying and deleting
 
 - **Type to add** lists the keys of `types`. **Add** appends an object of that type, as `add <id> <type> <u>,<v>`. The id is `<type><n>` with the smallest integer n ≥ 1 that no object uses. `pos` is the ground point under the center of the view region (the first frame region without `blocksScene`), each coordinate snapped to the nearest multiple of the snap step, a tie rounding up, then rounded to 6 decimals. `rot` is 0. The new object is selected.
-- **Duplicate**, enabled while an object is selected, appends a copy as `add <id> <type> <u>,<v> <rot>`: the same type and rotation, the id by the rule of Add, and `pos` with u increased by the footprint's extent along u. Nothing else is copied. The copy is selected.
+- **Duplicate**, enabled while an object is selected, appends a copy as `add <id> <type> <u>,<v> <rot>`, or `add <id> <type> <u>,<v>,<h> <rot>` when `pos` has a base height: the same type, rotation and base height, the id by the rule of Add, and u increased by the footprint's extent along u. Nothing else is copied. The copy is selected.
 - **Delete**, and the Delete and Backspace keys while no text field or select has the focus, removes the selected object as `remove` does. A locked object, an object a check names, and a removal that would shift a later object index are refused: the scene stays as it is and the status line gives the reason.
 
 ### Nudging
@@ -257,14 +258,14 @@ assumptions: tree.size.h=2.40
 (* = provisional value)
 ```
 
-- **Header:** scene id, version and status from `meta`, unit, camera (`iso30`, `dimetric21`, or `u<angleU>/v<angleV>`), pixels per unit, frame size, and the first region that does not block the scene.
-- **Object table:** one row per object. `pos` is the footprint's minimum (u, v) corner after rotation. `size` is the type's size `w,d,h` before rotation. `rot` is 0, 90, 180 or 270. `locks` lists locked properties, comma-separated, or `-`.
+- **Header:** scene id, version and status from `meta`, unit, camera (`iso30`, `dimetric21`, `u<angleU>/v<angleV>`, or `e<elevation>/d<direction>` for the view form), pixels per unit (`pxPerUnit` or `scale`), frame size, and the first region that does not block the scene.
+- **Object table:** one row per object. `pos` is the footprint's minimum (u, v) corner after rotation. When any object has a base height, the column is `pos(u,v,h)` and every row prints three numbers, with 0 for a `pos` of two. `size` is the type's size `w,d,h` before rotation. `rot` is 0, 90, 180 or 270. `locks` lists locked properties, comma-separated, or `-`.
 - **`*`:** a number that has an entry in `assumptions`. It is provisional: ask before relying on it.
 - **Check lines:** one per `fail`, `warn` or `skip` check, in `checks` order, with the ids involved. The gameplay checks read `FAIL k3 reachable bench2: path of 3.10 u (max 1.00)`, `FAIL s1 capacity seat: 4 usable < 6 (blocked: ...)`, `FAIL m1 min_screen_size walker1: 126 px < 200 px` and `FAIL s1 sort_consistency shed, box, counter, kiosk: drawn out of order, worst 545.60 px2`. A drawn region reads `FAIL drawn in_region tower: outside view`, a height reads `FAIL size_height min_screen_size tower: 192 px tall < 200 px`, and a lane separation reads `FAIL walks_near lane_apart walk1×walk2: 0.30 < 0.50` or `FAIL walks_cross lane_apart walk1×walk3: overlap 0.60`. With none, the output says `checks: all N pass` (or `checks: none`).
 - **Numbers:** 2 decimals (up to 4 when 2 would lose information), whole pixels after `≈`, whole percentages.
 - **Assumptions:** `<type>.size.<w|d|h>`, `<type>.<part>.<u0|v0|h0|u1|v1|h1>`, or the JSON Pointer for other paths. `-` when there are none.
 - **`--relations`:** after the check lines, one `BAD` line per violated relation (`BAD r1 in_front_of bench×tree: violation 0.7172`; a hard relation starts the text after the colon with `hard; `) and one `SKIP` line per skipped relation, then `relations: <n> · <v> violated · <k> skipped · hard <h> of <H> satisfied · soft penalty <p>`. With no relations the only line is `relations: none`.
-- **`--states`:** one line, `states: <name> hides <ids>` for each state in file order, joined with ` · `. A state that hides nothing says `<name> hides nothing`. With no states the line is `states: none`. With both flags, this line follows the relation lines.
+- **`--states`:** one line, `states: <name> hides <what>` for each state in file order, joined with ` · `. What a state hides is up to three items joined with `; `: its object ids, `parts <object>/<part>, …`, and `regions <ids>`. An empty item is left out, so `cinema hides crate2; regions board` and `bare hides parts mast/body`. A state that hides nothing says `<name> hides nothing`. With no states the line is `states: none`. With both flags, this line follows the relation lines.
 
 ## Check reference
 
@@ -272,24 +273,24 @@ Parameters marked optional can be left out. A check with a wrong or unknown para
 
 | `check` | Parameters | Passes when | `value` |
 |---|---|---|---|
-| `in_region` | `region`; optional `strip`, `ids`, `measure` (`footprint` or `drawn`), `maxOutside` (only with `drawn`) | With `footprint` (default): every footprint corner (projected at height 0) is inside the region rectangle, edges included, and the footprint's v range is inside the strip's v range. With `drawn`: the share of the screen box of the parts that lies outside the region is at most `maxOutside`, and the strip rule still holds | Number of failing objects. With `drawn`, also `outside` |
-| `no_overlap` | optional `ids`, `allow` (pairs, either order) | No two footprints overlap by more than 1e-9 along both axes, except allowed pairs. Touching is not overlap | Number of overlapping pairs |
-| `clearance` | `a`, `b`, `min` | Edge-to-edge distance between the two footprints is at least `min` | The distance |
-| `lane_clear` | `lane`; optional `ignore` | No object outside `ignore` has a footprint that overlaps the lane | Number of blocking objects |
+| `in_region` | `region`; optional `strip`, `ids`, `measure` (`footprint` or `drawn`), `maxOutside` (only with `drawn`) | With `footprint` (default): every footprint corner, projected at the object's base height, is inside the region rectangle, edges included, and the footprint's v range is inside the strip's v range. With `drawn`: the share of the screen box of the parts that lies outside the region is at most `maxOutside`, and the strip rule still holds | Number of failing objects. With `drawn`, also `outside` |
+| `no_overlap` | optional `ids`, `allow` (pairs, either order) | No two boxes overlap, except allowed pairs. A box is the footprint from the base height to the base height plus the type height. A flat box (height 0) overlaps nothing, and a box that rests on another does not overlap it | Number of overlapping pairs |
+| `clearance` | `a`, `b`, `min` | Edge-to-edge distance between the two footprints is at least `min`. Heights do not change it | The distance |
+| `lane_clear` | `lane`; optional `ignore`, `height` (clear height) | The lane is flat. No object outside `ignore` overlaps the lane rectangle and takes space at the lane's level, up to `height` when it is set | Number of blocking objects |
 | `lane_reaches` | `lane`, `edge` (`right`, `left`, `top` or `bottom`), `region` | The lane meets the frame edge, and the whole meeting segment lies inside the region's range along that edge (y for `right` and `left`, x for `top` and `bottom`) | Largest y of the meeting segment for `right` and `left`, largest x for `top` and `bottom`, in px. `null` and `fail` when the lane does not reach the edge |
 | `lane_apart` | `lane`, `target` (`lane:<id>` or `zone:<id>`); optional `min` (default 0) | The lane does not overlap the target, and the distance between them is at least `min` | The distance. Also `overlap`, the area they share |
 | `visible` | `target`, `maxOccluded`; optional `from` (default 0.55) | The share of the target's camera-facing faces hidden by other objects is at most `maxOccluded` | Occluded fraction, 0 to 1 |
-| `reachable` | `from`, `to` (points); optional `area`, `radius` (0.2), `step` (0.1), `ignore`, `max` | A walkable path exists from `from` to `to` on a grid of free cells, and with `max` it is at most that long | Path length in units (moves times `step`). `null` and `fail` when there is no path |
+| `reachable` | `from`, `to` (points); optional `area`, `radius` (0.2), `step` (0.1), `ignore`, `max`, `level` (0), `height` (clear height) | A walkable path exists on one level from `from` to `to` on a grid of free cells, and with `max` it is at most that long. Without `area`, only walkable zones at `level` count. An object blocks a cell only when it takes space at `level` up to `height` | Path length in units (moves times `step`). `null` and `fail` when there is no path |
 | `capacity` | `kind`, `min`; optional `body` (`[0.5, 0.5]`), `ids`, `allow` (object ids) | At least `min` anchors of `kind` can be used at once | Number of usable anchors |
-| `min_screen_size` | `target`, `min` (pixels); optional `screenWidth` (default: the frame width), `measure` (`bounds` or `height`) | The target is at least `min` pixels tall on screen. `bounds` (default) is the screen box of the parts; `height` is only their vertical extent | Pixels |
-| `sort_consistency` | `actor` (`[w, d, h]`); optional `step` (0.1), `reach` (1), `maxPixels` (0), `area` (zone id), `ids` | An engine that sorts one key per sprite draws a test actor and the objects in their geometric order, to within `maxPixels` of wrong area for every examined object | Number of examined objects over `maxPixels`. Also `worst` (px squared) and `positions` |
+| `min_screen_size` | `target`, `min` (pixels); optional `screenWidth` (default: the frame width), `measure` (`bounds` or `height`) | The target is at least `min` pixels tall on screen. `bounds` (default) is the screen box of the parts; `height` is their vertical extent times the length of `up` on screen | Pixels |
+| `sort_consistency` | `actor` (`[w, d, h]`); optional `step` (0.1), `reach` (1), `maxPixels` (0), `area` (zone id), `ids`, `level` (0) | An engine that sorts one key per sprite draws a test actor standing at `level` and the objects in their geometric order, to within `maxPixels` of wrong area for every examined object. The actor overlaps boxes, not footprints | Number of examined objects over `maxPixels`. Also `worst` (px squared) and `positions` |
 
 Notes:
 
 - `ids` in a result: failing objects (`in_region`), involved objects sorted alphabetically (`no_overlap`), blocking objects (`lane_clear`), `[a, b]` in file order (`clearance`), `[lane]` (`lane_reaches`), `[lane, target id]` (`lane_apart`), `[target]` (`visible`).
 - `visible` samples the top face and the side faces from `from` times the height up to the full height, 64 points per face, and casts a ray toward the camera from each point through the parts of every other object. `occluders` lists the objects that hide at least one point.
 - Footprints always use the type's `size` rectangle, even when parts stick out. Parts matter for `visible` and for drawing.
-- **`lane_clear`, `lane_reaches` and `lane_apart` support one lane shape:** exactly 2 points, parallel to u or v. Other shapes return `skip`. `lane_reaches` evaluates `right`, `left`, `top` and `bottom`. A `lane_apart` zone with fewer than 3 points is `skip` too. A skipped `lane_apart` has no `overlap`.
+- **`lane_clear`, `lane_reaches` and `lane_apart` support one lane shape:** exactly 2 points, parallel to u or v. Other shapes return `skip`. A lane that is not flat (its points do not share one height) is `skip` for `lane_clear`. `lane_reaches` projects each end at that end's height and evaluates `right`, `left`, `top` and `bottom`. A `lane_apart` zone with fewer than 3 points is `skip` too. A skipped `lane_apart` has no `overlap`. Heights do not change `clearance`, `capacity`, `lane_apart` or relations.
 - **`skip` is not a pass.** It means the tool could not evaluate the check: the check is not implemented in this stage (`state_stable`), or its input has an unsupported shape (for example `reachable` in a scene with no walkable zone), or the check names an object that the chosen state hides. A skipped check has `value: null` and `threshold: null`, and `check` exits 1.
 
 ### The gameplay checks
@@ -364,15 +365,20 @@ What to do about a failing object, in order:
 
 ## States
 
-A state is a named set of hidden objects (tents put up for an event, a closed gate):
+A state hides objects, parts of objects and frame regions:
 
 ```json
-"states": { "open": { "hide": ["barrier1"] }, "empty": { "hide": ["walker1", "rock1"] } }
+"states": {
+  "open": { "hide": ["barrier1"] },
+  "closed": { "hideParts": { "kiosk": ["awning"] }, "hideRegions": ["board"] }
+}
 ```
 
-A state only hides objects (and may carry `x-` keys); states that move objects are not scheduled. `--state NAME` works on `check`, `render`, `compare` and `export --target gen-bbox`; without it every object is present. In a state:
+A state does not move objects. `hideParts` maps an object id to part ids (`body` for a type without parts). `hideRegions` lists frame region ids. `--state NAME` works on `check`, `render`, `compare` and `export --target gen-bbox`; without it every object, part and region is present. In a state:
 
-- hidden objects are not drawn, get no generation box, and do not overlap, block, occlude or count anywhere (lanes, paths, seats, rays);
+- hidden objects are not drawn, get no generation box, and do not overlap, block, occlude or count anywhere (lanes, paths, seats, rays). An object whose every part is hidden counts as hidden;
+- a hidden part is not drawn, occludes nothing, leaves the sprites and the generation box, and is left out of `min_screen_size` and of `in_region` with `measure: "drawn"`. The object keeps its footprint and its box, so every check measured on them is unchanged;
+- a hidden region is not drawn. `in_region` and `lane_reaches` that name it are `skip`. The view region of `solve`, of `describe` and of Add stays the same in every state;
 - a check that names a hidden object by itself is `skip` (`clearance` `a` or `b`, the `target` of `visible` and `min_screen_size`, including `measure: "height"`, an anchor in `reachable` `from` or `to`), with a message that says which object and which state;
 - the lists `ids`, `allow` and `ignore` of a check lose the hidden objects; a list that loses all of them checks no object (it does not fall back to all objects). `in_region` with `measure: "drawn"` follows that rule, and a hidden object is not part of any drawn box;
 - `lane_apart` does not change in a state: lanes and zones stay;
@@ -417,13 +423,13 @@ relate bench in_front_of tree gap 1..1.5 hard
 
 | Command | Effect |
 |---|---|
-| `move <id> <u±n> [<v±n>]` | Adds to `pos`. Each axis at most once, in either order, with a sign: `move bench u-0.5 v+0.2`, `move bench v+1` |
-| `rot <id> <0\|90\|180\|270>` | Sets `rot` and recomputes `pos` so that the footprint keeps its center |
+| `move <id> <u±n> [<v±n>] [<h±n>]` | Adds to `pos`. Each axis at most once, in any order, with a sign: `move bench u-0.5 v+0.2`, `move bench h+0.3`. `h±n` adds to the base height; when `pos` has two numbers it gains a third, 0 plus the offset |
+| `rot <id> <0\|90\|180\|270>` | Sets `rot` and recomputes `pos` so that the footprint keeps its center. A base height stays as it is |
 | `set <pointer> <value> [note="<text>"]` | Replaces the value at an existing JSON Pointer. The value is read as JSON, else as a string (`2.5`, `true`, `"[1, 2]"`, `approved`). `note=` replaces the `note` of the assumption with that `path`; it is an error when there is none |
-| `lock <id> <lock>...` | Adds the locks the object does not have yet: `pos`, `pos.u`, `pos.v`, `rot`, `type`, or a JSON Pointer |
+| `lock <id> <lock>...` | Adds the locks the object does not have yet: `pos`, `pos.u`, `pos.v`, `pos.h`, `rot`, `type`, or a JSON Pointer |
 | `relate <a> <rel> <b> [gap <min>..<max>] [axis <u\|v>] [t <min>..<max>] [min <n>] [hard] [weight <n>] [id=<id>] [source="<text>"]` | Appends a relation. `hard` is always written (`false` when not given). Without `id=` the id is the first free `r1`, `r2`, ... |
-| `add <id> <type> <u>,<v> [<rot>]` | Appends an object `{ "id", "type", "pos": [u, v], "rot" }`. `rot` is 0, 90, 180 or 270, and 0 when it is left out. An id already in use, or a position or rotation that is not in that form, is `E_PATCH`. An unknown type is `E_REF` after the patch is applied |
-| `remove <id>` | Removes the object, every relation whose `a`, `b` or `ids` names it, its entries in each state's `hide` list, and every assumption whose path is that object's index or below it. If an assumption or a pointer lock sits at a later object index, the index would shift and the command is `E_PATCH`. Checks are left as they are: a check that still names the object makes the result `E_REF`, so change the check in the same patch first |
+| `add <id> <type> <u>,<v>[,<h>] [<rot>]` | Appends an object `{ "id", "type", "pos": [u, v], "rot" }`, or with `,<h>` `"pos": [u, v, h]`. `rot` is 0, 90, 180 or 270, and 0 when it is left out. An id already in use, or a position or rotation that is not in that form, is `E_PATCH`. An unknown type is `E_REF` after the patch is applied |
+| `remove <id>` | Removes the object, every relation whose `a`, `b` or `ids` names it, its entries in each state's `hide` list and `hideParts`, and every assumption whose path is that object's index or below it. If an assumption or a pointer lock sits at a later object index, the index would shift and the command is `E_PATCH`. Checks are left as they are: a check that still names the object makes the result `E_REF`, so change the check in the same patch first |
 | `hide <state> <id>` | Appends the object to `states.<state>.hide`, creating `states`, the state and its `hide` list when they are missing. An object already in that list is `E_PATCH` |
 | `show <state> <id>` | Removes the object from that list. The state stays, also when the list is empty. An unknown state, or an object the state does not hide, is `E_PATCH`. The object is checked before the state |
 | `solve ...` | Not a patch command: a patch that contains it is invalid with `E_USAGE`. Run `isoblock solve --patch` and apply the patch it writes |
@@ -438,7 +444,7 @@ relate bench in_front_of tree gap 1..1.5 hard
 
 A patch **touches a lock** when, compared with the original scene, any of these happens (only locks of the original scene count):
 
-- a locked value changes: `pos`, `pos.u` (the first number of `pos`), `pos.v`, `rot`, `type`, or the value at a JSON Pointer, including when it appears or is removed;
+- a locked value changes: `pos`, `pos.u` (the first number of `pos`), `pos.v`, `pos.h` (the third number; a third number that appears or goes counts), `rot`, `type`, or the value at a JSON Pointer, including when it appears or is removed;
 - a lock entry disappears from an object;
 - a locked object disappears.
 
@@ -552,7 +558,7 @@ How to read the table:
 - `failing checks`: checks with status `fail` or `skip`. `locks touched`: how many base locks the variant touches, then their labels; any entry marks the variant invalid (variant C above moves the locked tree).
 - One row per check that fails or is skipped in some column, or whose value differs from the base in some column, in the order of `checks`. The label names the check and its unit: `in_region <region>[/<strip>] (objects outside)`, `in_region <region>[/<strip>] drawn (objects outside)` for `measure: "drawn"`, `no_overlap (pairs)`, `clearance <a>×<b> (<unit>)`, `lane_clear <lane> (blocking objects)`, `lane_reaches <lane> (y px)` for `right` and `left` and `lane_reaches <lane> (x px)` for `top` and `bottom`, `lane_apart <lane>×<target id> (<unit>)`, `visible <target> (% occluded)`, `reachable <check id> (<unit>)`, `capacity <check id> (usable <kind>)`, `min_screen_size <target> (px)`, `min_screen_size <target> height (px)` for `measure: "height"`, `sort_consistency <check id> (objects out of order)`; other checks show as `<check> <id>`.
 - Cells: counts as integers, clearance, `lane_apart` and distances with 2 decimals, `lane_reaches` in whole pixels (`none` when the lane does not reach the edge), `visible` in whole percent, `reachable` with 2 decimals (`none` when there is no path), `capacity` and `sort_consistency` as integers, `min_screen_size` in whole pixels (halves up), `skip` for a skipped check. A trailing ` ✗` marks a value whose status is `fail` or `skip`.
-- `objects moved / total`: objects present in both scenes whose `pos` differs, and the sum of their ground distances.
+- `objects moved / total`: objects present in both scenes whose `pos` differs, including a change of base height, and the sum of their distances in (u, v, h). A `pos` of two numbers has base height 0.
 
 A `sort_consistency` row counts the examined objects drawn out of order, so a variant that moves the `box` clear of the `shed` shows `3 ✗` against the base `4 ✗` in check `s1` (`isoblock compare tests/fixtures/sort/court.scene.json --variant A=tests/fixtures/sort/compare/court.A.patch --variant B=tests/fixtures/sort/compare/court.B.patch`):
 
@@ -739,38 +745,39 @@ Use `--only` to move a few objects and keep the rest of a settled layout: `isobl
 
 ### `--target runtime`
 
-The layout an engine needs, as `isoblock-runtime/2`: a reduced copy of the scene with no relations, checks, locks, assumptions or generation hints, plus the sprites of every object and the states of the scene.
+The layout an engine needs, as `isoblock-runtime/3`: a reduced copy of the scene with no relations, checks, locks, assumptions or generation hints, plus the screen vectors, the sprites of every object and the states of the scene.
 
 ```
 $ isoblock export yard.scene.json --target runtime -o yard.runtime.json
 wrote yard.runtime.json
 ```
 
-Top-level keys, in this order: `schema`, `scene` (the scene id), `meta` (`version` and `status`, `null` when the scene has no `meta`), `units`, `camera` (`verticalScale` always present), `cameraDir`, `frame` (`w`, `h`, `regions` with `blocksScene` always present), `strips`, `objects`, `zones`, `lanes`, `states`. Entries of `units`, `strips`, `zones` and `lanes` are copied without their `x-` keys; an absent list is `[]`.
+Top-level keys, in this order: `schema`, `scene` (the scene id), `meta` (`version` and `status`, `null` when the scene has no `meta`), `units`, `camera`, `projection`, `cameraDir`, `frame` (`w`, `h`, `regions` with `blocksScene` always present), `strips`, `objects`, `zones`, `lanes`, `states`, then the scene's top-level `x-` keys. Entries of `units`, `strips`, `zones` and `lanes` are copied with their `x-` keys; an absent list is `[]`. Heights keep the form they have in the scene: a zone without `h` is at 0, and a lane point without a third number is at the lane's `h` (default 0).
 
 Each object, in file order (output of `yard`, one line each):
 
 ```
-{"id":"tree","type":"tree","pos":[3,0.2],"rot":0,"footprint":[3,0.2,4.2,1.4],"tags":["static"],"parts":[{"id":"trunk","box":[3.45,0.65,0,3.75,0.95,1.4],"order":1},{"id":"canopy","box":[2.8,0,1.4,4.4,1.6,2.4],"order":2}],"anchors":[],"sprites":[{"key":8.8,"footprint":[3,0.2,4.2,1.4],"pieces":[{"part":"trunk","box":[3.45,0.65,0,3.75,0.95,1.4]},{"part":"canopy","box":[2.8,0,1.4,4.4,1.6,2.4]}]}]}
-{"id":"bench","type":"bench","pos":[3.4,2.6],"rot":0,"footprint":[3.4,2.6,4.6,3],"tags":[],"parts":[{"id":"body","box":[3.4,2.6,0,4.6,3,0.5],"order":3}],"anchors":[{"id":"seat1","at":[3.7,2.8,0.5],"facing":"back","kind":"seat"}],"sprites":[{"key":12.8,"footprint":[3.4,2.6,3.8,3],"pieces":[{"part":"body","box":[3.4,2.6,0,3.8,3,0.5]}]},{"key":13.6,"footprint":[3.8,2.6,4.2,3],"pieces":[{"part":"body","box":[3.8,2.6,0,4.2,3,0.5]}]},{"key":14.4,"footprint":[4.2,2.6,4.6,3],"pieces":[{"part":"body","box":[4.2,2.6,0,4.6,3,0.5]}]}]}
+{"id":"tree","type":"tree","pos":[3,0.2],"rot":0,"base":0,"footprint":[3,0.2,4.2,1.4],"tags":["static"],"parts":[{"id":"trunk","box":[3.45,0.65,0,3.75,0.95,1.4],"order":1},{"id":"canopy","box":[2.8,0,1.4,4.4,1.6,2.4],"order":2}],"anchors":[],"sprites":[{"key":8.8,"footprint":[3,0.2,4.2,1.4],"pieces":[{"part":"trunk","box":[3.45,0.65,0,3.75,0.95,1.4]},{"part":"canopy","box":[2.8,0,1.4,4.4,1.6,2.4]}]}]}
+{"id":"bench","type":"bench","pos":[3.4,2.6],"rot":0,"base":0,"footprint":[3.4,2.6,4.6,3],"tags":[],"parts":[{"id":"body","box":[3.4,2.6,0,4.6,3,0.5],"order":3}],"anchors":[{"id":"seat1","at":[3.7,2.8,0.5],"facing":"back","kind":"seat"}],"sprites":[{"key":12.8,"footprint":[3.4,2.6,3.8,3],"pieces":[{"part":"body","box":[3.4,2.6,0,3.8,3,0.5]}]},{"key":13.6,"footprint":[3.8,2.6,4.2,3],"pieces":[{"part":"body","box":[3.8,2.6,0,4.2,3,0.5]}]},{"key":14.4,"footprint":[4.2,2.6,4.6,3],"pieces":[{"part":"body","box":[4.2,2.6,0,4.6,3,0.5]}]}]}
 ```
 
-- `footprint` is `[u0, v0, u1, v1]` after rotation. `parts[].box` is `[u0, v0, h0, u1, v1, h1]` in world units after rotation; a type without parts has one part, `body`. `anchors[].at` is `[u, v, h]` in world units after rotation; `facing` and `kind` appear only when the type gives them.
+- `camera` is the scene's camera in its form, with defaults written (`verticalScale` 1, or `direction` 45), then its `x-` keys. `projection` is `{ axisU, axisV, up }`, the screen vectors of SPEC section 5, each component rounded to 9 decimals. Engines project with those vectors and `camera.origin`.
+- `base` is the base height (the third number of `pos`, else 0). `footprint` is `[u0, v0, u1, v1]` after rotation. `parts[].box` and `anchors[].at` are in world units after rotation, raised by `base`. A type without parts has one part, `body`. `facing` and `kind` appear only when the type gives them. An object's `x-` keys follow `sprites`.
 - `order` is the part's place in the painter's order (SPEC section 13.4): 0 is drawn first. It is computed for all parts of all objects together, so a part of one object can sit between two parts of another (the canopy of a tree in front of an actor, the actor in front of the trunk). An adapter that draws parts instead of sprites uses it as the draw order and does not sort static objects. `render` and the editor draw in the same order.
-- Numbers the tool computes (footprints, boxes, anchors) are rounded to 6 decimals; `pos` is copied. `cameraDir` is the camera direction of SPEC section 5 with each component rounded to 9 decimals (`[1, 1, 1]` for true isometric).
+- Numbers the tool computes (footprints, boxes, anchors, keys) are rounded to 6 decimals; `pos` and `base` are copied. `cameraDir` is the camera direction of SPEC section 5 with each component rounded to 9 decimals (`[1, 1, 1]` for true isometric, and `(0, 0, 1)` at elevation 90).
 - `sprites` are the items an engine sorts and draws (see [Sprites and slices](#sprites-and-slices)); the bench above is cut into 3.
-- `states` has one entry per state of the scene, in file order, as `{ "hide": [ids] }` (`{ "closed": { "hide": ["bench"] } }`); it is `{}` when the scene has none. The file carries every state, so `export --target runtime` takes no `--state`.
+- `states` has one entry per state, in file order, as `{ "hide", "hideParts", "hideRegions" }` (`[]`, `{}` and `[]` when absent), then the state's `x-` keys. It is `{}` when the scene has none. The file carries every state, so `export --target runtime` takes no `--state`.
 
-#### Upgrade from `isoblock-runtime/1`
+#### Upgrade from `isoblock-runtime/2`
 
-Stages 5 and 6 wrote `isoblock-runtime/1`: the same file without `sprites` and `states`. Export again with `isoblock export <scene> --target runtime` and ship the new file; an adapter that reads `isoblock-runtime/2` rejects the old one (`E_SCHEMA`). A loader that reads the version 1 keys keeps working on the new keys it knows, but must accept the new `schema` value. See `CHANGELOG.md`.
+Stages 7 to 11 wrote `isoblock-runtime/2`: the same file without `projection`, `base`, the view form, `hideParts`, `hideRegions` and every `x-` key. For a scene without base heights whose camera has `|cu| = |cv|`, the keys and slices are the same. Export again with `isoblock export <scene> --target runtime` and ship the new file. An adapter that reads `isoblock-runtime/3` rejects `/2` and `/1` (`E_SCHEMA`). Project with `projection` and `camera.origin`. Read `base` for the pivot height, `hideParts` and `hideRegions` in `apply_state`, and pass a base height to `sort_key` for an actor that stands above the ground. See `CHANGELOG.md`.
 
 ### Sprites and slices
 
 A **sprite** is what an engine draws and sorts as one item: a whole object, or one slice of a long object. Every object has at least one sprite in `sprites`, listed in ascending order along the object's long axis; the sprite list of the file is the objects in file order with their sprites in that order.
 
-- **Key.** The sort key of a footprint `[u0, v0, u1, v1]` is `cu * (u0 + u1) + cv * (v0 + v1)` with `c` the `cameraDir` of the file, rounded to 6 decimals. It is twice the ground depth of the footprint's center. A larger key is closer to the camera.
-- **Slices.** An object whose footprint is not square is cut along its long side into the number of slices that brings the slice length closest to the short side (at most 64; a tie keeps the smaller number). The `bench` above is 1.2 x 0.4, so it has 3 slices of 0.4 x 0.4. A square footprint, or one with no width or no depth, is one sprite.
+- **Key.** The sort key of a footprint `[u0, v0, u1, v1]` at base height b is `cu * (u0 + u1) + cv * (v0 + v1) + 2 * b` with `c` the `cameraDir` of the file, rounded to 6 decimals. It is twice the depth of the footprint's center at that height. A larger key is closer to the camera. An object's sprites use its base height. An actor's key uses the height it stands on.
+- **Slices.** Weight the footprint by the camera: `W = w * |cu| / m` and `D = d * |cv| / m`, with m the larger of `|cu|` and `|cv|`. When m is 0, or `|W - D|` is at most 1e-9, or W or D is at most 1e-9, the object is one sprite. Otherwise it is cut along the long weighted side into the number of slices that brings that side closest to the short one (at most 64; a tie keeps the smaller number). When `|cu| = |cv|`, W and D are the footprint's own width and depth, so the slices are those of earlier stages. The `bench` above is 1.2 x 0.4 under a true-isometric camera, so it has 3 slices of 0.4 x 0.4.
 - **Pieces.** `pieces` are the part boxes cut to the slice, listed in the painter's order of their parts (`order`), so drawing them in list order gives the right result within a sprite. The first slice reaches to minus infinity and the last to plus infinity along the long axis, so a part that sticks out of the footprint (an awning) stays with the end slices. A piece no longer than 1e-9 along the long axis is left out.
 
 **The engine rule:** draw sprites in ascending `key`. On equal keys, draw scene sprites in the order of the sprite list, and actors (characters and vehicles that the game adds) after them. An actor's key is the key of its footprint. Draw the pieces of a sprite in list order. The Godot adapter draws by this rule (see [Godot adapter](#godot-adapter)). Static parts keep their `order` for an adapter that draws parts instead of sprites; such an adapter cannot place a moving actor correctly.
@@ -864,20 +871,20 @@ The same script is available as the global class `IsoblockRuntime` once Godot ha
 
 - `load_file(path)` returns `{ data, code, message }` (`E_IO`, `E_JSON_PARSE`).
 - `build(data, color_of, scenes)` returns `{ root, code, message, unmapped }`. `color_of` (optional) takes the object's dictionary and returns the flat `Color` of its debug faces. `scenes` (optional) maps type names to `PackedScene`s. `unmapped` lists the types of the file's objects that `scenes` lacks, each once, in the order of their first object, and `[]` when `scenes` is empty; those types are drawn as debug boxes. On an error nothing is built and `root` is null. `check(data)` validates without building.
-- `apply_state(root, name)` shows every object, then hides the objects that `states.<name>.hide` lists, with their sprites and anchors; `""` is the default state and hides nothing. An unknown name is `E_STATE` and changes nothing. Actors are not affected.
-- `add_actor(root, id, size, at, node, color)` adds a moving object of `size` `[w, d, h]` whose footprint is centered on `at`. `node` (optional) is the game's node for it; it is placed at the projection of `at` at h = 0. Without a node the actor draws its box in `color`. `move_actor(root, id, at)` moves it and gives it its new place in the draw order; `remove_actor(root, id)` removes and frees it (the game's node too). A duplicate id on `add_actor`, and an unknown id on `move_actor` or `remove_actor`, are `E_ACTOR`.
-- `at` is an array `[u, v]` (double precision) or a `Vector2`. A `Vector2` holds single precision, so its components are read back as the shortest decimal with the same value (4.2, not 4.19999980926514); that keeps the actor's key equal to a sprite's key where the tool says they are equal.
-- `sort_key(dir, footprint)` is the key of a footprint `[u0, v0, u1, v1]` (SPEC 13.4) for a camera direction with 9 decimals, such as the file's `cameraDir`; `order_direction(camera)` computes that direction from a camera. `project(camera, u, v, h)`, `unproject(camera, point, h)` and `camera_direction(camera)` match `tests/golden/projection.json` within 0.001, and `sort_key` matches the keys of `tests/golden/sort.json`.
+- `apply_state(root, name)` shows every object and part, then hides the objects in `states.<name>.hide` and the parts in `hideParts`, with their sprites and anchors. An object whose every part is hidden is hidden as by `hide`. In the debug drawing the polygons of a hidden part are hidden; in an instance, every descendant whose meta `part` equals a hidden part id is hidden, and nodes without `part` stay. It sets the root's meta `hidden_regions` to `hideRegions` (`[]` for `""`). `""` shows everything. An unknown name is `E_STATE` and changes nothing. Actors are not affected.
+- `add_actor(root, id, size, at, node, color)` adds a moving object of `size` `[w, d, h]` whose footprint is centered on `at`. `at` is `[u, v]` (standing at height 0) or `[u, v, h]` (standing at height h), or a `Vector2` or `Vector3`. `node` (optional) is the game's node for it, placed at the projection of `at` at the height it stands on. Without a node the actor draws its box in `color`. `move_actor(root, id, at)` moves it and gives it its new place in the draw order; `remove_actor(root, id)` removes and frees it (the game's node too). A duplicate id on `add_actor`, and an unknown id on `move_actor` or `remove_actor`, are `E_ACTOR`.
+- A `Vector2` or `Vector3` holds single precision, so its components are read back as the shortest decimal with the same value (4.2, not 4.19999980926514); that keeps the actor's key equal to a sprite's key where the tool says they are equal.
+- `sort_key(dir, footprint, base)` is the key of a footprint `[u0, v0, u1, v1]` at base height `base` (default 0) for a camera direction with 9 decimals, such as the file's `cameraDir`. `order_direction(camera)` computes that direction from either camera form. `project(camera, u, v, h)` uses `camera.projection` when the runtime file put it there, else the camera's own form. `project`, `unproject` and `camera_direction` match `tests/golden/projection.json`, its `views` included, within 0.001, and `sort_key` matches `tests/golden/sort.json` and `tests/golden/sort-levels.json`.
 - `faces(camera, dir, box)` returns the faces of a box that point toward the camera, as the debug drawing uses them.
-- Error codes: `E_SCHEMA` (a `schema` other than `isoblock-runtime/2`, a missing key, an object without `sprites`), `E_DUPLICATE_ID` (object, zone or lane ids, or the part or anchor ids of one object), `E_IO`, `E_JSON_PARSE`, `E_STATE`, `E_ACTOR`.
+- Error codes: `E_SCHEMA` (a `schema` other than `isoblock-runtime/3`, a missing key including `projection`, an object without `sprites`), `E_DUPLICATE_ID` (object, zone or lane ids, or the part or anchor ids of one object), `E_IO`, `E_JSON_PARSE`, `E_STATE`, `E_ACTOR`.
 
 **The tree.** The root is named by the scene id and has four containers:
 
-- `Objects`: one `Node2D` per object, named by its id, with meta `id`, `type`, `rot`, `tags` and `footprint`. Its children are its anchors: a `Marker2D` named by the anchor id at its projected point, with meta `kind` and `facing`.
+- `Objects`: one `Node2D` per object, named by its id, with meta `id`, `type`, `rot`, `tags`, `footprint` and `base`. Its children are its anchors: a `Marker2D` named by the anchor id at its projected point, with meta `kind` and `facing`.
 - `Sprites`: one `Node2D` per sprite of the runtime file, with meta `object` (the object id), `key` and `slice` (its position in the object's `sprites`). **The child order is the draw order**: ascending key, equal keys in the order of the sprite list (objects in file order, slices in order). Every `z_index` stays 0 and relative, and Godot's y-sort is not used (it treats close keys as equal). A sprite of an unmapped type holds the faces of its pieces that point toward the camera, piece by piece, as `Polygon2D` (antialiasing off, the object's flat color). Actors are children of `Sprites` too, with meta `actor` (the id) and `key` (the key of their footprint): after every scene sprite whose key is at most theirs, before every scene sprite with a larger key, and among actors with equal keys in the order they were added. A moved actor keeps that order among actors of its key.
-- `Zones`: one hidden `Polygon2D` per zone, and `Lanes`: one hidden `Line2D` per lane, each with its data as meta (`kind`, `points`, and for lanes `dir` and `width` in world units). Gameplay reads zones, lanes and anchors from the meta; the adapter does not move anything.
+- `Zones`: one hidden `Polygon2D` per zone, its points projected at the zone's height, and `Lanes`: one hidden `Line2D` per lane, each point projected at its own height, each with its data as meta (`kind`, `points`, and for lanes `dir` and `width` in world units). Gameplay reads zones, lanes and anchors from the meta; the adapter does not move anything.
 
-**Instancing.** A sprite of a mapped type holds an instance of the type's scene, positioned at the object's pivot: the projection of the center of its footprint at h = 0. So the origin of the game's scene is the point on the ground under the middle of the object, and the art is drawn around it in screen pixels (1 pixel per frame unit at scale 1). Instances carry meta `object`, `type`, `rot` and `slice`. An object of one sprite holds its instance directly. Each sprite of a sliced object (a long object, cut into slices so that one key per sprite sorts right next to a moving actor) holds a `Polygon2D` mask, the convex hull of the projected corners of the slice's pieces with `clip_children` set to `CLIP_CHILDREN_ONLY`, and under it its own copy of the instance; each slice shows the part of the image inside its pieces. Art that reaches outside the parts' boxes of a sliced object is cut off, so the parts should follow the art. The adapter does not turn instances: an instance carries the object's `rot` as meta, and the game picks or turns its art for it. To tint an instance, set its `modulate`.
+**Instancing.** A sprite of a mapped type holds an instance of the type's scene, positioned at the object's pivot: the projection of the center of its footprint at its base height. So the origin of the game's scene is that point, and the art is drawn around it in screen pixels (1 pixel per frame unit at scale 1). Instances carry meta `object`, `type`, `rot` and `slice`. An object of one sprite holds its instance directly. Each sprite of a sliced object (a long object, cut into slices so that one key per sprite sorts right next to a moving actor) holds a `Polygon2D` mask, the convex hull of the projected corners of the slice's pieces with `clip_children` set to `CLIP_CHILDREN_ONLY`, and under it its own copy of the instance; each slice shows the part of the image inside its pieces. Art that reaches outside the parts' boxes of a sliced object is cut off, so the parts should follow the art. The adapter does not turn instances: an instance carries the object's `rot` as meta, and the game picks or turns its art for it. To tint an instance, set its `modulate`.
 
 ### Test
 

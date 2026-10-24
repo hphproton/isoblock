@@ -1,4 +1,4 @@
-import { hiddenIn, withoutObjects } from "../states";
+import { hiddenObjects, sceneInState, withoutObjects } from "../states";
 import type { CheckResult, CheckSpec, ImplementedCheck, Scene } from "../types";
 import { runCheck } from "./index";
 import { parseAnchorRef } from "./points";
@@ -66,12 +66,16 @@ export function checkInState(
   return runCheck(visible, restricted);
 }
 
-export function runChecksHiding(scene: Scene, hidden: ReadonlySet<string>, state: string): readonly CheckResult[] {
-  const visible = withoutObjects(scene, hidden);
+export function runChecksHiding(
+  scene: Scene,
+  hidden: ReadonlySet<string>,
+  state: string,
+  visible: Scene = withoutObjects(scene, hidden),
+): readonly CheckResult[] {
   return (scene.checks ?? []).map((spec) => checkInState(scene, spec, hidden, state, visible));
 }
 
 /** Run every check of the scene as it is in a state. An unknown state is `E_USAGE`. */
 export function runChecksInState(scene: Scene, state: string): readonly CheckResult[] {
-  return runChecksHiding(scene, hiddenIn(scene, state), state);
+  return runChecksHiding(scene, hiddenObjects(scene, state), state, sceneInState(scene, state));
 }

@@ -1,10 +1,12 @@
 import { assumptionAt } from "../core/assumptions";
+import { round6 } from "../core/checks/result";
 import { moveObject, setObjectType, setRotation, setTypeSize } from "../core/edit";
 import { IsoblockError } from "../core/errors";
 import { isPathLocked, lockHolder } from "../core/locks";
 import { pointerOf } from "../core/pointer";
 import type { Rot, Scene, SceneObject } from "../core/types";
 import { el } from "./dom";
+import { signedDecimal } from "./edits";
 import { currentScene, type EditorStore } from "./store";
 
 const LOCKED_ICON =
@@ -33,6 +35,8 @@ interface LockSpec {
 /** One numeric property row: how to read it, write it, find its assumption, and lock it. */
 interface NumberRow {
   readonly prop: string;
+  /** `data-prop` and the provisional mark. Defaults to `prop`. `pos.h` must not share `h` with the type size. */
+  readonly field?: string;
   readonly label: string;
   readonly read: (o: SceneObject, s: Scene) => number;
   readonly write: (value: number, o: SceneObject, s: Scene) => void;
@@ -128,14 +132,15 @@ function buildProps(store: EditorStore, scene: Scene, object: SceneObject): { ro
     refresh();
   };
   const number = (spec: NumberRow) => {
+    const field = spec.field ?? spec.prop;
     const input = el("input", {
       type: "number",
       step: "any",
       inputmode: "decimal",
-      "data-prop": spec.prop,
+      "data-prop": field,
       "aria-label": `${spec.label} (${unit})`,
     });
-    const mark = markNode(spec.prop);
+    const mark = markNode(field);
     const toggle = lockButton(store, id, spec.lock);
     input.addEventListener("change", () => {
       const value = input.value.trim() === "" ? Number.NaN : Number(input.value);
@@ -190,6 +195,18 @@ function buildProps(store: EditorStore, scene: Scene, object: SceneObject): { ro
       lock: { path: `pos.${name}`, label: `pos.${name}` },
     });
   }
+  number({
+    prop: "h",
+    field: "pos.h",
+    label: "pos.h",
+    read: (o) => o.pos[2] ?? 0,
+    write: (value, o) => {
+      const delta = round6(value - (o.pos[2] ?? 0));
+      if (delta !== 0) store.applyLine(`move ${id} h${signedDecimal(delta)}`);
+    },
+    pointer: (_o, i) => pointerOf("objects", i, "pos", 2),
+    lock: { path: "pos.h", label: "pos.h" },
+  });
 
   const rotSelect = el("select", { "data-prop": "rot", "aria-label": "Rotation" }, ...ROTATIONS.map((r) => el("option", { value: String(r) }, String(r))));
   rotSelect.addEventListener("change", () => {

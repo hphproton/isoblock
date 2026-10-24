@@ -51,13 +51,14 @@ describe.skipIf(!hasBrowser)("editor: property panel", () => {
     expect(await page.textContent("#props-body .props-title strong")).toBe("bench");
     expect(await value(page, "u")).toBe("3.4");
     expect(await value(page, "v")).toBe("2.6");
+    expect(await value(page, "pos.h")).toBe("0");
     expect(await value(page, "w")).toBe("1.2");
     expect(await value(page, "d")).toBe("0.4");
     expect(await value(page, "h")).toBe("0.5");
     expect(await page.inputValue(prop("rot"))).toBe("0");
     expect(await page.inputValue(prop("type"))).toBe("bench");
     const units = await page.locator("#props-body .field .unit").allTextContents();
-    expect(units.filter((u) => u === "u")).toHaveLength(5);
+    expect(units.filter((u) => u === "u")).toHaveLength(6);
     await context.close();
   });
 

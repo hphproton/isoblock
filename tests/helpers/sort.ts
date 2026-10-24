@@ -59,11 +59,12 @@ export function stateArgs(state: string | null): string[] {
 
 export interface GoldenSort {
   readonly tolerance: number;
-  readonly keys: readonly { readonly camera: Camera; readonly footprint: readonly number[]; readonly key: number }[];
+  readonly keys: readonly { readonly camera: Camera; readonly footprint: readonly number[]; readonly key: number; readonly base?: number }[];
   readonly slices: readonly {
     readonly name: string;
     readonly camera: Camera;
     readonly footprint: readonly number[];
+    readonly base?: number;
     readonly parts: readonly { readonly id: string; readonly box: readonly number[]; readonly order: number }[];
     readonly sprites: readonly unknown[];
   }[];

@@ -1,5 +1,6 @@
 import { laneRefId, parseAnchorRef } from "./checks/points";
 import { resolvePointer } from "./pointer";
+import { partNames } from "./states";
 import { hint } from "./suggest";
 import type { CheckSpec, PointRef, Scene } from "./types";
 
@@ -186,6 +187,20 @@ export function referenceErrors(scene: Scene): string[] {
   for (const [state, def] of Object.entries(scene.states ?? {})) {
     for (const id of def.hide ?? []) {
       if (!names.objects.has(id)) out.push(`state "${state}" hides unknown object "${id}"${hint(id, pools.object)}`);
+    }
+    for (const [id, parts] of Object.entries(def.hideParts ?? {})) {
+      if (!names.objects.has(id)) {
+        out.push(`state "${state}" hides parts of unknown object "${id}"${hint(id, pools.object)}`);
+        continue;
+      }
+      const object = scene.objects.find((item) => item.id === id);
+      const known = object === undefined ? [] : partNames(scene, object);
+      for (const part of parts) {
+        if (!known.includes(part)) out.push(`state "${state}" hides unknown part "${part}" of "${id}"${hint(part, known)}`);
+      }
+    }
+    for (const id of def.hideRegions ?? []) {
+      if (!names.regions.has(id)) out.push(`state "${state}" hides unknown region "${id}"${hint(id, pools.region)}`);
     }
   }
   for (const a of scene.assumptions ?? []) {

@@ -1,4 +1,5 @@
 import { EPS, type Rect } from "../geometry";
+import { unitLength } from "../projection";
 import type { PreparedRelation } from "../relations/prepare";
 import { overlapAmount, SATISFIED } from "../relations/shared";
 import type { SolverModel } from "./model";
@@ -49,19 +50,27 @@ export function viewPenalty(model: SolverModel, rects: readonly Rect[], i: numbe
   const [x0, y0, x1, y1] = model.view;
   const r = rects[i] as Rect;
   let px = 0;
+  const h = model.base[i] ?? 0;
   const corner = (u: number, v: number) => {
-    const [x, y] = model.project(u, v);
+    const [x, y] = model.project(u, v, h);
     px += Math.max(0, x0 - x, x - x1) + Math.max(0, y0 - y, y - y1);
   };
   corner(r.u0, r.v0);
   corner(r.u1, r.v0);
   corner(r.u1, r.v1);
   corner(r.u0, r.v1);
-  return px > EPS ? px / model.scene.camera.pxPerUnit : 0;
+  return px > EPS ? px / unitLength(model.scene.camera) : 0;
 }
 
-/** Overlap constraint of one pair: a moved footprint must not overlap another unless the two overlapped before. */
+function heightsMeet(model: SolverModel, i: number, j: number): boolean {
+  const a0 = model.base[i] ?? 0;
+  const b0 = model.base[j] ?? 0;
+  return Math.min(a0 + (model.height[i] ?? 0), b0 + (model.height[j] ?? 0)) - Math.max(a0, b0) > EPS;
+}
+
+/** Overlap constraint of one pair: a moved box must not overlap another unless the two overlapped before. */
 export function pairPenalty(model: SolverModel, rects: readonly Rect[], i: number, j: number): number {
+  if (!heightsMeet(model, i, j)) return 0;
   const amount = overlapAmount(rects[i] as Rect, rects[j] as Rect);
   if (amount === 0) return 0;
   const n = rects.length;

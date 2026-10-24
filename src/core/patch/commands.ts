@@ -3,21 +3,21 @@ import type { Rot } from "../types";
 
 /** A short command of SPEC section 12, parsed but not applied. */
 export type Command =
-  | { readonly cmd: "move"; readonly id: string; readonly du?: number; readonly dv?: number }
+  | { readonly cmd: "move"; readonly id: string; readonly du?: number; readonly dv?: number; readonly dh?: number }
   | { readonly cmd: "rot"; readonly id: string; readonly rot: Rot }
   | { readonly cmd: "set"; readonly pointer: string; readonly value: unknown; readonly note?: string }
   | { readonly cmd: "lock"; readonly id: string; readonly locks: readonly string[] }
   | { readonly cmd: "relate"; readonly id?: string; readonly fields: Readonly<Record<string, unknown>> }
-  | { readonly cmd: "add"; readonly id: string; readonly type: string; readonly pos: readonly [number, number]; readonly rot: Rot }
+  | { readonly cmd: "add"; readonly id: string; readonly type: string; readonly pos: readonly [number, number]; readonly h?: number; readonly rot: Rot }
   | { readonly cmd: "remove"; readonly id: string }
   | { readonly cmd: "hide"; readonly state: string; readonly id: string }
   | { readonly cmd: "show"; readonly state: string; readonly id: string };
 
 const NUMBER = /^-?(?:\d+(?:\.\d*)?|\.\d+)$/;
-const OFFSET = /^([uv])([+-])((?:\d+(?:\.\d*)?|\.\d+))$/;
+const OFFSET = /^([uvh])([+-])((?:\d+(?:\.\d*)?|\.\d+))$/;
 const RANGE = /^(-?(?:\d+(?:\.\d+)?|\.\d+))\.\.(-?(?:\d+(?:\.\d+)?|\.\d+))$/;
 const ROTATIONS: readonly string[] = ["0", "90", "180", "270"];
-const LOCK_NAMES: readonly string[] = ["pos", "pos.u", "pos.v", "rot", "type"];
+const LOCK_NAMES: readonly string[] = ["pos", "pos.u", "pos.v", "pos.h", "rot", "type"];
 
 function fail(message: string): IsoblockError {
   return new IsoblockError("E_PATCH", message);
@@ -36,12 +36,12 @@ function rangeOf(token: string | undefined, what: string): readonly [number, num
 
 function parseMove(args: readonly string[]): Command {
   const [id, ...offsets] = args;
-  if (id === undefined || offsets.length < 1 || offsets.length > 2) throw fail("usage: move <id> <u+n|u-n> [<v+n|v-n>]");
-  const delta: { du?: number; dv?: number } = {};
+  if (id === undefined || offsets.length < 1 || offsets.length > 3) throw fail("usage: move <id> <u+n|u-n> [<v+n|v-n>] [<h+n|h-n>]");
+  const delta: { du?: number; dv?: number; dh?: number } = {};
   for (const token of offsets) {
     const m = OFFSET.exec(token);
     if (m === null) throw fail(`bad offset "${token}": write an axis and a signed number, like u+0.5`);
-    const key = m[1] === "u" ? "du" : "dv";
+    const key = m[1] === "u" ? "du" : m[1] === "v" ? "dv" : "dh";
     if (delta[key] !== undefined) throw fail(`axis ${m[1]} is given twice`);
     delta[key] = Number(m[3]) * (m[2] === "-" ? -1 : 1);
   }
@@ -126,17 +126,21 @@ function parseRelate(args: readonly string[]): Command {
   return { cmd: "relate", ...(id === undefined ? {} : { id }), fields };
 }
 
-const POSITION = /^(-?(?:\d+(?:\.\d*)?|\.\d+)),(-?(?:\d+(?:\.\d*)?|\.\d+))$/;
+const POSITION = /^(-?(?:\d+(?:\.\d*)?|\.\d+)),(-?(?:\d+(?:\.\d*)?|\.\d+))(?:,(-?(?:\d+(?:\.\d*)?|\.\d+)))?$/;
 
 function parseAdd(args: readonly string[]): Command {
   const [id, type, pos, rot, extra] = args;
   if (id === undefined || type === undefined || pos === undefined || extra !== undefined) {
-    throw fail("usage: add <id> <type> <u>,<v> [<rot>]");
+    throw fail("usage: add <id> <type> <u>,<v>[,<h>] [<rot>]");
   }
   const m = POSITION.exec(pos);
-  if (m === null) throw fail(`bad position "${pos}": write u,v as decimal numbers, like 1.5,2`);
+  if (m === null) throw fail(`bad position "${pos}": write u,v or u,v,h as decimal numbers, like 1.5,2`);
   if (rot !== undefined && !ROTATIONS.includes(rot)) throw fail(`rotation must be 0, 90, 180 or 270, not "${rot}"`);
-  return { cmd: "add", id, type, pos: [Number(m[1]), Number(m[2])], rot: rot === undefined ? 0 : (Number(rot) as Rot) };
+  return {
+    cmd: "add", id, type, pos: [Number(m[1]), Number(m[2])],
+    ...(m[3] === undefined ? {} : { h: Number(m[3]) }),
+    rot: rot === undefined ? 0 : (Number(rot) as Rot),
+  };
 }
 
 function parseRemove(args: readonly string[]): Command {

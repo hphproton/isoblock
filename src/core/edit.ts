@@ -1,7 +1,7 @@
 import { IsoblockError } from "./errors";
 import { axisLock, isPathLocked, lockHolder, lockedAxes } from "./locks";
 import { pointerOf } from "./pointer";
-import type { Rot, Scene, SceneObject, Vec2 } from "./types";
+import type { Pos, Rot, Scene, SceneObject, Vec2 } from "./types";
 
 /**
  * Outcome of an edit. `scene` is the new scene (the input scene when nothing changed).
@@ -58,7 +58,9 @@ export function moveObject(scene: Scene, id: string, pos: Vec2): EditResult {
   }
   const result = [...blocked];
   if (u === object.pos[0] && v === object.pos[1]) return { scene, blocked: result };
-  let next = replaceObject(scene, index, { ...object, pos: [u, v] });
+  const h = (object.pos as readonly number[])[2];
+  const nextPos: Pos = h === undefined ? [u, v] : [u, v, h];
+  let next = replaceObject(scene, index, { ...object, pos: nextPos });
   if (u !== object.pos[0]) next = syncAssumption(next, pointerOf("objects", index, "pos", 0), u);
   if (v !== object.pos[1]) next = syncAssumption(next, pointerOf("objects", index, "pos", 1), v);
   return { scene: next, blocked: result };

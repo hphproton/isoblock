@@ -15,6 +15,8 @@ func _initialize() -> void:
 	var args := Args.parse()
 	_golden(JSON.parse_string(FileAccess.get_file_as_string(args["golden"])))
 	_sort_keys(JSON.parse_string(FileAccess.get_file_as_string(args["sort"])))
+	if args.has("levels"):
+		_sort_keys(JSON.parse_string(FileAccess.get_file_as_string(args["levels"])))
 	var loaded := Runtime.load_file(args["runtime"])
 	_expect(loaded["code"] == "", "the runtime file loads")
 	var data: Dictionary = loaded["data"]
@@ -53,6 +55,13 @@ func _golden(golden: Dictionary) -> void:
 		var dir := Runtime.camera_direction(set["camera"])
 		var want := Vector3(set["cameraDir"][0], set["cameraDir"][1], set["cameraDir"][2])
 		_expect(dir.distance_to(want) <= TOLERANCE, "camera direction %s" % [dir])
+	for view in golden["views"]:
+		for c in view["cases"]:
+			var p := Runtime.project(view["camera"], c["uvh"][0], c["uvh"][1], c["uvh"][2])
+			_expect(_near(p, Vector2(c["xy"][0], c["xy"][1]), TOLERANCE), "view project %s" % [c["uvh"]])
+		var dir := Runtime.camera_direction(view["camera"])
+		var want := Vector3(view["cameraDir"][0], view["cameraDir"][1], view["cameraDir"][2])
+		_expect(dir.distance_to(want) <= TOLERANCE, "view camera direction %s" % [dir])
 	for c in golden["inverse"]:
 		var uv := Runtime.unproject(golden["camera"], Vector2(c["xyh"][0], c["xyh"][1]), c["xyh"][2])
 		_expect(_near(uv, Vector2(c["uv"][0], c["uv"][1]), TOLERANCE), "unproject %s" % [c["xyh"]])
@@ -61,7 +70,7 @@ func _golden(golden: Dictionary) -> void:
 ## The keys of tests/golden/sort.json through `sort_key`, with the camera direction of the draw order.
 func _sort_keys(sort: Dictionary) -> void:
 	for c in sort["keys"]:
-		var key := Runtime.sort_key(Runtime.order_direction(c["camera"]), c["footprint"])
+		var key := Runtime.sort_key(Runtime.order_direction(c["camera"]), c["footprint"], float(c.get("base", 0.0)))
 		_expect(absf(key - float(c["key"])) <= float(sort["tolerance"]), "sort key %s under %s: %s, expected %s" % [c["footprint"], c["camera"], key, c["key"]])
 	var dir := Runtime.order_direction({ "angleU": 30, "angleV": 150, "pxPerUnit": 100, "origin": [0, 0] })
 	_expect(dir == [1.0, 1.0, 1.0], "true isometric gives the direction [1, 1, 1] exactly: %s" % [dir])
@@ -346,7 +355,7 @@ func _actor_ties(data: Dictionary) -> void:
 
 
 func _errors(data: Dictionary) -> void:
-	for old in ["isoblock-runtime/1", "isoblock-runtime/3", ""]:
+	for old in ["isoblock-runtime/1", "isoblock-runtime/2", ""]:
 		var wrong := data.duplicate(true)
 		wrong["schema"] = old
 		var built := Runtime.build(wrong)

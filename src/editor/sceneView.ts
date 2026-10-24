@@ -188,7 +188,9 @@ export class SceneView implements Frameable {
       this.setInteractive(true);
     }
     const point = fromCanvas(this.viewport, g.latest);
-    const result = dragTo(g.base, g.camera, g.start, point, this.store.get().snap);
+    const grabbed = g.base.objects.find((object) => object.id === g.start.id);
+    const h = grabbed === undefined ? 0 : (grabbed.pos[2] ?? 0);
+    const result = dragTo(g.base, g.camera, g.start, point, this.store.get().snap, h);
     if (result.blocked.length > 0 && !g.warned) {
       g.warned = true;
       this.store.notify(`${g.start.id} is locked: ${result.blocked.join(", ")}`, "error");
@@ -375,17 +377,26 @@ export class SceneView implements Frameable {
   /** Page coordinates of a point that picks the object in this view, or null if it is not visible. */
   screenOf(id: string): Vec2 | null {
     const rect = this.canvas.getBoundingClientRect();
-    for (let i = this.items.length - 1; i >= 0; i--) {
-      const item = this.items[i] as DisplayItem;
-      if (item.kind !== "polygon" || item.layer !== "object" || item.ref !== id) continue;
-      const x = item.points.reduce((s, p) => s + p[0], 0) / item.points.length;
-      const y = item.points.reduce((s, p) => s + p[1], 0) / item.points.length;
+    for (const [x, y] of this.hitPoints(id)) {
       if (pickObject(this.items, x, y, 0) !== id) continue;
       const [cx, cy] = toCanvas(this.viewport, [x, y]);
-      if (cx < 0 || cy < 0 || cx > this.size.w || cy > this.size.h) return null;
+      if (cx < 0 || cy < 0 || cx > this.size.w || cy > this.size.h) continue;
       return [rect.left + cx, rect.top + cy];
     }
     return null;
+  }
+
+  /** Points on the object's polygons: the center, then points toward each corner, so a covered center still finds a free spot. */
+  private hitPoints(id: string): Vec2[] {
+    const points: Vec2[] = [];
+    for (const item of this.items) {
+      if (item.kind !== "polygon" || item.layer !== "object" || item.ref !== id || item.points.length === 0) continue;
+      const cx = item.points.reduce((s, p) => s + p[0], 0) / item.points.length;
+      const cy = item.points.reduce((s, p) => s + p[1], 0) / item.points.length;
+      points.push([cx, cy]);
+      for (const p of item.points) points.push([cx + (p[0] - cx) * 0.65, cy + (p[1] - cy) * 0.65]);
+    }
+    return points;
   }
 
   getViewport(): Viewport {

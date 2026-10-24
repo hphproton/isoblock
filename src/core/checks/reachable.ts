@@ -1,5 +1,5 @@
-import { EPS, footprint, type Rect } from "../geometry";
-import type { CheckResult, ReachableCheck, Scene, Vec2 } from "../types";
+import { EPS, footprint, sizeBox, takesSpace, type Rect } from "../geometry";
+import type { CheckResult, ReachableCheck, Scene, Vec2, Zone } from "../types";
 import { resolvePoint, type ResolvedPoint } from "./points";
 import { inObjectOrder, round6, skipResult } from "./result";
 import { buildGrid, MAX_CELLS, nearestFree, shortestMoves } from "./walkGrid";
@@ -9,25 +9,29 @@ const DEFAULT_STEP = 0.1;
 
 type Polygons = readonly (readonly Vec2[])[];
 
-/** The polygon of `area`, else every walkable zone with 3 or more points; a message when there is none. */
-function walkableAreas(scene: Scene, area: string | undefined): Polygons | string {
+function atLevel(zone: Zone, level: number): boolean {
+  return Math.abs((zone.h ?? 0) - level) <= EPS;
+}
+
+/** The polygon of `area`, else every walkable zone at `level` with 3 or more points; a message when there is none. */
+function walkableAreas(scene: Scene, area: string | undefined, level: number): Polygons | string {
   const zones = scene.zones ?? [];
   if (area !== undefined) {
     const points = zones.find((z) => z.id === area)?.points ?? [];
     return points.length >= 3 ? [points] : `zone "${area}" has ${points.length} points; a walkable area needs 3 or more`;
   }
-  const polygons = zones.filter((z) => z.kind === "walkable" && (z.points ?? []).length >= 3).map((z) => z.points as readonly Vec2[]);
+  const polygons = zones.filter((z) => z.kind === "walkable" && atLevel(z, level) && (z.points ?? []).length >= 3).map((z) => z.points as readonly Vec2[]);
   return polygons.length > 0 ? polygons : 'the scene has no zone with kind "walkable"';
 }
 
-function blockedAreas(scene: Scene): Polygons {
-  return (scene.zones ?? []).filter((z) => z.kind === "blocked" && (z.points ?? []).length >= 3).map((z) => z.points as readonly Vec2[]);
+function blockedAreas(scene: Scene, level: number): Polygons {
+  return (scene.zones ?? []).filter((z) => z.kind === "blocked" && atLevel(z, level) && (z.points ?? []).length >= 3).map((z) => z.points as readonly Vec2[]);
 }
 
-/** Footprints of the objects that block the path: all except those in `ignore` and those the points name. */
-function obstacles(scene: Scene, spec: ReachableCheck, named: ReadonlySet<string>): readonly Rect[] {
+/** Footprints of the objects that take space at `level`: all except those in `ignore` and those the points name. */
+function obstacles(scene: Scene, spec: ReachableCheck, named: ReadonlySet<string>, level: number): readonly Rect[] {
   const skipped = new Set([...(spec.ignore ?? []), ...named]);
-  return scene.objects.filter((o) => !skipped.has(o.id)).map((o) => footprint(scene, o));
+  return scene.objects.filter((o) => !skipped.has(o.id) && takesSpace(sizeBox(scene, o), level, spec.height)).map((o) => footprint(scene, o));
 }
 
 function failure(spec: ReachableCheck, ids: readonly string[], message: string): CheckResult {
@@ -42,7 +46,8 @@ export function checkReachable(scene: Scene, spec: ReachableCheck): CheckResult 
   const from = resolvePoint(scene, spec.from, "first");
   const to = resolvePoint(scene, spec.to, "last");
   if (from === null || to === null) return skipResult(spec, "a point of the check does not resolve");
-  const areas = walkableAreas(scene, spec.area);
+  const level = spec.level ?? 0;
+  const areas = walkableAreas(scene, spec.area, level);
   if (typeof areas === "string") return skipResult(spec, areas);
   const named = new Set([from, to].map((p: ResolvedPoint) => p.object).filter((id): id is string => id !== null));
   const ids = inObjectOrder(scene, named);
@@ -51,8 +56,8 @@ export function checkReachable(scene: Scene, spec: ReachableCheck): CheckResult 
     step,
     radius: spec.radius ?? DEFAULT_RADIUS,
     walkable: areas,
-    blocked: blockedAreas(scene),
-    obstacles: obstacles(scene, spec, named),
+    blocked: blockedAreas(scene, level),
+    obstacles: obstacles(scene, spec, named, level),
   });
   if (grid === null) return skipResult(spec, `the grid has more than ${MAX_CELLS} cells; use a larger step`);
   const start = nearestFree(grid, from.at);
