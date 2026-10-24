@@ -272,3 +272,9 @@ Template:
 - Question: The workflow must install Chromium with `node node_modules/playwright-core/cli.js install chromium`. `playwright-core` 1.56.1, the pinned release, refuses that command on `ubuntu-latest`, which is now Ubuntu 26.04 (`Playwright does not support chromium on ubuntu26.04-x64`). The spec does not name the runner image.
 - Reading chosen for now: Both jobs run on `ubuntu-24.04`, where that install command works. Playwright is not upgraded, and the workflow installs nothing else.
 - Answer (maintainer): Approved as written. SPEC 16 now names `ubuntu-24.04` for both jobs; a newer image comes with the stage that upgrades `playwright-core`.
+
+## Q-027 · Whole-frame Godot check on `levels`
+
+- Spec section: 13.6, 13.8, 17 (stage 12), 18
+- Question: `tests/fixtures/levels/godot.json` asks for the cross-check of SPEC 13.6 on `levels.scene.json`. That scene's `sort_deck` result has `worst` 1358.72: the engine rule and the painter's order disagree on a large area. The whole-frame limit is 108 pixels on the 1200 by 900 frame (100 per 1,000,000). A run of the adapter against `render` differs in 1525 pixels in the default state: 1356 where the engine shows `crate2` and the painter shows `post_b`, and 163 where the engine shows `plinth` and the painter shows `vase`. Each object alone stays within 1 px, and the actor adds 0 pixels beyond that frame. SPEC 13.6 says the whole-frame check holds for scenes where `sort_consistency` finds no static mismatch. This scene has one.
+- Reading chosen for now: Keep both draw rules as SPEC 13.4 and 13.8 state them. Do not change the fixture, the limit, or either order to make the numbers meet. The per-object boxes and the actor limit pass. The whole-frame check on `levels` does not, and the stage is not ready for review until the maintainer says how that case should be judged.
