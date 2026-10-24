@@ -1,0 +1,56 @@
+{
+  "base": "tests/fixtures/levels/levels.scene.json",
+  "tolerance": {
+    "value": 0.01,
+    "valuePx": 1,
+    "coordinate": 0.000001
+  },
+  "exit": 1,
+  "status": "applied",
+  "error": null,
+  "locks": [],
+  "diff": [
+    {
+      "op": "replace",
+      "path": "/objects/deck/pos",
+      "from": [
+        3,
+        1,
+        2.5
+      ],
+      "to": [
+        6,
+        -2,
+        2.5
+      ]
+    },
+    {
+      "op": "add",
+      "path": "/objects/deck/rot",
+      "to": 90
+    }
+  ],
+  "checks": [
+    {
+      "id": "reach_ground_all",
+      "check": "reachable",
+      "from": "pass",
+      "to": "pass",
+      "value": [
+        15.4,
+        21.6
+      ]
+    },
+    {
+      "id": "sort_deck",
+      "check": "sort_consistency",
+      "from": "fail",
+      "to": "fail",
+      "value": [
+        1,
+        2
+      ]
+    }
+  ],
+  "failing": 11
+}

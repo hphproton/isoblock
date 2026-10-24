@@ -1,0 +1,18 @@
+scene levels v1 draft · unit u · camera e30/d120 · 50 px/u · frame 1200x900 (view y 0-760)
+id         type    pos(u,v,h)        size(w,d,h)       rot  locks
+post_a     post    3.20,1.00,0.00    0.40,0.40,2.50    0    -
+post_b     post    10.40,2.60,0.00   0.40,0.40,2.50    0    -
+deck       deck    3.00,1.00,2.50*   8.00,2.00,0.50    0    pos.h
+crate_up   crate   7.00,1.50,3.00    1.00,1.00,1.00    0    -
+mat        mat     5.00,1.50,0.00    2.00,1.00,0.00    0    -
+crate2     crate   9.80,2.20,0.00    1.00,1.00,1.00    0    -
+crate      crate   12.00,1.60,0.00   1.00,1.00,1.00    0    -
+side_wall  wall    0.00,7.20,-1.50   14.00,0.30,1.50   0    -
+kiosk      kiosk   4.00,5.00,0.00    2.00,1.00,2.20    0    -
+figure     figure  4.80,4.20,0.00    0.50,0.50,1.70    0    -
+plinth     plinth  8.00,4.50,0.00    1.00,1.00,0.20    0    -
+vase       vase    8.20,4.80,0.20    0.60,0.40,0.40    0    -
+mast       mast    12.50,4.00,0.00   0.30,0.30,4.00    0    -
+states: open hides parts kiosk/shutter · closed hides parts kiosk/awning · cinema hides crate2; regions board · bare hides parts mast/body
+assumptions: /objects/2/pos/2=2.50 · kiosk.awning.h1=2.20
+(* = provisional value)

@@ -1,0 +1,60 @@
+{
+  "cases": [
+    {
+      "file": "camera-elevation.invalid.json",
+      "code": "E_SCHEMA",
+      "scene": "levels",
+      "contains": [
+        "/camera"
+      ],
+      "excludes": []
+    },
+    {
+      "file": "camera-mixed.invalid.json",
+      "code": "E_SCHEMA",
+      "scene": "levels",
+      "contains": [
+        "/camera"
+      ],
+      "excludes": []
+    },
+    {
+      "file": "part-typo.invalid.json",
+      "code": "E_REF",
+      "scene": "levels",
+      "contains": [
+        "\"shuter\"",
+        "did you mean \"shutter\"?"
+      ],
+      "excludes": []
+    },
+    {
+      "file": "hidden-region-typo.invalid.json",
+      "code": "E_REF",
+      "scene": "levels",
+      "contains": [
+        "\"bord\"",
+        "did you mean \"board\"?"
+      ],
+      "excludes": []
+    },
+    {
+      "file": "lane-point-four.invalid.json",
+      "code": "E_SCHEMA",
+      "scene": "levels",
+      "contains": [
+        "/lanes/2/points/1"
+      ],
+      "excludes": []
+    },
+    {
+      "file": "pos-four.invalid.json",
+      "code": "E_SCHEMA",
+      "scene": "levels",
+      "contains": [
+        "/objects/3/pos"
+      ],
+      "excludes": []
+    }
+  ]
+}

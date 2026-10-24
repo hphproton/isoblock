@@ -1,0 +1,3 @@
+# the mast goes, and its check follows the figure
+set /checks/16/target "figure"
+remove mast

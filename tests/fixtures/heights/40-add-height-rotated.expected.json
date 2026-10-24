@@ -1,0 +1,51 @@
+{
+  "base": "tests/fixtures/yard.scene.json",
+  "tolerance": {
+    "value": 0.01,
+    "valuePx": 1,
+    "coordinate": 0.000001
+  },
+  "exit": 1,
+  "status": "applied",
+  "error": null,
+  "locks": [],
+  "diff": [
+    {
+      "op": "add",
+      "path": "/objects/box9",
+      "to": {
+        "id": "box9",
+        "type": "crate",
+        "pos": [
+          3,
+          1,
+          0.5
+        ],
+        "rot": 90
+      }
+    }
+  ],
+  "checks": [
+    {
+      "id": "c3",
+      "check": "no_overlap",
+      "from": "pass",
+      "to": "fail",
+      "value": [
+        0,
+        1
+      ]
+    },
+    {
+      "id": "c8",
+      "check": "visible",
+      "from": "fail",
+      "to": "fail",
+      "value": [
+        0.401042,
+        0.473958
+      ]
+    }
+  ],
+  "failing": 4
+}
