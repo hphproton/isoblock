@@ -5,7 +5,7 @@ import { hint } from "./suggest";
 /** Check names of SPEC section 9, in the order of that table. */
 const CHECK_NAMES = [
   "in_region", "no_overlap", "clearance", "lane_clear", "lane_reaches", "lane_apart",
-  "reachable", "capacity", "visible", "min_screen_size", "sort_consistency", "state_stable",
+  "reachable", "capacity", "visible", "min_screen_size", "sort_consistency", "visible_share", "state_stable",
 ] as const;
 
 /** Relation names of SPEC section 7, in the order of that table. */

@@ -66,6 +66,8 @@ function body(spec: CheckSpec, r: CheckResult): string {
     }
     case "sort_consistency":
       return `${join(r.ids)}: drawn out of order, worst ${(r.worst ?? 0).toFixed(2)} px2`;
+    case "visible_share":
+      return `${join(r.ids)}: ${percent(r.value ?? 0)}% shown`;
     default:
       return r.message;
   }

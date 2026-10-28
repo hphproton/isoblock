@@ -227,6 +227,20 @@ export interface SortConsistencyCheck {
   readonly level?: number;
 }
 
+/** Share of an object's own pixels that stay visible in a frame region (SPEC 9.6). */
+export interface VisibleShareCheck {
+  readonly id: string;
+  readonly check: "visible_share";
+  /** Object ids. Exactly one of `ids` and `tag` is set. */
+  readonly ids?: readonly string[];
+  /** A tag. Exactly one of `ids` and `tag` is set. */
+  readonly tag?: string;
+  /** Frame region. Absent means the whole raster. */
+  readonly region?: string;
+  /** Minimum share, from 0 to 1. */
+  readonly min: number;
+}
+
 /** What one state hides (SPEC section 6). */
 export interface SceneState {
   readonly hide?: readonly string[];
@@ -246,7 +260,8 @@ export type ImplementedCheck =
   | ReachableCheck
   | CapacityCheck
   | MinScreenSizeCheck
-  | SortConsistencyCheck;
+  | SortConsistencyCheck
+  | VisibleShareCheck;
 
 /** A check from the catalog that the current stage does not evaluate. */
 export interface OtherCheck {
@@ -316,5 +331,7 @@ export interface CheckResult {
   readonly outside?: readonly number[];
   /** `lane_apart`: area of the overlap between the lane and its target. Absent when the check is skipped. */
   readonly overlap?: number;
+  /** `visible_share`: the share of each failing object, in the order of `ids`. Absent when the check is skipped. */
+  readonly shares?: readonly number[];
   readonly message: string;
 }

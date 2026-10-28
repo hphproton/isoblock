@@ -1,6 +1,7 @@
 import { changedObjects, involves, searchesGrid } from "../incremental";
+import { objectRaster, type ObjectRaster } from "../raster/raster";
 import { hiddenObjects, sceneInState } from "../states";
-import type { CheckResult, Scene } from "../types";
+import type { CheckResult, CheckSpec, Scene } from "../types";
 import { checkInState, runChecksInState } from "./inState";
 
 const NO_STALE: ReadonlySet<string> = new Set();
@@ -45,6 +46,12 @@ export function resultsInState(
   const hidden = hiddenObjects(next, state);
   const visible = sceneInState(next, state);
   const deferred: string[] = [];
+  let raster: ObjectRaster | undefined;
+  const shared = (spec: CheckSpec): ObjectRaster | undefined => {
+    if (spec.check !== "visible_share") return undefined;
+    raster ??= objectRaster(visible);
+    return raster;
+  };
   const results = specs.map((spec, i) => {
     const old = prevResults[i] as CheckResult;
     const waiting = stale.has(spec.id);
@@ -53,7 +60,7 @@ export function resultsInState(
       if (!waiting) deferred.push(spec.id);
       return old;
     }
-    const fresh = checkInState(next, spec, hidden, state, visible);
+    const fresh = checkInState(next, spec, hidden, state, visible, shared(spec));
     return same(fresh, old) ? old : fresh;
   });
   if (!dragging) return { results, stale: NO_STALE };

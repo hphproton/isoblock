@@ -87,6 +87,7 @@
       "id": "lamp",
       "type": "lamp",
       "tags": [
+        "light",
         "street"
       ],
       "full": 1258,
@@ -148,6 +149,16 @@
       "visible": 1576,
       "share": 1,
       "cover": 0.01026
+    },
+    {
+      "tag": "light",
+      "ids": [
+        "lamp"
+      ],
+      "full": 1258,
+      "visible": 1258,
+      "share": 1,
+      "cover": 0.00819
     },
     {
       "tag": "street",

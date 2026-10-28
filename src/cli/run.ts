@@ -12,6 +12,7 @@ import { parseScene, validateScene } from "../core/validate";
 import { USAGE, parseArgs, type Parsed } from "./args";
 import { runCompareCommand, runDiffCommand, runPatchCommand } from "./commands";
 import { runExportCommand } from "./export";
+import { runOccludersCommand, runVisibilityCommand } from "./visibility";
 import { runSolveCommand } from "./solve";
 import type { Io } from "./io";
 import { toSvg } from "./svg";
@@ -141,6 +142,10 @@ export function run(argv: readonly string[], io: Io): number {
         return runSolveCommand(args, io);
       case "export":
         return runExportCommand(args, io);
+      case "visibility":
+        return runVisibilityCommand(args, io);
+      case "occluders":
+        return runOccludersCommand(args, io);
       default:
         return execute(args, io);
     }

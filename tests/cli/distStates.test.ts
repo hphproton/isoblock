@@ -83,6 +83,6 @@ describe("dist/isoblock.mjs: --state", () => {
     expect(unknown.stderr).toMatch(/^error E_USAGE: unknown state 'night'/);
     const runtime = node("export", caseScenePath(c), "--target", "runtime", "--state", c.state);
     expect(runtime.status).toBe(2);
-    expect(runtime.stderr).toMatch(/--state applies to the gen-bbox target only/);
+    expect(runtime.stderr).toMatch(/--state applies to gen-bbox and masks/);
   });
 });

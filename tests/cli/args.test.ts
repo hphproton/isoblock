@@ -48,7 +48,7 @@ describe("parseArgs", () => {
   });
 
   it("rejects export without a target, with an unknown target or with bad gen-bbox values", () => {
-    expect(usageError(["export", "a.json"])).toMatch(/export needs --target runtime or gen-bbox/);
+    expect(usageError(["export", "a.json"])).toMatch(/export needs --target runtime, gen-bbox or masks/);
     expect(usageError(["export", "a.json", "--target", "mesh"])).toMatch(/unknown export target 'mesh'/);
     expect(usageError(["export", "a.json", "--target", "gen-bbox", "--bbox-units", "em"])).toMatch(/--bbox-units must be px or norm1000/);
     expect(usageError(["export", "a.json", "--target", "gen-bbox", "--bbox-order", "xy"])).toMatch(/--bbox-order must be xyxy or yxyx/);
@@ -91,7 +91,7 @@ describe("parseArgs", () => {
   });
 
   it("refuses --state with the runtime export target", () => {
-    expect(usageError(["export", "a.json", "--target", "runtime", "--state", "night"])).toMatch(/--state applies to the gen-bbox target only/);
+    expect(usageError(["export", "a.json", "--target", "runtime", "--state", "night"])).toMatch(/--state applies to gen-bbox and masks/);
   });
 
   it("parses --version, check --only and the describe and compare flags", () => {

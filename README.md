@@ -2,7 +2,7 @@
 
 IsoBlock keeps the layout of a 2D isometric scene as data. People and AI agents edit one scene file; IsoBlock checks it against the scene's rules, renders it, and exports one approved layout to the game engine, to image generation and to graybox gameplay.
 
-Made by [Forty-Two Twice](https://10101042.xyz), an independent game studio. Status: pre-release, version 0.12.0. Scene format `isoblock/1`. Breaking changes and upgrade steps are listed in [`CHANGELOG.md`](CHANGELOG.md).
+Made by [Forty-Two Twice](https://10101042.xyz), an independent game studio. Status: pre-release, version 0.13.0. Scene format `isoblock/1`. Breaking changes and upgrade steps are listed in [`CHANGELOG.md`](CHANGELOG.md).
 
 ## Why
 
@@ -15,11 +15,12 @@ IsoBlock makes the scene file the single source of truth, checks it with exact r
 ## Features
 
 - **Scene file** in world units: types with parts, objects, strips, zones, lanes, relations, checks, states, per-property locks and recorded assumptions. The camera is either two ground axes or a view (elevation, direction and scale). Objects, zones and lanes may stand at a height.
-- **Checks**: `in_region`, `no_overlap`, `clearance`, `lane_clear`, `lane_reaches`, `lane_apart`, `visible` (occlusion), `reachable`, `capacity`, `min_screen_size` and `sort_consistency`. Each result states pass or fail, the measured value, the threshold and the objects involved.
+- **Checks**: `in_region`, `no_overlap`, `clearance`, `lane_clear`, `lane_reaches`, `lane_apart`, `visible` (occlusion), `reachable`, `capacity`, `min_screen_size`, `sort_consistency` and `visible_share` (how much of an object shows). Each result states pass or fail, the measured value, the threshold and the objects involved.
 - **For agents**: `describe` prints a short text summary; `patch` applies short commands or JSON Patch, also from standard input, and rejects changes to locked properties; `diff` and `compare` report changes and variants by measured values; `validate --json` and `check --only` keep the output short, and a misspelled name gets a suggestion.
 - **Relations and solver**: `relations` measures every relation; `solve` places objects from them and, when they cannot all hold, reports a minimal set of conflicting hard relations.
 - **Render**: SVG and PNG, with no native dependencies.
-- **Export**: a runtime file (`isoblock-runtime/3`) for engines, and bounding boxes for image generation (`gen-bbox`).
+- **Export**: a runtime file (`isoblock-runtime/3`) for engines, and bounding boxes (`gen-bbox`) and masks per object and per tag (`masks`) for image generation.
+- **Visibility**: `visibility` reports how much of each object shows in a frame region and how much of the region is covered; `occluders` lists the objects that hide an actor walking in a lane or a zone.
 - **Godot 4 adapter** ([`adapters/godot/`](adapters/godot/)): builds a node tree from the runtime file, draws sprites in the tool's draw order, switches states, and places the game's moving actors.
 - **Editor** (`dist/editor.html`): one offline page with dragging on isometric and top-down views, adding, duplicating, deleting and nudging objects, a base height field, a state switch, locks, settling assumptions, undo and a live check panel.
 
@@ -50,8 +51,10 @@ isoblock solve     <scene.json> [--only a,b] [-o <proposal.json>] [--patch <move
 isoblock patch     <scene.json> <patch|-> [-o <out.json>] [--dry-run] [--json]
 isoblock diff      <a.json> <b.json> [--json]
 isoblock compare   <scene.json> --variant NAME=FILE... [--state NAME] [--format text|md|json] [--relations]
-isoblock export    <scene.json> --target runtime|gen-bbox [-o <out.json>]
-                   [--bbox-units px|norm1000] [--bbox-order xyxy|yxyx] [--state NAME]
+isoblock export    <scene.json> --target runtime|gen-bbox|masks [-o <out.json|dir>]
+                   [--bbox-units px|norm1000] [--bbox-order xyxy|yxyx] [--state NAME] [--grow N]
+isoblock visibility <scene.json> [--region ID] [--state NAME] [--json]
+isoblock occluders  <scene.json> --actor w,d,h (--lane ID | --zone ID) [--step S] [--state NAME] [--json]
 ```
 
 Run the tool as `node dist/isoblock.mjs`. Exit codes: `0` success; `1` a check failed or was skipped (`relations`: a hard relation is not satisfied; `solve`: also a conflict); `2` invalid input or usage; `3` a patch touches a lock; `70` internal error. Details and examples: [`docs/AGENT_GUIDE.md`](docs/AGENT_GUIDE.md).

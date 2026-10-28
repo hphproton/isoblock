@@ -2,7 +2,7 @@
 
 How an AI agent uses IsoBlock. The builder fills each section as commands ship.
 
-This guide describes the tool built from this repository: the commands `validate`, `check`, `render`, `describe`, `relations`, `solve`, `patch`, `diff`, `compare` and `export`, the editor page `dist/editor.html`, and the Godot adapter in `adapters/godot/`. What is not scheduled is listed under [Not available yet](#not-available-yet).
+This guide describes the tool built from this repository: the commands `validate`, `check`, `render`, `describe`, `relations`, `solve`, `patch`, `diff`, `compare`, `export`, `visibility` and `occluders`, the editor page `dist/editor.html`, and the Godot adapter in `adapters/godot/`. What is not scheduled is listed under [Not available yet](#not-available-yet).
 
 ## Install and build
 
@@ -35,12 +35,14 @@ isoblock solve    <scene.json> [--only a,b] [-o <proposal.json>] [--patch <moves
 isoblock patch    <scene.json> <patch|-> [-o <out.json>] [--dry-run] [--json]
 isoblock diff     <a.json> <b.json> [--json]
 isoblock compare  <scene.json> --variant NAME=FILE... [--state NAME] [--format text|md|json] [--relations]
-isoblock export   <scene.json> --target runtime|gen-bbox [-o <out.json>] [--bbox-units px|norm1000] [--bbox-order xyxy|yxyx] [--state NAME]
+isoblock export   <scene.json> --target runtime|gen-bbox|masks [-o <out.json|dir>] [--bbox-units px|norm1000] [--bbox-order xyxy|yxyx] [--state NAME] [--grow N]
+isoblock visibility <scene.json> [--region ID] [--state NAME] [--json]
+isoblock occluders  <scene.json> --actor w,d,h (--lane ID | --zone ID) [--step S] [--state NAME] [--json]
 ```
 
 ### `validate`
 
-Checks the file against `schema/isoblock-1.json`, then checks references: duplicate ids, object types that do not exist, relation targets, check parameters that name a missing region, strip, zone, lane, object or anchor (`lane:<id>`, `anchor:<object id>/<anchor id>`), states that hide a missing object, and assumption paths that do not resolve in the file. A state may only have `hide` (and `x-` keys).
+Checks the file against `schema/isoblock-1.json`, then checks references: duplicate ids, object types that do not exist, relation targets, check parameters that name a missing region, strip, zone, lane, object or anchor (`lane:<id>`, `anchor:<object id>/<anchor id>`), states that hide a missing object, part or region, and assumption paths that do not resolve in the file. A state may only have `hide`, `hideParts`, `hideRegions` and `x-` keys. A `visible_share` check needs exactly one of `ids` and `tag`, and `min` from 0 to 1; a tag that no object has is valid and the check is `skip`.
 
 ```
 $ isoblock validate yard.scene.json
@@ -95,7 +97,7 @@ SKIP c6 lane_clear: lane "L4" has 3 points; only 2-point lanes are supported
 SKIP c7 reachable: the scene has no zone with kind "walkable"
 ```
 
-`--json` prints `{ "scene": "<id>", "results": [...] }` instead. Each result has `id`, `check`, `status` (`pass`, `fail`, `warn` or `skip`), `value`, `threshold`, `ids` and `message`; `no_overlap` adds `pairs`, `visible` adds `occluders`, `capacity` adds `accepted` and `rejected`; `sort_consistency` adds `worst` and `positions`. Keys are always in this order. `message` is one line meant for people; read `status`, `value` and `ids` instead of parsing it.
+`--json` prints `{ "scene": "<id>", "results": [...] }` instead. Each result has `id`, `check`, `status` (`pass`, `fail`, `warn` or `skip`), `value`, `threshold`, `ids` and `message`; `no_overlap` adds `pairs`, `visible` adds `occluders`, `capacity` adds `accepted` and `rejected`; `sort_consistency` adds `worst` and `positions`; `visible_share` adds `shares` (omitted when the check is `skip`). Keys are always in this order. `message` is one line meant for people; read `status`, `value` and `ids` instead of parsing it.
 
 `--state NAME` checks the scene as it is in one of its states, with the objects that state hides taken out (see [States](#states)). The summary line then reads `scene walk (state open): ...`; `--json` keeps the same shape. An unknown state name exits 2 (`E_USAGE`) and lists the states the scene has.
 
@@ -166,9 +168,13 @@ Described in their own sections below: [Relations](#relations), [`solve`](#solve
 
 Described in [Export](#export) below.
 
+### `visibility` and `occluders`
+
+Described in [Masks and visibility](#masks-and-visibility).
+
 ### Not available yet
 
-`--state` belongs to `check`, `render`, `compare` and `export --target gen-bbox`. On any other command it is a usage error (`flag '--state' does not apply to '<command>'`), and so it is with `export --target runtime`: the runtime file carries all states.
+`--state` belongs to `check`, `render`, `compare`, `export --target gen-bbox`, `export --target masks`, `visibility` and `occluders`. On any other command it is a usage error (`flag '--state' does not apply to '<command>'`), and so it is with `export --target runtime`: the runtime file carries all states.
 
 Export targets `godot`, `phaser` and `tiled` are not scheduled (the Godot adapter reads the `runtime` file instead). `compare --render` is not scheduled either. The check `state_stable` is not implemented: it returns `skip`.
 
@@ -209,7 +215,7 @@ Select an object (tap or click it) to see its properties, each with its unit:
 
 The checks of the scene run again after every change, and only the checks that involve the changed objects run again (`in_region` and `no_overlap` even measure only the changed objects). Tapping a row highlights its objects in both views; tapping it again, or `Esc`, clears the highlight. Rows show the same status, id and message as `isoblock check`. `in_region` with `measure: "drawn"`, `min_screen_size` with `measure: "height"` and `lane_apart` are rows like the others, and after a save the panel equals `isoblock check --json` on that file (with `--state <name>` while a state is shown). `lane_apart` does not depend on object positions, so moving an object leaves its row as it was.
 
-Checks that search a grid, `reachable` and `sort_consistency`, are too slow to run on every pointer move. While a drag is going on, their rows keep the last result, are dimmed and say `out of date: runs again when the drag ends`; when the object is dropped (or the drag is cancelled) they run again, so the panel then equals `isoblock check --json` on the saved file. Every other edit (a typed value, a lock, undo, redo, opening a file) runs every check it involves at once.
+Checks that search a grid or rasterize the frame, `reachable`, `sort_consistency` and `visible_share`, are too slow to run on every pointer move. While a drag is going on, their rows keep the last result, are dimmed and say `out of date: runs again when the drag ends`; when the object is dropped (or the drag is cancelled) they run again, so the panel then equals `isoblock check --json` on the saved file. Every other edit (a typed value, a lock, undo, redo, opening a file) runs every check it involves at once.
 
 ### State
 
@@ -284,14 +290,15 @@ Parameters marked optional can be left out. A check with a wrong or unknown para
 | `capacity` | `kind`, `min`; optional `body` (`[0.5, 0.5]`), `ids`, `allow` (object ids) | At least `min` anchors of `kind` can be used at once | Number of usable anchors |
 | `min_screen_size` | `target`, `min` (pixels); optional `screenWidth` (default: the frame width), `measure` (`bounds` or `height`) | The target is at least `min` pixels tall on screen. `bounds` (default) is the screen box of the parts; `height` is their vertical extent times the length of `up` on screen | Pixels |
 | `sort_consistency` | `actor` (`[w, d, h]`); optional `step` (0.1), `reach` (1), `maxPixels` (0), `area` (zone id), `ids`, `level` (0) | An engine that sorts one key per sprite draws a test actor standing at `level` and the objects in their geometric order, to within `maxPixels` of wrong area for every examined object. The actor overlaps boxes, not footprints | Number of examined objects over `maxPixels`. Also `worst` (px squared) and `positions` |
+| `visible_share` | `ids` or `tag`, exactly one; `min` (0 to 1); optional `region` | Each examined object shows at least `min` of its own pixels in the region, measured on the object raster (see [Masks and visibility](#masks-and-visibility)). An object with no pixel there is not examined | The smallest share of the examined objects. Also `shares`, the share of each failing object |
 
 Notes:
 
-- `ids` in a result: failing objects (`in_region`), involved objects sorted alphabetically (`no_overlap`), blocking objects (`lane_clear`), `[a, b]` in file order (`clearance`), `[lane]` (`lane_reaches`), `[lane, target id]` (`lane_apart`), `[target]` (`visible`).
+- `ids` in a result: failing objects (`in_region`), involved objects sorted alphabetically (`no_overlap`), blocking objects (`lane_clear`), `[a, b]` in file order (`clearance`), `[lane]` (`lane_reaches`), `[lane, target id]` (`lane_apart`), `[target]` (`visible`), failing objects in file order (`visible_share`).
 - `visible` samples the top face and the side faces from `from` times the height up to the full height, 64 points per face, and casts a ray toward the camera from each point through the parts of every other object. `occluders` lists the objects that hide at least one point.
 - Footprints always use the type's `size` rectangle, even when parts stick out. Parts matter for `visible` and for drawing.
 - **`lane_clear`, `lane_reaches` and `lane_apart` support one lane shape:** exactly 2 points, parallel to u or v. Other shapes return `skip`. A lane that is not flat (its points do not share one height) is `skip` for `lane_clear`. `lane_reaches` projects each end at that end's height and evaluates `right`, `left`, `top` and `bottom`. A `lane_apart` zone with fewer than 3 points is `skip` too. A skipped `lane_apart` has no `overlap`. Heights do not change `clearance`, `capacity`, `lane_apart` or relations.
-- **`skip` is not a pass.** It means the tool could not evaluate the check: the check is not implemented in this stage (`state_stable`), or its input has an unsupported shape (for example `reachable` in a scene with no walkable zone), or the check names an object that the chosen state hides. A skipped check has `value: null` and `threshold: null`, and `check` exits 1.
+- **`skip` is not a pass.** It means the tool could not evaluate the check: the check is not implemented in this stage (`state_stable`), or its input has an unsupported shape (for example `reachable` in a scene with no walkable zone), or the check names an object or a frame region that the chosen state hides, or `visible_share` finds no listed object drawn in its region. A skipped check has `value: null` and `threshold: null`, and `check` exits 1. A tag that no object has is not a schema error: that `visible_share` check is `skip`.
 
 ### The gameplay checks
 
@@ -556,8 +563,8 @@ objects moved / total (u)    -       1 / 0.60  1 / 0.40  1 / 1.00
 How to read the table:
 
 - `failing checks`: checks with status `fail` or `skip`. `locks touched`: how many base locks the variant touches, then their labels; any entry marks the variant invalid (variant C above moves the locked tree).
-- One row per check that fails or is skipped in some column, or whose value differs from the base in some column, in the order of `checks`. The label names the check and its unit: `in_region <region>[/<strip>] (objects outside)`, `in_region <region>[/<strip>] drawn (objects outside)` for `measure: "drawn"`, `no_overlap (pairs)`, `clearance <a>×<b> (<unit>)`, `lane_clear <lane> (blocking objects)`, `lane_reaches <lane> (y px)` for `right` and `left` and `lane_reaches <lane> (x px)` for `top` and `bottom`, `lane_apart <lane>×<target id> (<unit>)`, `visible <target> (% occluded)`, `reachable <check id> (<unit>)`, `capacity <check id> (usable <kind>)`, `min_screen_size <target> (px)`, `min_screen_size <target> height (px)` for `measure: "height"`, `sort_consistency <check id> (objects out of order)`; other checks show as `<check> <id>`.
-- Cells: counts as integers, clearance, `lane_apart` and distances with 2 decimals, `lane_reaches` in whole pixels (`none` when the lane does not reach the edge), `visible` in whole percent, `reachable` with 2 decimals (`none` when there is no path), `capacity` and `sort_consistency` as integers, `min_screen_size` in whole pixels (halves up), `skip` for a skipped check. A trailing ` ✗` marks a value whose status is `fail` or `skip`.
+- One row per check that fails or is skipped in some column, or whose value differs from the base in some column, in the order of `checks`. The label names the check and its unit: `in_region <region>[/<strip>] (objects outside)`, `in_region <region>[/<strip>] drawn (objects outside)` for `measure: "drawn"`, `no_overlap (pairs)`, `clearance <a>×<b> (<unit>)`, `lane_clear <lane> (blocking objects)`, `lane_reaches <lane> (y px)` for `right` and `left` and `lane_reaches <lane> (x px)` for `top` and `bottom`, `lane_apart <lane>×<target id> (<unit>)`, `visible <target> (% occluded)`, `reachable <check id> (<unit>)`, `capacity <check id> (usable <kind>)`, `min_screen_size <target> (px)`, `min_screen_size <target> height (px)` for `measure: "height"`, `sort_consistency <check id> (objects out of order)`, `visible_share <check id> (% shown)`; other checks show as `<check> <id>`.
+- Cells: counts as integers, clearance, `lane_apart` and distances with 2 decimals, `lane_reaches` in whole pixels (`none` when the lane does not reach the edge), `visible` in whole percent, `visible_share` in whole percent (halves up), `reachable` with 2 decimals (`none` when there is no path), `capacity` and `sort_consistency` as integers, `min_screen_size` in whole pixels (halves up), `skip` for a skipped check. A trailing ` ✗` marks a value whose status is `fail` or `skip`.
 - `objects moved / total`: objects present in both scenes whose `pos` differs, including a change of base height, and the sum of their distances in (u, v, h). A `pos` of two numbers has base height 0.
 
 A `sort_consistency` row counts the examined objects drawn out of order, so a variant that moves the `box` clear of the `shed` shows `3 ✗` against the base `4 ✗` in check `s1` (`isoblock compare tests/fixtures/sort/court.scene.json --variant A=tests/fixtures/sort/compare/court.A.patch --variant B=tests/fixtures/sort/compare/court.B.patch`):
@@ -733,15 +740,18 @@ Use `--only` to move a few objects and keep the rest of a settled layout: `isobl
 
 ## Export
 
-`isoblock export <scene> --target runtime|gen-bbox [-o out.json]` writes a file derived from the scene. The scene file stays the only source of truth: an export never writes back, and `-o` naming the scene file is a usage error. Without `-o` the file goes to stdout; with `-o` the command prints `wrote <path>`. Both files use the saved format (two-space indentation, one final newline), and the same scene gives the same bytes. `export` exits 0 when it completes, even if checks fail; it writes drafts too, so a game build decides which `meta.status` it accepts.
+`isoblock export <scene> --target runtime|gen-bbox|masks [-o out.json|dir]` writes a file, or for `masks` a folder, derived from the scene. The scene file stays the only source of truth: an export never writes back, and `-o` naming the scene file is a usage error. Without `-o` a `runtime` or `gen-bbox` file goes to stdout; `masks` requires `-o <dir>`. With `-o` the command prints `wrote <path>`. JSON files use the saved format (two-space indentation, one final newline), and the same scene gives the same bytes. `export` exits 0 when it completes, even if checks fail; it writes drafts too, so a game build decides which `meta.status` it accepts.
 
 | Usage error (exit 2) | Message starts |
 |---|---|
-| no `--target` | `export needs --target runtime or gen-bbox` |
+| no `--target` | `export needs --target runtime, gen-bbox or masks` |
 | `--target godot`, `phaser` or `tiled` | `export target '<name>' is not scheduled` |
 | another name | `unknown export target '<name>'` |
-| `--bbox-units` or `--bbox-order` with `runtime` | `--bbox-units applies to the gen-bbox target only` |
-| `--state` with `runtime` | `--state applies to the gen-bbox target only` |
+| `--bbox-units` or `--bbox-order` with `runtime` or `masks` | `--bbox-units applies to the gen-bbox target only` |
+| `--state` with `runtime` | `--state applies to gen-bbox and masks: the runtime file carries all states` |
+| `--grow` with `runtime` or `gen-bbox` | `--grow applies to the masks target only` |
+| `masks` without `-o` | `export --target masks needs -o <dir>` |
+| `--grow` not an integer from 0 to 64 | `--grow must be an integer from 0 to 64` |
 
 ### `--target runtime`
 
@@ -814,11 +824,66 @@ $ isoblock export yard.scene.json --target gen-bbox --bbox-units norm1000 --bbox
     },
 ```
 
-- `box` is the screen bounds of every corner of every part of the object, cut to the frame. An object that is outside the frame (nothing left of its box) is not listed. `clipped` is `true` when the frame cut the box. `hint` is the type's `genHint`; it is left out when the type has none. Boxes follow the order of the objects in the scene. Groups are not scheduled.
+- `box` is the screen bounds of every corner of every part of the object, cut to the frame. An object that is outside the frame (nothing left of its box) is not listed. `clipped` is `true` when the frame cut the box. `hint` is the type's `genHint`; it is left out when the type has none. Boxes follow the order of the objects in the scene. `gen-bbox` has no groups; [`masks`](#masks-and-visibility) groups objects by tag.
 - `--bbox-units px` (default) gives pixels rounded to 2 decimals; `norm1000` gives `x * 1000 / frame width` and `y * 1000 / frame height` as whole numbers, halves rounded up.
 - `--bbox-order xyxy` (default) gives `[x0, y0, x1, y1]`; `yxyx` gives `[y0, x0, y1, x1]`.
 - `--state NAME` leaves out the objects that state hides (see [States](#states)): `walk.scene.json --state open` has no box for `barrier1`. The other boxes are the same as without a state.
 - Generation never writes back to the scene file. A tool that measures a generated image against the boxes is outside this project.
+
+## Masks and visibility
+
+One raster of the objects answers two questions. Image generation by layers needs, per object and per tag, the shape on the screen and the part that is not covered, so a picture can be cut into layers and a layer can be kept in front of a walking area. Layout work needs to know how much of each object shows in a frame region, and how much of that region the objects cover. Both read the same raster.
+
+The raster is `ceil(frame.w)` by `ceil(frame.h)` pixels, one pixel per frame unit. Each pixel takes the object of the last drawn part whose outline contains the pixel center, in the painter's order of the state. A part's outline is the convex hull of its eight projected corners, snapped to 1/256 px, filled by the top-left rule. Ground, lanes, zones, regions and labels do not take pixels: a region with `blocksScene` covers no object. An object's **full mask** is every pixel inside one of its drawn parts, whether or not something is drawn over it. Its **visible mask** is the pixels the raster gives to it. A tag group's masks are the unions of its objects' masks. Hidden objects and hidden parts are not drawn. The same scene and state give the same pixels.
+
+Masks cover the parts' boxes, not the art drawn inside or past them. `--grow` adds a band of pixels (Chebyshev distance, at most 64) so the art has room for detail the block does not show.
+
+### `export --target masks`
+
+```
+isoblock export plaza.scene.json --target masks -o plaza-masks --state closed --grow 2
+```
+
+`-o` is the folder. It is created when missing. The command replaces the files it writes and leaves other files in the folder alone. `--state` draws that state. `--grow` defaults to 0. `--bbox-units` and `--bbox-order` belong to `gen-bbox` and are usage errors here.
+
+- `labels.png`: a 16-bit grayscale image of the whole frame. A pixel holds the 1-based position of its object in the scene file, so the numbers are the same in every state; 0 is no object. It is never grown. A scene of more than 65,535 objects cannot be written this way (`E_USAGE`).
+- `full/<index>.png` and `visible/<index>.png`: 8-bit grayscale, 255 in the mask and 0 elsewhere, cropped to the box of the grown full mask. Written for each object that has a full pixel. `<index>` is the same number as in `labels.png`. The visible image uses that same box.
+- `groups/full/<n>.png` and `groups/visible/<n>.png`: the same for each tag group that has a full pixel. `n` is 1, 2, … in the order of `groups`.
+- `masks.json` (`isoblock-masks/1`), in the saved format. `frame` is the raster size. `state` is `null` without `--state`. `objects` lists every object of the file, in file order; `full`, `visible` and `share` are `null` for a hidden object and for an object with no full pixel. `pixels` counts the mask before growing, over the whole raster. `share` is visible pixels divided by full pixels, rounded to 6 decimals. `groups` has one entry per tag, in order of first appearance (objects in file order, each object's tags in its order). `ids` lists every object with that tag, hidden objects included. The group's pixels are those of its drawn objects.
+
+The PNGs are not interlaced. Filters and compression are free, so compare pixels, not bytes. This build writes the same bytes for the same input.
+
+Use the masks to cut objects out of a generated picture, to place them in drawing order, and to keep a layer of the objects that stand in front of a walking area. `labels.png` names the object of each pixel without a separate file per object.
+
+### `visibility`
+
+```
+isoblock visibility plaza.scene.json --region focus --json
+```
+
+Reports how much of each drawn object shows in a frame region, and how much of the region the objects cover. Without `--region` the region is the whole raster. An unknown region, and a region the state hides, are usage errors (`E_USAGE`). The command exits 0 when it completes.
+
+`--json` prints `{ scene, state, region, objects, tags }`. `region` has `id` (`null` without `--region`), `pixels`, `covered` and `share` (covered divided by pixels). `objects` lists the drawn objects with at least one full pixel in the region, in file order: `full`, `visible`, `share` (visible divided by full) and `cover` (visible divided by the region's pixels). `tags` has one row per tag of those objects, in order of first appearance. `ids` are the listed objects with that tag. `full` is the union of their full masks in the region. `visible` is the sum of their visible pixels. Shares are rounded to 6 decimals. Regions use half-open pixel ranges, so two regions that share an edge share no pixel.
+
+Use it to see which objects are hidden behind others in a frame region, and how full that region already is, before deciding what can go.
+
+### `occluders`
+
+```
+isoblock occluders plaza.scene.json --actor 0.5,0.5,1.7 --lane walk --step 0.25 --json
+```
+
+Lists the objects that hide part of a moving actor somewhere in a walkable area: what a game or an artist draws on a layer in front of the actors there. Give exactly one of `--lane` and `--zone`. `--actor` is `w,d,h`, three numbers above 0. `--step` defaults to 0.25 and must be above 0.
+
+The area of a lane is its rectangle, at the lane's level; the lane must be flat and axis-parallel with two points. The area of a zone is its polygon, at the zone's height; the zone needs 3 points or more. A position is a grid center that lies in the area, not in a blocked zone of that level, and whose actor box overlaps no drawn object's box. At each such position an object hides the actor when one of its drawn parts, whose box does not intersect the actor box, is drawn after the actor by the painter's order and the two outlines overlap. This is the geometric order, not the engine's one key per sprite: a flat mat in front of the actor's feet and a deck under an actor standing on it are not occluders. Where `sort_consistency` finds no mismatch, the engine draws the same objects over the actor.
+
+`--json` prints `{ scene, state, area, actor, step, positions, occluders }`. `area` is `{ kind, id, level }` with `kind` `lane` or `zone`. `positions` is how many grid positions were used. `occluders` lists, in file order, each object that hides the actor at one position or more, with that count and the largest overlap of one of its parts with the actor, in px squared rounded to 2 decimals. An unknown lane or zone, a lane of another shape or one that is not flat, a zone of fewer than 3 points, a bad actor size, and a grid of more than 1,000,000 points (the message asks for a larger `--step`) are usage errors. The command exits 0 when it completes.
+
+### `visible_share`
+
+The check form of the same raster. Exactly one of `ids` (object ids) and `tag` is set. `min` is required, from 0 to 1. `region` is an optional frame region; without it the region is the whole raster. The examined objects are the listed ones that are drawn and have at least one full pixel in the region. An object's share is its visible pixels in the region divided by its full pixels there. It fails when that share is below `min`. `value` is the smallest share of the examined objects, rounded to 6 decimals. `ids` are the failing objects, in file order, and `shares` their shares in that order (`[]` when none fails). No examined object is `skip`, with a message that no listed object is drawn in the region. A region the state hides is `skip`, as `in_region`. A tag that no object carries is `skip`, not a schema error. One raster per state serves every `visible_share` check of a run.
+
+In `compare` the row is `visible_share <check id> (% shown)` and the cell is the value as a whole percent, halves up. In the editor the row waits for the end of a drag, like `reachable` and `sort_consistency`, because it rasterizes the frame.
 
 ## Godot adapter
 

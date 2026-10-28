@@ -66,6 +66,63 @@ export function decodePng(bytes: Uint8Array): Image {
   return { width, height, data };
 }
 
+export interface GrayImage {
+  readonly width: number;
+  readonly height: number;
+  readonly depth: 8 | 16;
+  /** One sample per pixel, row-major. 8-bit values are 0 to 255; 16-bit values are 0 to 65535. */
+  readonly samples: Uint16Array;
+}
+
+/** Decode an 8-bit or 16-bit grayscale PNG (color type 0), not interlaced. */
+export function decodeGrayPng(bytes: Uint8Array): GrayImage {
+  const buf = Buffer.from(bytes);
+  if (buf.subarray(0, 8).toString("hex") !== "89504e470d0a1a0a") throw new Error("not a PNG");
+  let width = 0;
+  let height = 0;
+  let depth = 0;
+  let colorType = 0;
+  const idat: Buffer[] = [];
+  for (let at = 8; at < buf.length; ) {
+    const length = buf.readUInt32BE(at);
+    const type = buf.subarray(at + 4, at + 8).toString("latin1");
+    const body = buf.subarray(at + 8, at + 8 + length);
+    if (type === "IHDR") {
+      width = body.readUInt32BE(0);
+      height = body.readUInt32BE(4);
+      depth = body[8] as number;
+      colorType = body[9] as number;
+      if (body[12] !== 0) throw new Error("interlaced PNG");
+    } else if (type === "IDAT") {
+      idat.push(body);
+    }
+    at += 12 + length;
+  }
+  if (colorType !== 0 || (depth !== 8 && depth !== 16)) throw new Error(`unsupported gray PNG ${depth}/${colorType}`);
+  const bpp = depth === 16 ? 2 : 1;
+  const stride = width * bpp;
+  const raw = inflateSync(Buffer.concat(idat));
+  const rows = new Uint8Array(stride * height);
+  for (let y = 0; y < height; y++) {
+    const filter = raw[y * (stride + 1)] as number;
+    for (let x = 0; x < stride; x++) {
+      const cur = raw[y * (stride + 1) + 1 + x] as number;
+      const left = x >= bpp ? (rows[y * stride + x - bpp] as number) : 0;
+      const up = y > 0 ? (rows[(y - 1) * stride + x] as number) : 0;
+      const upLeft = y > 0 && x >= bpp ? (rows[(y - 1) * stride + x - bpp] as number) : 0;
+      const add = filter === 0 ? 0 : filter === 1 ? left : filter === 2 ? up : filter === 3 ? (left + up) >> 1 : paeth(left, up, upLeft);
+      rows[y * stride + x] = (cur + add) & 255;
+    }
+  }
+  const samples = new Uint16Array(width * height);
+  if (depth === 8) {
+    for (let i = 0; i < samples.length; i++) samples[i] = rows[i] as number;
+  } else {
+    for (let i = 0; i < samples.length; i++) samples[i] = ((rows[i * 2] as number) << 8) | (rows[i * 2 + 1] as number);
+  }
+  return { width, height, depth, samples };
+}
+
 /** The largest difference of any channel of any pixel; Infinity when the sizes differ. */
 export function maxChannelDifference(a: Image, b: Image): number {
   if (a.width !== b.width || a.height !== b.height) return Infinity;

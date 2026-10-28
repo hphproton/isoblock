@@ -766,7 +766,7 @@ scene.json (git) → isoblock export --target runtime → <game>/data/scenes/<id
 
 - `labels.png`: the raster, a 16-bit grayscale PNG of W × H pixels. A pixel holds the 1-based position of its object in `objects` of the scene file, hidden objects counted, so the numbers are the same in every state; 0 for no object. It is never grown. A scene of more than 65,535 objects cannot be written this way: a usage error.
 - `full/<index>.png` and `visible/<index>.png`, for each object with a full pixel (`<index>` as in `labels.png`): 8-bit grayscale PNGs, 255 in the mask and 0 elsewhere, of the **box** of its grown full mask, from its first pixel to one past its last pixel along x and along y (as in section 13.6). Its visible image has the same box.
-- `groups/full/<n>.png` and `groups/visible/<n>.png`, for each tag group with a full pixel, n = 1, 2, … in the order of `groups`.
+- `groups/full/<n>.png` and `groups/visible/<n>.png`, for each tag group with a full pixel: those groups are numbered n = 1, 2, … in the order of `groups`; a group without a full pixel has no file and takes no number.
 - `masks.json`, in the saved format of section 10:
 
 ```json
@@ -817,7 +817,7 @@ dist/        build output, not committed; from stage 10 also THIRD_PARTY_NOTICES
   - fixed seeds;
   - coded errors;
   - TypeScript strict mode.
-- **Size budget (guide):** core about 7,000 lines (7,332 after stage 12); editor 1,500–2,500 (2,101 lines after stage 12); each adapter 150–400.
+- **Size budget (guide):** core about 7,000 lines (8,262 after stage 13, of which about 930 are the raster, the masks, visibility and occluders); editor 1,500–2,500 (2,101 lines after stage 13); each adapter 150–400.
 - Engine adapters live in `adapters/<engine>/`. They are not npm code, import nothing from `src/`, and read only the runtime file.
 - **Notices in the build (stage 10):** `npm run build` copies `THIRD_PARTY_NOTICES.md` to `dist/` unchanged and writes a header line into each built file: line 2 of `dist/isoblock.mjs` (after the shebang) is `// Third-party notices: THIRD_PARTY_NOTICES.md next to this file.`, and the line after the doctype of `dist/editor.html` is `<!-- Third-party notices: THIRD_PARTY_NOTICES.md next to this file. -->`. A test bundles both entry points with esbuild's metafile and fails when the set of packages whose files it contains (name and version from the nearest `package.json` under `node_modules/`) differs from the rows of the notices table that list that file in their `In` column.
 - **Continuous integration (stage 10):** `.github/workflows/ci.yml` runs on every push and pull request. Job `test`: Node 20 and 22, `npm ci`, `npm run typecheck`, `npm test` with Chromium installed by `node node_modules/playwright-core/cli.js install chromium` (the run must show no skipped tests), then the notices test. Job `godot`: downloads the Linux build of Godot 4.7.1 from the GitHub release `4.7.1-stable`, checks it against the release's `SHA512-SUMS.txt`, and runs `npm run test:godot` under Xvfb. The workflow installs nothing else and uses no secrets: it runs on `push` and `pull_request` only (never `pull_request_target`), with `permissions: contents: read`, and names each action with a version tag. Both jobs run on `ubuntu-24.04`, because `playwright-core` 1.56 cannot install Chromium on a newer runner image (Q-026); move to a newer image in the stage that upgrades it.

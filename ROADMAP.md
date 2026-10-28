@@ -256,19 +256,19 @@ Not in stage 12: paths between levels in `reachable`, a relation that puts an ob
 
 **Done when:** all tests pass, `npm run test:godot` passes, earlier fixtures still match except the runtime files of `tests/fixtures/runtime/`, which those of `tests/fixtures/runtime3/` replace, the workflow `ci` passes on the branch, `npm run check:publish` reports nothing, the branch is named `builder/stage-12`, its session log names the tool and model, gives the test counts with skipped tests and ends with the pull request's title and description, and the stage 12 criteria in SPEC section 17 hold.
 
-## Stage 13 · open
+## Stage 13 · done (0.13.0)
 
-Masks and visibility (SPEC sections 9, 9.6, 10, 11, 11.1, 11.3, 11.4, 14, 14.1, 16, 17, 18). Core, CLI and the editor's check panel. No change to the scene format beyond the new check, no change to the runtime file, no new dependency. Fixtures, all in new files so that the suite of release 0.12.0 still passes on this branch: `tests/fixtures/masks/` (the scene `plaza.scene.json` with an axes-form camera at 2:1, an overhanging part, a raised panel, a flat mat, an object of no pixel, one outside the frame and one the frame cuts, tags, a walkable and a blocked zone, a lane, three regions and two states; `cases.json` with 3 masks cases and their expected folders, 3 visibility cases, 4 occluders cases on `plaza` and `levels`, and the `visible_share` results of `plaza` in three states; `invalid/` with 4 broken scenes).
+Masks and visibility (SPEC sections 9, 9.6, 10, 11, 11.1, 11.3, 11.4, 14, 14.1, 16, 17, 18). Core, CLI and the editor's check panel. No change to the scene format beyond the new check, no change to the runtime file, no new dependency. Fixtures, all in new files so that the suite of release 0.12.0 still passes on this branch: `tests/fixtures/masks/` (the scene `plaza.scene.json` with an axes-form camera at 2:1, an overhanging part, a raised panel, a flat mat, an object of no pixel, one outside the frame and one the frame cuts, tags, a walkable and a blocked zone, a lane, three regions and two states; `cases.json` with 4 masks cases and their expected folders, 3 visibility cases, 4 occluders cases on `plaza` and `levels`, and the `visible_share` results of `plaza` in three states; `invalid/` with 4 broken scenes).
 
-- [ ] Object raster (SPEC section 14.1): part outlines snapped to 1/256 px, the top-left rule, the painter's order of the scene in a state; full and visible masks per object and per tag group; growing
-- [ ] `export --target masks -o <dir>` with `--state` and `--grow`: `labels.png` (16-bit), the cut mask PNGs and `masks.json`; PNG encoding in `src/cli` with `node:zlib`; the usage errors of SPEC section 11
-- [ ] `visibility` with `--region`, `--state` and `--json` (SPEC section 11.3)
-- [ ] `occluders` with `--actor`, `--lane` or `--zone`, `--step`, `--state` and `--json` (SPEC section 11.4)
-- [ ] Check `visible_share`: schema, references and suggestions (SPEC section 6), states, `skip` rules, `shares` (SPEC section 9.6); its `compare` label and cells (SPEC section 11.1); in the editor its rows wait for the drop like the grid checks (SPEC section 10)
-- [ ] Tests load `tests/fixtures/masks/cases.json` (every masks, visibility, occluders and checks case) and `tests/fixtures/masks/invalid/cases.json`, and compare with the expected results within the tolerances of `cases.json`; the stage 2 and stage 8 frame-time tests still pass
-- [ ] `CHANGELOG.md` lists the new export target, the two commands and the check
-- [ ] `docs/AGENT_GUIDE.md` covers the masks and their files, `visibility`, `occluders` and `visible_share`, with what each one is for
-- [ ] Session log says `branch ready for review`
+- [x] Object raster (SPEC section 14.1): part outlines snapped to 1/256 px, the top-left rule, the painter's order of the scene in a state; full and visible masks per object and per tag group; growing
+- [x] `export --target masks -o <dir>` with `--state` and `--grow`: `labels.png` (16-bit), the cut mask PNGs and `masks.json`; PNG encoding in `src/cli` with `node:zlib`; the usage errors of SPEC section 11
+- [x] `visibility` with `--region`, `--state` and `--json` (SPEC section 11.3)
+- [x] `occluders` with `--actor`, `--lane` or `--zone`, `--step`, `--state` and `--json` (SPEC section 11.4)
+- [x] Check `visible_share`: schema, references and suggestions (SPEC section 6), states, `skip` rules, `shares` (SPEC section 9.6); its `compare` label and cells (SPEC section 11.1); in the editor its rows wait for the drop like the grid checks (SPEC section 10)
+- [x] Tests load `tests/fixtures/masks/cases.json` (every masks, visibility, occluders and checks case) and `tests/fixtures/masks/invalid/cases.json`, and compare with the expected results within the tolerances of `cases.json`; the stage 2 and stage 8 frame-time tests still pass
+- [x] `CHANGELOG.md` lists the new export target, the two commands and the check
+- [x] `docs/AGENT_GUIDE.md` covers the masks and their files, `visibility`, `occluders` and `visible_share`, with what each one is for
+- [x] Session log says `branch ready for review`
 
 Not in stage 13: editor overlays of masks, visible shares and occluders (planned for stage 14); a height budget for a point, leaving out what a frame region does not show (asked for, not scheduled: SPEC section 17); masks of zones, lanes or regions; `compare --render` and layout indicators (not scheduled). The Rust crate license texts in `THIRD_PARTY_NOTICES.md` are a maintainer task (`MAINTAINING.md`, Before distributing a build).
 

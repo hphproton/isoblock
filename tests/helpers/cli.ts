@@ -35,6 +35,9 @@ export function memoryIo(initial: Record<string, string> = {}, rasterize?: Io["r
     writeBytes(path, data) {
       bytes.set(path, data);
     },
+    mkdir() {
+      // The in-memory files do not need directories.
+    },
     ...(rasterize === undefined ? {} : { rasterize }),
     appendText(path, text) {
       files.set(path, (files.get(path) ?? "") + text);

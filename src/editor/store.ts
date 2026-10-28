@@ -29,8 +29,8 @@ export interface EditorState {
   /** The scene that `results` belong to. */
   readonly resultsScene: Scene | null;
   /**
-   * Ids of the checks whose result is out of date: grid checks keep their last result during a drag
-   * and run again when it ends (SPEC 10).
+   * Ids of the checks whose result is out of date: grid and raster checks keep their last result
+   * during a drag and run again when it ends (SPEC 10).
    */
   readonly stale: ReadonlySet<string>;
   readonly selected: string | null;

@@ -17,6 +17,7 @@ export function canonical(r: CheckResult): CheckResult {
     ...(r.positions === undefined ? {} : { positions: r.positions }),
     ...(r.outside === undefined ? {} : { outside: r.outside }),
     ...(r.overlap === undefined ? {} : { overlap: r.overlap }),
+    ...(r.shares === undefined ? {} : { shares: r.shares }),
     message: r.message,
   };
 }
