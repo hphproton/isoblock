@@ -11,4 +11,4 @@
 | capacity seats (usable seat) | 0 ✗ | 0 ✗ | 0 ✗ | 0 ✗ | 0 ✗ |
 | min_screen_size figure height (px) | 85 ! | 85 ! | 85 ! | 85 ! | 85 ! |
 | visible_share street_shown (% shown) | 81 ! | 81 ! | 81 ! | 100 | 81 ! |
-| objects moved / total (u) | - | 1 / 0.20 | 1 / 0.30 | 1 / 0.40 | 1 / 0.60 |
+| objects moved / total (u) | - | 1 / 0.20 | 1 / 0.30 | 1 / 0.40 | 0 / 0.00 |

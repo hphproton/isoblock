@@ -2,10 +2,6 @@
 
 ## Unreleased
 
-### Changed
-
-- `compare --state` counts a position change of an object the state hides. Checks still ignore that object. SPEC 11.1 says such a move is left out; the explain compare fixture counts it (`QUESTIONS.md` Q-028).
-
 ### Added
 
 - Checks that have one bound take `warn`, a margin on the passing side of that bound: `clearance`, `lane_apart`, `visible`, `reachable` (with `max`), `capacity`, `min_screen_size` and `visible_share`. A result that would pass is `warn` when its value lies in the margin. `fail` and `skip` are unchanged, and `warn: 0` never warns. `check` prints `WARN` lines; `check --failing` leaves them out, and the exit code still treats `warn` as `pass`. `describe` prints one `WARN` line per warning, with the value, the margin and the bound. `compare` shows a warning row and marks the cell with ` !`. In the editor the check row reads `WARN`.

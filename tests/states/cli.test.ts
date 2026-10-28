@@ -128,11 +128,10 @@ describe("cli: compare --state", () => {
     expect(JSON.parse(compare(["--state", "apart", "--format", "json"]).out).state).toBe("apart");
   });
 
-  it("does not check an object a state hides, and still counts a move of that object", () => {
+  it("counts the objects a state hides neither as checked nor as moved", () => {
     const json = (extra: string[]) => JSON.parse(compare([...extra, "--format", "json"]).out);
     expect(json([]).moved).toEqual([null, { count: 1, distance: 3 }, { count: 1, distance: 1 }]);
-    // Q-028: the explain compare fixture counts a move of an object the state hides.
-    expect(json(["--state", "apart"]).moved).toEqual([null, { count: 1, distance: 3 }, { count: 1, distance: 1 }]);
+    expect(json(["--state", "apart"]).moved).toEqual([null, { count: 0, distance: 0 }, { count: 1, distance: 1 }]);
     const k2 = json(["--state", "apart"]).checks.find((c: { id: string }) => c.id === "k2");
     expect(k2.status).toEqual(["skip", "skip", "skip"]);
     expect(k2.values).toEqual([null, null, null]);
