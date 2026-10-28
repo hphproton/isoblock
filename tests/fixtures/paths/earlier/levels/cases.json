@@ -1,0 +1,1125 @@
+{
+  "tolerance": {
+    "value": 0.01,
+    "valuePx": 1
+  },
+  "cases": [
+    {
+      "scene": "tests/fixtures/levels/levels.scene.json",
+      "state": null,
+      "checks": [
+        {
+          "id": "overlap",
+          "check": "no_overlap",
+          "status": "fail",
+          "value": 1,
+          "threshold": 0,
+          "ids": [
+            "crate2",
+            "post_b"
+          ],
+          "pairs": [
+            [
+              "crate2",
+              "post_b"
+            ]
+          ]
+        },
+        {
+          "id": "walk_clear",
+          "check": "lane_clear",
+          "status": "fail",
+          "value": 2,
+          "threshold": 0,
+          "ids": [
+            "crate2",
+            "crate"
+          ]
+        },
+        {
+          "id": "walk_clear_all",
+          "check": "lane_clear",
+          "status": "fail",
+          "value": 4,
+          "threshold": 0,
+          "ids": [
+            "deck",
+            "crate_up",
+            "crate2",
+            "crate"
+          ]
+        },
+        {
+          "id": "deck_clear",
+          "check": "lane_clear",
+          "status": "fail",
+          "value": 1,
+          "threshold": 0,
+          "ids": [
+            "crate_up"
+          ]
+        },
+        {
+          "id": "steps_clear",
+          "check": "lane_clear",
+          "status": "fail",
+          "value": 1,
+          "threshold": 0,
+          "ids": [
+            "crate"
+          ]
+        },
+        {
+          "id": "reach_deck",
+          "check": "reachable",
+          "threshold": null,
+          "ids": [],
+          "status": "pass",
+          "value": 8.4
+        },
+        {
+          "id": "reach_ground",
+          "check": "reachable",
+          "threshold": null,
+          "ids": [],
+          "status": "pass",
+          "value": 14.2
+        },
+        {
+          "id": "reach_ground_all",
+          "check": "reachable",
+          "threshold": null,
+          "ids": [],
+          "status": "pass",
+          "value": 15.4
+        },
+        {
+          "id": "vase_seen",
+          "check": "visible",
+          "status": "pass",
+          "value": 0,
+          "threshold": 0.05,
+          "ids": [
+            "vase"
+          ],
+          "occluders": []
+        },
+        {
+          "id": "figure_seen",
+          "check": "visible",
+          "status": "fail",
+          "value": 1,
+          "threshold": 0.1,
+          "ids": [
+            "figure"
+          ],
+          "occluders": [
+            "kiosk"
+          ]
+        },
+        {
+          "id": "up_in_band",
+          "check": "in_region",
+          "status": "fail",
+          "value": 1,
+          "threshold": 0,
+          "ids": [
+            "crate_up"
+          ]
+        },
+        {
+          "id": "mat_on_board",
+          "check": "in_region",
+          "status": "fail",
+          "value": 1,
+          "threshold": 0,
+          "ids": [
+            "mat"
+          ]
+        },
+        {
+          "id": "walk_reaches",
+          "check": "lane_reaches",
+          "threshold": [
+            0,
+            760
+          ],
+          "ids": [
+            "walk"
+          ],
+          "status": "pass",
+          "value": 197.720146
+        },
+        {
+          "id": "carts_reach",
+          "check": "lane_reaches",
+          "threshold": [
+            0,
+            760
+          ],
+          "ids": [
+            "carts"
+          ],
+          "status": "fail",
+          "value": 793.834299
+        },
+        {
+          "id": "figure_tall",
+          "check": "min_screen_size",
+          "status": "pass",
+          "value": 73.612159,
+          "threshold": 70,
+          "ids": [
+            "figure"
+          ]
+        },
+        {
+          "id": "kiosk_size",
+          "check": "min_screen_size",
+          "status": "pass",
+          "value": 152.15862,
+          "threshold": 120,
+          "ids": [
+            "kiosk"
+          ]
+        },
+        {
+          "id": "mast_size",
+          "check": "min_screen_size",
+          "status": "pass",
+          "value": 183.450271,
+          "threshold": 100,
+          "ids": [
+            "mast"
+          ]
+        },
+        {
+          "id": "sort_ground",
+          "check": "sort_consistency",
+          "status": "fail",
+          "value": 1,
+          "threshold": 0,
+          "ids": [
+            "kiosk"
+          ],
+          "worst": 26.87,
+          "positions": 2063
+        },
+        {
+          "id": "sort_deck",
+          "check": "sort_consistency",
+          "status": "fail",
+          "value": 1,
+          "threshold": 0,
+          "ids": [
+            "deck"
+          ],
+          "worst": 1358.72,
+          "positions": 1920
+        },
+        {
+          "id": "vase_gap",
+          "check": "clearance",
+          "status": "pass",
+          "value": 2.901724,
+          "threshold": 1,
+          "ids": [
+            "figure",
+            "vase"
+          ]
+        }
+      ],
+      "genBbox": "levels.default.gen-bbox.json"
+    },
+    {
+      "scene": "tests/fixtures/levels/levels.scene.json",
+      "state": "open",
+      "checks": [
+        {
+          "id": "overlap",
+          "check": "no_overlap",
+          "status": "fail",
+          "value": 1,
+          "threshold": 0,
+          "ids": [
+            "crate2",
+            "post_b"
+          ],
+          "pairs": [
+            [
+              "crate2",
+              "post_b"
+            ]
+          ]
+        },
+        {
+          "id": "walk_clear",
+          "check": "lane_clear",
+          "status": "fail",
+          "value": 2,
+          "threshold": 0,
+          "ids": [
+            "crate2",
+            "crate"
+          ]
+        },
+        {
+          "id": "walk_clear_all",
+          "check": "lane_clear",
+          "status": "fail",
+          "value": 4,
+          "threshold": 0,
+          "ids": [
+            "deck",
+            "crate_up",
+            "crate2",
+            "crate"
+          ]
+        },
+        {
+          "id": "deck_clear",
+          "check": "lane_clear",
+          "status": "fail",
+          "value": 1,
+          "threshold": 0,
+          "ids": [
+            "crate_up"
+          ]
+        },
+        {
+          "id": "steps_clear",
+          "check": "lane_clear",
+          "status": "fail",
+          "value": 1,
+          "threshold": 0,
+          "ids": [
+            "crate"
+          ]
+        },
+        {
+          "id": "reach_deck",
+          "check": "reachable",
+          "threshold": null,
+          "ids": [],
+          "status": "pass",
+          "value": 8.4
+        },
+        {
+          "id": "reach_ground",
+          "check": "reachable",
+          "threshold": null,
+          "ids": [],
+          "status": "pass",
+          "value": 14.2
+        },
+        {
+          "id": "reach_ground_all",
+          "check": "reachable",
+          "threshold": null,
+          "ids": [],
+          "status": "pass",
+          "value": 15.4
+        },
+        {
+          "id": "vase_seen",
+          "check": "visible",
+          "status": "pass",
+          "value": 0,
+          "threshold": 0.05,
+          "ids": [
+            "vase"
+          ],
+          "occluders": []
+        },
+        {
+          "id": "figure_seen",
+          "check": "visible",
+          "status": "fail",
+          "value": 1,
+          "threshold": 0.1,
+          "ids": [
+            "figure"
+          ],
+          "occluders": [
+            "kiosk"
+          ]
+        },
+        {
+          "id": "up_in_band",
+          "check": "in_region",
+          "status": "fail",
+          "value": 1,
+          "threshold": 0,
+          "ids": [
+            "crate_up"
+          ]
+        },
+        {
+          "id": "mat_on_board",
+          "check": "in_region",
+          "status": "fail",
+          "value": 1,
+          "threshold": 0,
+          "ids": [
+            "mat"
+          ]
+        },
+        {
+          "id": "walk_reaches",
+          "check": "lane_reaches",
+          "threshold": [
+            0,
+            760
+          ],
+          "ids": [
+            "walk"
+          ],
+          "status": "pass",
+          "value": 197.720146
+        },
+        {
+          "id": "carts_reach",
+          "check": "lane_reaches",
+          "threshold": [
+            0,
+            760
+          ],
+          "ids": [
+            "carts"
+          ],
+          "status": "fail",
+          "value": 793.834299
+        },
+        {
+          "id": "figure_tall",
+          "check": "min_screen_size",
+          "status": "pass",
+          "value": 73.612159,
+          "threshold": 70,
+          "ids": [
+            "figure"
+          ]
+        },
+        {
+          "id": "kiosk_size",
+          "check": "min_screen_size",
+          "status": "pass",
+          "value": 152.15862,
+          "threshold": 120,
+          "ids": [
+            "kiosk"
+          ]
+        },
+        {
+          "id": "mast_size",
+          "check": "min_screen_size",
+          "status": "pass",
+          "value": 183.450271,
+          "threshold": 100,
+          "ids": [
+            "mast"
+          ]
+        },
+        {
+          "id": "sort_ground",
+          "check": "sort_consistency",
+          "status": "fail",
+          "value": 1,
+          "threshold": 0,
+          "ids": [
+            "kiosk"
+          ],
+          "worst": 26.87,
+          "positions": 2063
+        },
+        {
+          "id": "sort_deck",
+          "check": "sort_consistency",
+          "status": "fail",
+          "value": 1,
+          "threshold": 0,
+          "ids": [
+            "deck"
+          ],
+          "worst": 1358.72,
+          "positions": 1920
+        },
+        {
+          "id": "vase_gap",
+          "check": "clearance",
+          "status": "pass",
+          "value": 2.901724,
+          "threshold": 1,
+          "ids": [
+            "figure",
+            "vase"
+          ]
+        }
+      ],
+      "genBbox": "levels.open.gen-bbox.json"
+    },
+    {
+      "scene": "tests/fixtures/levels/levels.scene.json",
+      "state": "closed",
+      "checks": [
+        {
+          "id": "overlap",
+          "check": "no_overlap",
+          "status": "fail",
+          "value": 1,
+          "threshold": 0,
+          "ids": [
+            "crate2",
+            "post_b"
+          ],
+          "pairs": [
+            [
+              "crate2",
+              "post_b"
+            ]
+          ]
+        },
+        {
+          "id": "walk_clear",
+          "check": "lane_clear",
+          "status": "fail",
+          "value": 2,
+          "threshold": 0,
+          "ids": [
+            "crate2",
+            "crate"
+          ]
+        },
+        {
+          "id": "walk_clear_all",
+          "check": "lane_clear",
+          "status": "fail",
+          "value": 4,
+          "threshold": 0,
+          "ids": [
+            "deck",
+            "crate_up",
+            "crate2",
+            "crate"
+          ]
+        },
+        {
+          "id": "deck_clear",
+          "check": "lane_clear",
+          "status": "fail",
+          "value": 1,
+          "threshold": 0,
+          "ids": [
+            "crate_up"
+          ]
+        },
+        {
+          "id": "steps_clear",
+          "check": "lane_clear",
+          "status": "fail",
+          "value": 1,
+          "threshold": 0,
+          "ids": [
+            "crate"
+          ]
+        },
+        {
+          "id": "reach_deck",
+          "check": "reachable",
+          "threshold": null,
+          "ids": [],
+          "status": "pass",
+          "value": 8.4
+        },
+        {
+          "id": "reach_ground",
+          "check": "reachable",
+          "threshold": null,
+          "ids": [],
+          "status": "pass",
+          "value": 14.2
+        },
+        {
+          "id": "reach_ground_all",
+          "check": "reachable",
+          "threshold": null,
+          "ids": [],
+          "status": "pass",
+          "value": 15.4
+        },
+        {
+          "id": "vase_seen",
+          "check": "visible",
+          "status": "pass",
+          "value": 0,
+          "threshold": 0.05,
+          "ids": [
+            "vase"
+          ],
+          "occluders": []
+        },
+        {
+          "id": "figure_seen",
+          "check": "visible",
+          "status": "pass",
+          "value": 0,
+          "threshold": 0.1,
+          "ids": [
+            "figure"
+          ],
+          "occluders": []
+        },
+        {
+          "id": "up_in_band",
+          "check": "in_region",
+          "status": "fail",
+          "value": 1,
+          "threshold": 0,
+          "ids": [
+            "crate_up"
+          ]
+        },
+        {
+          "id": "mat_on_board",
+          "check": "in_region",
+          "status": "fail",
+          "value": 1,
+          "threshold": 0,
+          "ids": [
+            "mat"
+          ]
+        },
+        {
+          "id": "walk_reaches",
+          "check": "lane_reaches",
+          "threshold": [
+            0,
+            760
+          ],
+          "ids": [
+            "walk"
+          ],
+          "status": "pass",
+          "value": 197.720146
+        },
+        {
+          "id": "carts_reach",
+          "check": "lane_reaches",
+          "threshold": [
+            0,
+            760
+          ],
+          "ids": [
+            "carts"
+          ],
+          "status": "fail",
+          "value": 793.834299
+        },
+        {
+          "id": "figure_tall",
+          "check": "min_screen_size",
+          "status": "pass",
+          "value": 73.612159,
+          "threshold": 70,
+          "ids": [
+            "figure"
+          ]
+        },
+        {
+          "id": "kiosk_size",
+          "check": "min_screen_size",
+          "status": "pass",
+          "value": 122.003175,
+          "threshold": 120,
+          "ids": [
+            "kiosk"
+          ]
+        },
+        {
+          "id": "mast_size",
+          "check": "min_screen_size",
+          "status": "pass",
+          "value": 183.450271,
+          "threshold": 100,
+          "ids": [
+            "mast"
+          ]
+        },
+        {
+          "id": "sort_ground",
+          "check": "sort_consistency",
+          "status": "pass",
+          "value": 0,
+          "threshold": 0,
+          "ids": [],
+          "worst": 0,
+          "positions": 2063
+        },
+        {
+          "id": "sort_deck",
+          "check": "sort_consistency",
+          "status": "fail",
+          "value": 1,
+          "threshold": 0,
+          "ids": [
+            "deck"
+          ],
+          "worst": 1358.72,
+          "positions": 1920
+        },
+        {
+          "id": "vase_gap",
+          "check": "clearance",
+          "status": "pass",
+          "value": 2.901724,
+          "threshold": 1,
+          "ids": [
+            "figure",
+            "vase"
+          ]
+        }
+      ],
+      "genBbox": "levels.closed.gen-bbox.json"
+    },
+    {
+      "scene": "tests/fixtures/levels/levels.scene.json",
+      "state": "cinema",
+      "checks": [
+        {
+          "id": "overlap",
+          "check": "no_overlap",
+          "status": "pass",
+          "value": 0,
+          "threshold": 0,
+          "ids": [],
+          "pairs": []
+        },
+        {
+          "id": "walk_clear",
+          "check": "lane_clear",
+          "status": "fail",
+          "value": 1,
+          "threshold": 0,
+          "ids": [
+            "crate"
+          ]
+        },
+        {
+          "id": "walk_clear_all",
+          "check": "lane_clear",
+          "status": "fail",
+          "value": 3,
+          "threshold": 0,
+          "ids": [
+            "deck",
+            "crate_up",
+            "crate"
+          ]
+        },
+        {
+          "id": "deck_clear",
+          "check": "lane_clear",
+          "status": "fail",
+          "value": 1,
+          "threshold": 0,
+          "ids": [
+            "crate_up"
+          ]
+        },
+        {
+          "id": "steps_clear",
+          "check": "lane_clear",
+          "status": "fail",
+          "value": 1,
+          "threshold": 0,
+          "ids": [
+            "crate"
+          ]
+        },
+        {
+          "id": "reach_deck",
+          "check": "reachable",
+          "threshold": null,
+          "ids": [],
+          "status": "pass",
+          "value": 8.4
+        },
+        {
+          "id": "reach_ground",
+          "check": "reachable",
+          "threshold": null,
+          "ids": [],
+          "status": "pass",
+          "value": 14.2
+        },
+        {
+          "id": "reach_ground_all",
+          "check": "reachable",
+          "threshold": null,
+          "ids": [],
+          "status": "pass",
+          "value": 15.4
+        },
+        {
+          "id": "vase_seen",
+          "check": "visible",
+          "status": "pass",
+          "value": 0,
+          "threshold": 0.05,
+          "ids": [
+            "vase"
+          ],
+          "occluders": []
+        },
+        {
+          "id": "figure_seen",
+          "check": "visible",
+          "status": "fail",
+          "value": 1,
+          "threshold": 0.1,
+          "ids": [
+            "figure"
+          ],
+          "occluders": [
+            "kiosk"
+          ]
+        },
+        {
+          "id": "up_in_band",
+          "check": "in_region",
+          "status": "fail",
+          "value": 1,
+          "threshold": 0,
+          "ids": [
+            "crate_up"
+          ]
+        },
+        {
+          "id": "mat_on_board",
+          "check": "in_region",
+          "status": "skip",
+          "value": null,
+          "threshold": null,
+          "ids": []
+        },
+        {
+          "id": "walk_reaches",
+          "check": "lane_reaches",
+          "threshold": [
+            0,
+            760
+          ],
+          "ids": [
+            "walk"
+          ],
+          "status": "pass",
+          "value": 197.720146
+        },
+        {
+          "id": "carts_reach",
+          "check": "lane_reaches",
+          "threshold": [
+            0,
+            760
+          ],
+          "ids": [
+            "carts"
+          ],
+          "status": "fail",
+          "value": 793.834299
+        },
+        {
+          "id": "figure_tall",
+          "check": "min_screen_size",
+          "status": "pass",
+          "value": 73.612159,
+          "threshold": 70,
+          "ids": [
+            "figure"
+          ]
+        },
+        {
+          "id": "kiosk_size",
+          "check": "min_screen_size",
+          "status": "pass",
+          "value": 152.15862,
+          "threshold": 120,
+          "ids": [
+            "kiosk"
+          ]
+        },
+        {
+          "id": "mast_size",
+          "check": "min_screen_size",
+          "status": "pass",
+          "value": 183.450271,
+          "threshold": 100,
+          "ids": [
+            "mast"
+          ]
+        },
+        {
+          "id": "sort_ground",
+          "check": "sort_consistency",
+          "status": "fail",
+          "value": 1,
+          "threshold": 0,
+          "ids": [
+            "kiosk"
+          ],
+          "worst": 26.87,
+          "positions": 1124
+        },
+        {
+          "id": "sort_deck",
+          "check": "sort_consistency",
+          "status": "fail",
+          "value": 1,
+          "threshold": 0,
+          "ids": [
+            "deck"
+          ],
+          "worst": 1358.72,
+          "positions": 1920
+        },
+        {
+          "id": "vase_gap",
+          "check": "clearance",
+          "status": "pass",
+          "value": 2.901724,
+          "threshold": 1,
+          "ids": [
+            "figure",
+            "vase"
+          ]
+        }
+      ],
+      "genBbox": "levels.cinema.gen-bbox.json"
+    },
+    {
+      "scene": "tests/fixtures/levels/levels.scene.json",
+      "state": "bare",
+      "checks": [
+        {
+          "id": "overlap",
+          "check": "no_overlap",
+          "status": "fail",
+          "value": 1,
+          "threshold": 0,
+          "ids": [
+            "crate2",
+            "post_b"
+          ],
+          "pairs": [
+            [
+              "crate2",
+              "post_b"
+            ]
+          ]
+        },
+        {
+          "id": "walk_clear",
+          "check": "lane_clear",
+          "status": "fail",
+          "value": 2,
+          "threshold": 0,
+          "ids": [
+            "crate2",
+            "crate"
+          ]
+        },
+        {
+          "id": "walk_clear_all",
+          "check": "lane_clear",
+          "status": "fail",
+          "value": 4,
+          "threshold": 0,
+          "ids": [
+            "deck",
+            "crate_up",
+            "crate2",
+            "crate"
+          ]
+        },
+        {
+          "id": "deck_clear",
+          "check": "lane_clear",
+          "status": "fail",
+          "value": 1,
+          "threshold": 0,
+          "ids": [
+            "crate_up"
+          ]
+        },
+        {
+          "id": "steps_clear",
+          "check": "lane_clear",
+          "status": "fail",
+          "value": 1,
+          "threshold": 0,
+          "ids": [
+            "crate"
+          ]
+        },
+        {
+          "id": "reach_deck",
+          "check": "reachable",
+          "threshold": null,
+          "ids": [],
+          "status": "pass",
+          "value": 8.4
+        },
+        {
+          "id": "reach_ground",
+          "check": "reachable",
+          "threshold": null,
+          "ids": [],
+          "status": "pass",
+          "value": 14.2
+        },
+        {
+          "id": "reach_ground_all",
+          "check": "reachable",
+          "threshold": null,
+          "ids": [],
+          "status": "pass",
+          "value": 15.4
+        },
+        {
+          "id": "vase_seen",
+          "check": "visible",
+          "status": "pass",
+          "value": 0,
+          "threshold": 0.05,
+          "ids": [
+            "vase"
+          ],
+          "occluders": []
+        },
+        {
+          "id": "figure_seen",
+          "check": "visible",
+          "status": "fail",
+          "value": 1,
+          "threshold": 0.1,
+          "ids": [
+            "figure"
+          ],
+          "occluders": [
+            "kiosk"
+          ]
+        },
+        {
+          "id": "up_in_band",
+          "check": "in_region",
+          "status": "fail",
+          "value": 1,
+          "threshold": 0,
+          "ids": [
+            "crate_up"
+          ]
+        },
+        {
+          "id": "mat_on_board",
+          "check": "in_region",
+          "status": "fail",
+          "value": 1,
+          "threshold": 0,
+          "ids": [
+            "mat"
+          ]
+        },
+        {
+          "id": "walk_reaches",
+          "check": "lane_reaches",
+          "threshold": [
+            0,
+            760
+          ],
+          "ids": [
+            "walk"
+          ],
+          "status": "pass",
+          "value": 197.720146
+        },
+        {
+          "id": "carts_reach",
+          "check": "lane_reaches",
+          "threshold": [
+            0,
+            760
+          ],
+          "ids": [
+            "carts"
+          ],
+          "status": "fail",
+          "value": 793.834299
+        },
+        {
+          "id": "figure_tall",
+          "check": "min_screen_size",
+          "status": "pass",
+          "value": 73.612159,
+          "threshold": 70,
+          "ids": [
+            "figure"
+          ]
+        },
+        {
+          "id": "kiosk_size",
+          "check": "min_screen_size",
+          "status": "pass",
+          "value": 152.15862,
+          "threshold": 120,
+          "ids": [
+            "kiosk"
+          ]
+        },
+        {
+          "id": "mast_size",
+          "check": "min_screen_size",
+          "status": "skip",
+          "value": null,
+          "threshold": null,
+          "ids": []
+        },
+        {
+          "id": "sort_ground",
+          "check": "sort_consistency",
+          "status": "fail",
+          "value": 1,
+          "threshold": 0,
+          "ids": [
+            "kiosk"
+          ],
+          "worst": 26.87,
+          "positions": 2063
+        },
+        {
+          "id": "sort_deck",
+          "check": "sort_consistency",
+          "status": "fail",
+          "value": 1,
+          "threshold": 0,
+          "ids": [
+            "deck"
+          ],
+          "worst": 1358.72,
+          "positions": 1920
+        },
+        {
+          "id": "vase_gap",
+          "check": "clearance",
+          "status": "pass",
+          "value": 2.901724,
+          "threshold": 1,
+          "ids": [
+            "figure",
+            "vase"
+          ]
+        }
+      ],
+      "genBbox": "levels.bare.gen-bbox.json"
+    }
+  ]
+}

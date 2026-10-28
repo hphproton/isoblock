@@ -1,0 +1,25 @@
+{
+  "base": "tests/fixtures/paths/slash.scene.json",
+  "tolerance": {
+    "value": 0.01,
+    "valuePx": 1,
+    "coordinate": 0.000001
+  },
+  "exit": 0,
+  "status": "applied",
+  "error": null,
+  "locks": [],
+  "diff": [
+    {
+      "op": "add",
+      "path": "/states/s/hideParts",
+      "to": {
+        "a/b": [
+          "b/top"
+        ]
+      }
+    }
+  ],
+  "checks": [],
+  "failing": 0
+}

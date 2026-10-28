@@ -1,0 +1,18 @@
+{
+  "scene": "turn-locked",
+  "only": null,
+  "rotate": true,
+  "status": "conflict",
+  "conflict": [
+    "r1"
+  ],
+  "hardViolated": null,
+  "maxSoftPenalty": null,
+  "maxDistance": null,
+  "unchanged": [
+    "stool"
+  ],
+  "rot": null,
+  "referenceSoftPenalty": 0,
+  "referenceDistance": 6.72328
+}

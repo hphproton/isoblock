@@ -1,0 +1,592 @@
+{
+  "schema": "isoblock/1",
+  "id": "paths",
+  "meta": {
+    "version": 1,
+    "status": "draft"
+  },
+  "units": {
+    "name": "u",
+    "note": "synthetic unit"
+  },
+  "camera": {
+    "elevation": 30,
+    "direction": 60,
+    "scale": 40,
+    "origin": [
+      430,
+      180
+    ]
+  },
+  "frame": {
+    "w": 1000,
+    "h": 720,
+    "regions": [
+      {
+        "id": "view",
+        "rect": [
+          0,
+          0,
+          1000,
+          640
+        ]
+      },
+      {
+        "id": "strip",
+        "rect": [
+          0,
+          640,
+          1000,
+          720
+        ],
+        "blocksScene": true
+      }
+    ]
+  },
+  "types": {
+    "deck": {
+      "size": [
+        6,
+        4,
+        2
+      ]
+    },
+    "crate": {
+      "size": [
+        0.8,
+        0.8,
+        0.8
+      ]
+    },
+    "kiosk": {
+      "size": [
+        1.5,
+        1,
+        2.2
+      ],
+      "front": "-u"
+    },
+    "bench": {
+      "size": [
+        1.6,
+        0.5,
+        0.5
+      ],
+      "front": "+v",
+      "anchors": [
+        {
+          "id": "seat",
+          "at": [
+            0.8,
+            0.25,
+            0.5
+          ],
+          "front": "-v",
+          "kind": "seat"
+        }
+      ]
+    },
+    "post": {
+      "size": [
+        0.3,
+        0.3,
+        1.5
+      ]
+    },
+    "peg": {
+      "size": [
+        0.2,
+        0.2,
+        1
+      ]
+    },
+    "bin": {
+      "size": [
+        0.6,
+        0.6,
+        1
+      ]
+    },
+    "screen": {
+      "size": [
+        2,
+        0.2,
+        1.4
+      ],
+      "front": "-v"
+    },
+    "hedge": {
+      "size": [
+        3,
+        0.5,
+        1.4
+      ]
+    }
+  },
+  "objects": [
+    {
+      "id": "deck",
+      "type": "deck",
+      "pos": [
+        10,
+        0
+      ],
+      "locks": [
+        "pos"
+      ]
+    },
+    {
+      "id": "crate",
+      "type": "crate",
+      "pos": [
+        7.5,
+        2.1
+      ]
+    },
+    {
+      "id": "kiosk",
+      "type": "kiosk",
+      "pos": [
+        12,
+        1,
+        2
+      ]
+    },
+    {
+      "id": "bench",
+      "type": "bench",
+      "pos": [
+        5.5,
+        8.6
+      ]
+    },
+    {
+      "id": "lamp",
+      "type": "post",
+      "pos": [
+        2.9,
+        8.1
+      ]
+    },
+    {
+      "id": "peg",
+      "type": "peg",
+      "pos": [
+        4.9,
+        6.5
+      ]
+    },
+    {
+      "id": "bin",
+      "type": "bin",
+      "pos": [
+        12.2,
+        4.3
+      ]
+    },
+    {
+      "id": "sign",
+      "type": "post",
+      "pos": [
+        13.85,
+        6.6
+      ]
+    },
+    {
+      "id": "screen",
+      "type": "screen",
+      "pos": [
+        5,
+        10.2
+      ]
+    },
+    {
+      "id": "hedge",
+      "type": "hedge",
+      "pos": [
+        6.5,
+        3.6
+      ]
+    }
+  ],
+  "zones": [
+    {
+      "id": "ground",
+      "kind": "walkable",
+      "points": [
+        [
+          0,
+          0
+        ],
+        [
+          16,
+          0
+        ],
+        [
+          16,
+          11
+        ],
+        [
+          0,
+          11
+        ]
+      ]
+    },
+    {
+      "id": "terrace",
+      "kind": "walkable",
+      "h": 2,
+      "points": [
+        [
+          10,
+          0
+        ],
+        [
+          16,
+          0
+        ],
+        [
+          16,
+          4
+        ],
+        [
+          10,
+          4
+        ]
+      ]
+    },
+    {
+      "id": "pond",
+      "kind": "blocked",
+      "points": [
+        [
+          2,
+          1
+        ],
+        [
+          4,
+          1
+        ],
+        [
+          4,
+          2.5
+        ],
+        [
+          2,
+          2.5
+        ]
+      ]
+    }
+  ],
+  "lanes": [
+    {
+      "id": "ramp",
+      "kind": "walk",
+      "width": 1,
+      "points": [
+        [
+          6,
+          2.5,
+          0
+        ],
+        [
+          10,
+          2.5,
+          2
+        ]
+      ]
+    },
+    {
+      "id": "stairs",
+      "kind": "walk",
+      "width": 1,
+      "points": [
+        [
+          14,
+          8,
+          0
+        ],
+        [
+          14,
+          6,
+          1
+        ],
+        [
+          12.5,
+          5,
+          1.5
+        ],
+        [
+          12.5,
+          4,
+          2
+        ],
+        [
+          12.5,
+          3.5,
+          2
+        ]
+      ]
+    },
+    {
+      "id": "walk",
+      "kind": "walk",
+      "width": 1,
+      "points": [
+        [
+          0.5,
+          10
+        ],
+        [
+          5,
+          7
+        ],
+        [
+          9,
+          9.5
+        ]
+      ]
+    },
+    {
+      "id": "trail",
+      "kind": "walk",
+      "width": 0.8,
+      "points": [
+        [
+          1,
+          6
+        ],
+        [
+          5,
+          4.5
+        ]
+      ]
+    },
+    {
+      "id": "road",
+      "kind": "vehicle",
+      "width": 1.5,
+      "points": [
+        [
+          -6,
+          12
+        ],
+        [
+          6,
+          12
+        ],
+        [
+          6,
+          32
+        ]
+      ]
+    }
+  ],
+  "relations": [
+    {
+      "id": "f1",
+      "rel": "facing",
+      "a": "bench",
+      "b": "zone:pond",
+      "angle": 60
+    },
+    {
+      "id": "f2",
+      "rel": "facing",
+      "a": "anchor:bench/sat",
+      "b": "lane:walk"
+    },
+    {
+      "id": "f3",
+      "rel": "facing",
+      "a": "screen",
+      "b": "bench",
+      "angle": 20,
+      "hard": true
+    },
+    {
+      "id": "f4",
+      "rel": "facing",
+      "a": "crate",
+      "b": "bench"
+    },
+    {
+      "id": "f5",
+      "rel": "facing",
+      "a": "kiosk",
+      "b": "lane:ramp",
+      "angle": 30
+    },
+    {
+      "id": "a1",
+      "rel": "against",
+      "a": "lamp",
+      "b": "lane:walk",
+      "gap": [
+        0,
+        0.2
+      ]
+    },
+    {
+      "id": "a2",
+      "rel": "clear_of",
+      "a": "bench",
+      "b": "lane:walk",
+      "min": 0.5
+    },
+    {
+      "id": "a3",
+      "rel": "clear_of",
+      "a": "crate",
+      "b": "lane:ramp",
+      "min": 0.2
+    },
+    {
+      "id": "a4",
+      "rel": "against",
+      "a": "bin",
+      "b": "lane:stairs",
+      "gap": [
+        0,
+        0.5
+      ]
+    },
+    {
+      "id": "o1",
+      "rel": "on_lane",
+      "a": "lamp",
+      "b": "lane:walk"
+    }
+  ],
+  "checks": [
+    {
+      "id": "ramp_clear",
+      "check": "lane_clear",
+      "lane": "ramp"
+    },
+    {
+      "id": "ramp_clear_ignore",
+      "check": "lane_clear",
+      "lane": "ramp",
+      "ignore": [
+        "crate"
+      ]
+    },
+    {
+      "id": "stairs_clear",
+      "check": "lane_clear",
+      "lane": "stairs"
+    },
+    {
+      "id": "walk_clear",
+      "check": "lane_clear",
+      "lane": "walk"
+    },
+    {
+      "id": "road_left",
+      "check": "lane_reaches",
+      "lane": "road",
+      "edge": "left",
+      "region": "view"
+    },
+    {
+      "id": "road_bottom",
+      "check": "lane_reaches",
+      "lane": "road",
+      "edge": "bottom",
+      "region": "view"
+    },
+    {
+      "id": "walk_trail",
+      "check": "lane_apart",
+      "lane": "walk",
+      "target": "lane:trail",
+      "min": 0.5
+    },
+    {
+      "id": "trail_pond",
+      "check": "lane_apart",
+      "lane": "trail",
+      "target": "zone:pond",
+      "min": 1
+    },
+    {
+      "id": "reach_up",
+      "check": "reachable",
+      "from": [
+        1,
+        9
+      ],
+      "to": [
+        14,
+        2
+      ],
+      "toLevel": 2
+    },
+    {
+      "id": "reach_up_ignore",
+      "check": "reachable",
+      "from": [
+        1,
+        9
+      ],
+      "to": [
+        14,
+        2
+      ],
+      "toLevel": 2,
+      "ignore": [
+        "sign"
+      ],
+      "max": 21
+    },
+    {
+      "id": "reach_down",
+      "check": "reachable",
+      "from": [
+        11,
+        3
+      ],
+      "to": "anchor:bench/seat",
+      "level": 2,
+      "toLevel": 0
+    },
+    {
+      "id": "reach_flat",
+      "check": "reachable",
+      "from": [
+        1,
+        9
+      ],
+      "to": [
+        8,
+        5
+      ]
+    },
+    {
+      "id": "reach_under",
+      "check": "reachable",
+      "from": [
+        1,
+        9
+      ],
+      "to": [
+        14,
+        2
+      ]
+    }
+  ],
+  "states": {
+    "cleared": {
+      "hide": [
+        "crate"
+      ]
+    },
+    "open": {
+      "hide": [
+        "crate",
+        "sign"
+      ]
+    }
+  }
+}

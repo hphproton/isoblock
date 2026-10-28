@@ -1,0 +1,80 @@
+{
+  "cases": [
+    {
+      "name": "p01-solve-turn",
+      "scene": "tests/fixtures/paths/solver/turn.scene.json",
+      "state": null,
+      "overlay": "proposal",
+      "only": null,
+      "rotate": true,
+      "then": "Apply"
+    },
+    {
+      "name": "p02-solve-turn-locked",
+      "scene": "tests/fixtures/paths/solver/turn-locked.scene.json",
+      "state": null,
+      "overlay": "proposal",
+      "only": null,
+      "rotate": true,
+      "then": "Discard"
+    },
+    {
+      "name": "p03-solve-no-turn",
+      "scene": "tests/fixtures/paths/solver/turn.scene.json",
+      "state": null,
+      "overlay": "proposal",
+      "only": "counter",
+      "rotate": false,
+      "then": "Discard"
+    },
+    {
+      "name": "p04-relations",
+      "scene": "tests/fixtures/paths/paths.scene.json",
+      "state": null,
+      "overlay": "relations",
+      "drag": {
+        "object": "bench",
+        "dx": 0,
+        "dy": -30
+      }
+    },
+    {
+      "name": "p05-occluders-ramp",
+      "scene": "tests/fixtures/paths/paths.scene.json",
+      "state": null,
+      "overlay": "occluders",
+      "area": "lane:ramp",
+      "actor": "0.5,0.5,1.7",
+      "step": 0.25,
+      "drag": {
+        "object": "crate",
+        "dx": 20,
+        "dy": 0
+      }
+    },
+    {
+      "name": "p06-occluders-stairs",
+      "scene": "tests/fixtures/paths/paths.scene.json",
+      "state": "open",
+      "overlay": "occluders",
+      "area": "lane:stairs",
+      "actor": "0.5,0.5,1.7",
+      "step": 0.25
+    },
+    {
+      "name": "p07-occluders-walk",
+      "scene": "tests/fixtures/paths/paths.scene.json",
+      "state": null,
+      "overlay": "occluders",
+      "area": "lane:walk",
+      "actor": "0.5,0.5,1.7",
+      "step": 0.25
+    },
+    {
+      "name": "p08-panel",
+      "scene": "tests/fixtures/paths/paths.scene.json",
+      "state": "cleared",
+      "overlay": null
+    }
+  ]
+}

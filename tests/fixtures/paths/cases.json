@@ -1,0 +1,698 @@
+{
+  "tolerance": {
+    "value": 0.01,
+    "valuePx": 1,
+    "area": 0.05
+  },
+  "checks": [
+    {
+      "scene": "tests/fixtures/paths/paths.scene.json",
+      "state": null,
+      "checks": [
+        {
+          "id": "ramp_clear",
+          "check": "lane_clear",
+          "status": "fail",
+          "value": 1,
+          "threshold": 0,
+          "ids": [
+            "crate"
+          ]
+        },
+        {
+          "id": "ramp_clear_ignore",
+          "check": "lane_clear",
+          "status": "pass",
+          "value": 0,
+          "threshold": 0,
+          "ids": []
+        },
+        {
+          "id": "stairs_clear",
+          "check": "lane_clear",
+          "status": "fail",
+          "value": 1,
+          "threshold": 0,
+          "ids": [
+            "sign"
+          ]
+        },
+        {
+          "id": "walk_clear",
+          "check": "lane_clear",
+          "status": "fail",
+          "value": 2,
+          "threshold": 0,
+          "ids": [
+            "bench",
+            "lamp"
+          ]
+        },
+        {
+          "id": "road_left",
+          "check": "lane_reaches",
+          "status": "fail",
+          "value": 794.878037,
+          "threshold": [
+            0,
+            640
+          ],
+          "ids": [
+            "road"
+          ]
+        },
+        {
+          "id": "road_bottom",
+          "check": "lane_reaches",
+          "status": "pass",
+          "value": 118.230855,
+          "threshold": [
+            0,
+            1000
+          ],
+          "ids": [
+            "road"
+          ]
+        },
+        {
+          "id": "walk_trail",
+          "check": "lane_apart",
+          "status": "pass",
+          "value": 1.453902,
+          "threshold": 0.5,
+          "ids": [
+            "walk",
+            "trail"
+          ],
+          "overlap": 0
+        },
+        {
+          "id": "trail_pond",
+          "check": "lane_apart",
+          "status": "pass",
+          "value": 1.823782,
+          "threshold": 1,
+          "ids": [
+            "trail",
+            "pond"
+          ],
+          "overlap": 0
+        },
+        {
+          "id": "reach_up",
+          "check": "reachable",
+          "status": "fail",
+          "value": null,
+          "threshold": null,
+          "ids": [],
+          "message": "no walkable path"
+        },
+        {
+          "id": "reach_up_ignore",
+          "check": "reachable",
+          "status": "fail",
+          "value": 22.724931,
+          "threshold": 21,
+          "ids": []
+        },
+        {
+          "id": "reach_down",
+          "check": "reachable",
+          "status": "fail",
+          "value": null,
+          "threshold": null,
+          "ids": [
+            "bench"
+          ],
+          "message": "no walkable path"
+        },
+        {
+          "id": "reach_flat",
+          "check": "reachable",
+          "status": "pass",
+          "value": 11,
+          "threshold": null,
+          "ids": []
+        },
+        {
+          "id": "reach_under",
+          "check": "reachable",
+          "status": "fail",
+          "value": null,
+          "threshold": null,
+          "ids": [],
+          "message": "target is not on walkable ground"
+        }
+      ]
+    },
+    {
+      "scene": "tests/fixtures/paths/paths.scene.json",
+      "state": "cleared",
+      "checks": [
+        {
+          "id": "ramp_clear",
+          "check": "lane_clear",
+          "status": "pass",
+          "value": 0,
+          "threshold": 0,
+          "ids": []
+        },
+        {
+          "id": "ramp_clear_ignore",
+          "check": "lane_clear",
+          "status": "pass",
+          "value": 0,
+          "threshold": 0,
+          "ids": []
+        },
+        {
+          "id": "stairs_clear",
+          "check": "lane_clear",
+          "status": "fail",
+          "value": 1,
+          "threshold": 0,
+          "ids": [
+            "sign"
+          ]
+        },
+        {
+          "id": "walk_clear",
+          "check": "lane_clear",
+          "status": "fail",
+          "value": 2,
+          "threshold": 0,
+          "ids": [
+            "bench",
+            "lamp"
+          ]
+        },
+        {
+          "id": "road_left",
+          "check": "lane_reaches",
+          "status": "fail",
+          "value": 794.878037,
+          "threshold": [
+            0,
+            640
+          ],
+          "ids": [
+            "road"
+          ]
+        },
+        {
+          "id": "road_bottom",
+          "check": "lane_reaches",
+          "status": "pass",
+          "value": 118.230855,
+          "threshold": [
+            0,
+            1000
+          ],
+          "ids": [
+            "road"
+          ]
+        },
+        {
+          "id": "walk_trail",
+          "check": "lane_apart",
+          "status": "pass",
+          "value": 1.453902,
+          "threshold": 0.5,
+          "ids": [
+            "walk",
+            "trail"
+          ],
+          "overlap": 0
+        },
+        {
+          "id": "trail_pond",
+          "check": "lane_apart",
+          "status": "pass",
+          "value": 1.823782,
+          "threshold": 1,
+          "ids": [
+            "trail",
+            "pond"
+          ],
+          "overlap": 0
+        },
+        {
+          "id": "reach_up",
+          "check": "reachable",
+          "status": "pass",
+          "value": 20.372136,
+          "threshold": null,
+          "ids": []
+        },
+        {
+          "id": "reach_up_ignore",
+          "check": "reachable",
+          "status": "pass",
+          "value": 20.372136,
+          "threshold": 21,
+          "ids": []
+        },
+        {
+          "id": "reach_down",
+          "check": "reachable",
+          "status": "pass",
+          "value": 12.572136,
+          "threshold": null,
+          "ids": [
+            "bench"
+          ]
+        },
+        {
+          "id": "reach_flat",
+          "check": "reachable",
+          "status": "pass",
+          "value": 11,
+          "threshold": null,
+          "ids": []
+        },
+        {
+          "id": "reach_under",
+          "check": "reachable",
+          "status": "fail",
+          "value": null,
+          "threshold": null,
+          "ids": [],
+          "message": "target is not on walkable ground"
+        }
+      ]
+    },
+    {
+      "scene": "tests/fixtures/paths/paths.scene.json",
+      "state": "open",
+      "checks": [
+        {
+          "id": "ramp_clear",
+          "check": "lane_clear",
+          "status": "pass",
+          "value": 0,
+          "threshold": 0,
+          "ids": []
+        },
+        {
+          "id": "ramp_clear_ignore",
+          "check": "lane_clear",
+          "status": "pass",
+          "value": 0,
+          "threshold": 0,
+          "ids": []
+        },
+        {
+          "id": "stairs_clear",
+          "check": "lane_clear",
+          "status": "pass",
+          "value": 0,
+          "threshold": 0,
+          "ids": []
+        },
+        {
+          "id": "walk_clear",
+          "check": "lane_clear",
+          "status": "fail",
+          "value": 2,
+          "threshold": 0,
+          "ids": [
+            "bench",
+            "lamp"
+          ]
+        },
+        {
+          "id": "road_left",
+          "check": "lane_reaches",
+          "status": "fail",
+          "value": 794.878037,
+          "threshold": [
+            0,
+            640
+          ],
+          "ids": [
+            "road"
+          ]
+        },
+        {
+          "id": "road_bottom",
+          "check": "lane_reaches",
+          "status": "pass",
+          "value": 118.230855,
+          "threshold": [
+            0,
+            1000
+          ],
+          "ids": [
+            "road"
+          ]
+        },
+        {
+          "id": "walk_trail",
+          "check": "lane_apart",
+          "status": "pass",
+          "value": 1.453902,
+          "threshold": 0.5,
+          "ids": [
+            "walk",
+            "trail"
+          ],
+          "overlap": 0
+        },
+        {
+          "id": "trail_pond",
+          "check": "lane_apart",
+          "status": "pass",
+          "value": 1.823782,
+          "threshold": 1,
+          "ids": [
+            "trail",
+            "pond"
+          ],
+          "overlap": 0
+        },
+        {
+          "id": "reach_up",
+          "check": "reachable",
+          "status": "pass",
+          "value": 20.372136,
+          "threshold": null,
+          "ids": []
+        },
+        {
+          "id": "reach_up_ignore",
+          "check": "reachable",
+          "status": "pass",
+          "value": 20.372136,
+          "threshold": 21,
+          "ids": []
+        },
+        {
+          "id": "reach_down",
+          "check": "reachable",
+          "status": "pass",
+          "value": 12.572136,
+          "threshold": null,
+          "ids": [
+            "bench"
+          ]
+        },
+        {
+          "id": "reach_flat",
+          "check": "reachable",
+          "status": "pass",
+          "value": 11,
+          "threshold": null,
+          "ids": []
+        },
+        {
+          "id": "reach_under",
+          "check": "reachable",
+          "status": "fail",
+          "value": null,
+          "threshold": null,
+          "ids": [],
+          "message": "target is not on walkable ground"
+        }
+      ]
+    }
+  ],
+  "relations": {
+    "scene": "tests/fixtures/paths/paths.scene.json",
+    "results": [
+      {
+        "id": "f1",
+        "rel": "facing",
+        "hard": false,
+        "status": "violated",
+        "violation": 1.746889,
+        "ids": [
+          "bench"
+        ]
+      },
+      {
+        "id": "f2",
+        "rel": "facing",
+        "hard": false,
+        "status": "satisfied",
+        "violation": 0,
+        "ids": [
+          "bench"
+        ]
+      },
+      {
+        "id": "f3",
+        "rel": "facing",
+        "hard": true,
+        "status": "satisfied",
+        "violation": 0,
+        "ids": [
+          "bench",
+          "screen"
+        ]
+      },
+      {
+        "id": "f4",
+        "rel": "facing",
+        "hard": false,
+        "status": "skip",
+        "violation": null,
+        "ids": [
+          "crate",
+          "bench"
+        ]
+      },
+      {
+        "id": "f5",
+        "rel": "facing",
+        "hard": false,
+        "status": "satisfied",
+        "violation": 0,
+        "ids": [
+          "kiosk"
+        ]
+      },
+      {
+        "id": "a1",
+        "rel": "against",
+        "hard": false,
+        "status": "satisfied",
+        "violation": 0,
+        "ids": [
+          "lamp"
+        ]
+      },
+      {
+        "id": "a2",
+        "rel": "clear_of",
+        "hard": false,
+        "status": "violated",
+        "violation": 0.7562,
+        "ids": [
+          "bench"
+        ]
+      },
+      {
+        "id": "a3",
+        "rel": "clear_of",
+        "hard": false,
+        "status": "violated",
+        "violation": 1,
+        "ids": [
+          "crate"
+        ]
+      },
+      {
+        "id": "a4",
+        "rel": "against",
+        "hard": false,
+        "status": "satisfied",
+        "violation": 0,
+        "ids": [
+          "bin"
+        ]
+      },
+      {
+        "id": "o1",
+        "rel": "on_lane",
+        "hard": false,
+        "status": "satisfied",
+        "violation": 0,
+        "ids": [
+          "lamp"
+        ]
+      }
+    ]
+  },
+  "occluders": [
+    {
+      "name": "walk",
+      "scene": "tests/fixtures/paths/paths.scene.json",
+      "state": null,
+      "lane": "walk",
+      "actor": [
+        0.5,
+        0.5,
+        1.7
+      ],
+      "step": 0.25,
+      "expected": {
+        "scene": "paths",
+        "state": null,
+        "area": {
+          "kind": "lane",
+          "id": "walk",
+          "level": 0
+        },
+        "actor": [
+          0.5,
+          0.5,
+          1.7
+        ],
+        "step": 0.25,
+        "positions": 137,
+        "occluders": [
+          {
+            "id": "bench",
+            "positions": 21,
+            "area": 273.51
+          },
+          {
+            "id": "lamp",
+            "positions": 2,
+            "area": 483.34
+          },
+          {
+            "id": "peg",
+            "positions": 1,
+            "area": 21.33
+          },
+          {
+            "id": "screen",
+            "positions": 12,
+            "area": 123.94
+          }
+        ]
+      }
+    },
+    {
+      "name": "ramp",
+      "scene": "tests/fixtures/paths/paths.scene.json",
+      "state": null,
+      "lane": "ramp",
+      "actor": [
+        0.5,
+        0.5,
+        1.7
+      ],
+      "step": 0.25,
+      "expected": {
+        "scene": "paths",
+        "state": null,
+        "area": {
+          "kind": "lane",
+          "id": "ramp",
+          "level": null
+        },
+        "actor": [
+          0.5,
+          0.5,
+          1.7
+        ],
+        "step": 0.25,
+        "positions": 56,
+        "occluders": [
+          {
+            "id": "deck",
+            "positions": 4,
+            "area": 15.92
+          },
+          {
+            "id": "crate",
+            "positions": 4,
+            "area": 36.77
+          },
+          {
+            "id": "hedge",
+            "positions": 24,
+            "area": 783.06
+          }
+        ]
+      }
+    },
+    {
+      "name": "ramp-cleared",
+      "scene": "tests/fixtures/paths/paths.scene.json",
+      "state": "cleared",
+      "lane": "ramp",
+      "actor": [
+        0.5,
+        0.5,
+        1.7
+      ],
+      "step": 0.25,
+      "expected": {
+        "scene": "paths",
+        "state": "cleared",
+        "area": {
+          "kind": "lane",
+          "id": "ramp",
+          "level": null
+        },
+        "actor": [
+          0.5,
+          0.5,
+          1.7
+        ],
+        "step": 0.25,
+        "positions": 60,
+        "occluders": [
+          {
+            "id": "deck",
+            "positions": 4,
+            "area": 15.92
+          },
+          {
+            "id": "hedge",
+            "positions": 27,
+            "area": 783.06
+          }
+        ]
+      }
+    },
+    {
+      "name": "stairs",
+      "scene": "tests/fixtures/paths/paths.scene.json",
+      "state": null,
+      "lane": "stairs",
+      "actor": [
+        0.5,
+        0.5,
+        1.7
+      ],
+      "step": 0.25,
+      "expected": {
+        "scene": "paths",
+        "state": null,
+        "area": {
+          "kind": "lane",
+          "id": "stairs",
+          "level": null
+        },
+        "actor": [
+          0.5,
+          0.5,
+          1.7
+        ],
+        "step": 0.25,
+        "positions": 60,
+        "occluders": [
+          {
+            "id": "sign",
+            "positions": 7,
+            "area": 198.87
+          }
+        ]
+      }
+    }
+  ]
+}
