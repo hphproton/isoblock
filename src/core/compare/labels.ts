@@ -52,6 +52,8 @@ export function checkLabel(spec: CheckSpec, base: CheckResult, unit: string): st
     }
     case "sort_consistency":
       return `sort_consistency ${spec.id} (objects out of order)`;
+    case "visible_share":
+      return `visible_share ${spec.id} (% shown)`;
     default:
       return `${spec.check} ${spec.id}`;
   }

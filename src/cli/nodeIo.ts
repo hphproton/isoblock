@@ -1,4 +1,4 @@
-import { appendFileSync, existsSync, readFileSync, writeFileSync } from "node:fs";
+import { appendFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { IsoblockError } from "../core/errors";
 import type { Io } from "./io";
 
@@ -34,6 +34,13 @@ export const nodeIo: Io = {
       writeFileSync(path, bytes);
     } catch (e) {
       throw new IsoblockError("E_IO", `cannot write ${path}: ${reason(e)}`);
+    }
+  },
+  mkdir(path) {
+    try {
+      mkdirSync(path, { recursive: true });
+    } catch (e) {
+      throw new IsoblockError("E_IO", `cannot create ${path}: ${reason(e)}`);
     }
   },
   appendText(path, text) {

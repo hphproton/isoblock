@@ -1,4 +1,5 @@
 import { runCheck, runChecks, updateCheck } from "./checks";
+import { objectRaster, type ObjectRaster } from "./raster/raster";
 import type { CheckResult, CheckSpec, ImplementedCheck, Scene, SceneObject } from "./types";
 
 /** Ids of the objects that differ between two scenes, or `"all"` when shared inputs changed. */
@@ -76,6 +77,7 @@ export function involves(spec: CheckSpec, changed: ReadonlySet<string>): boolean
     case "lane_apart":
       return false;
     case "visible":
+    case "visible_share":
     case "reachable":
     case "capacity":
     case "sort_consistency":
@@ -88,11 +90,16 @@ export function involves(spec: CheckSpec, changed: ReadonlySet<string>): boolean
 }
 
 /**
- * Checks that search a grid (`reachable`, `sort_consistency`). They are too slow to re-run on every
- * pointer move of a drag, so the editor re-runs them when the drag ends (SPEC 10).
+ * Checks that search a grid or rasterize the frame (`reachable`, `sort_consistency`,
+ * `visible_share`). They are too slow to re-run on every pointer move of a drag, so the editor
+ * re-runs them when the drag ends (SPEC 10).
  */
 export function searchesGrid(spec: CheckSpec): boolean {
-  return spec.check === "reachable" || spec.check === "sort_consistency";
+  return spec.check === "reachable" || spec.check === "sort_consistency" || spec.check === "visible_share";
+}
+
+function rasterFor(scene: Scene, needed: boolean): ObjectRaster | undefined {
+  return needed ? objectRaster(scene) : undefined;
 }
 
 export interface ResultUpdate {
@@ -125,6 +132,7 @@ export function updateResults(
   if (changed === "all" || !aligned) return { results: runChecks(next), rerun: specs.map((s) => s.id), deferred: [] };
   const rerun: string[] = [];
   const deferred: string[] = [];
+  const raster = rasterFor(next, specs.some((spec) => spec.check === "visible_share" && involves(spec, changed) && !defer(spec)));
   const results = specs.map((spec, i) => {
     const old = prevResults[i] as CheckResult;
     if (!involves(spec, changed)) return old;
@@ -133,7 +141,7 @@ export function updateResults(
       return old;
     }
     rerun.push(spec.id);
-    const fresh = updateCheck(next, spec, old, changed);
+    const fresh = updateCheck(next, spec, old, changed, raster);
     return same(fresh, old) ? old : fresh;
   });
   return { results, rerun, deferred };
@@ -146,10 +154,11 @@ export function updateResults(
 export function rerunResults(scene: Scene, results: readonly CheckResult[], ids: ReadonlySet<string>): readonly CheckResult[] {
   if (ids.size === 0) return results;
   const specs = scene.checks ?? [];
+  const raster = rasterFor(scene, specs.some((spec) => ids.has(spec.id) && spec.check === "visible_share"));
   return results.map((old, i) => {
     const spec = specs[i];
     if (spec === undefined || !ids.has(spec.id)) return old;
-    const fresh = runCheck(scene, spec);
+    const fresh = runCheck(scene, spec, raster);
     return same(fresh, old) ? old : fresh;
   });
 }

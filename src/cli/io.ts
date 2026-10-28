@@ -9,6 +9,8 @@ export interface Io {
   writeText(path: string, text: string): void;
   /** Write a binary file, such as a PNG image. */
   writeBytes(path: string, bytes: Uint8Array): void;
+  /** Create a directory, including parents. An existing directory is left as it is. */
+  mkdir(path: string): void;
   /** Add text to the end of a file; the file is created when it does not exist. */
   appendText(path: string, text: string): void;
   exists(path: string): boolean;

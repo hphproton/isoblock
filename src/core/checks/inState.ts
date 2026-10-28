@@ -1,3 +1,4 @@
+import { objectRaster, type ObjectRaster } from "../raster/raster";
 import { hiddenObjects, sceneInState, withoutObjects } from "../states";
 import type { CheckResult, CheckSpec, ImplementedCheck, Scene } from "../types";
 import { runCheck } from "./index";
@@ -43,27 +44,29 @@ function restrict(scene: Scene, spec: CheckSpec, hidden: ReadonlySet<string>): I
       };
     case "sort_consistency":
       return check.ids === undefined ? check : { ...check, ids: keep(check.ids) };
+    case "visible_share":
+      return check.ids === undefined ? check : { ...check, ids: keep(check.ids) };
     default:
       return check;
   }
 }
 
 /**
- * Run every check of the scene with the objects in `hidden` removed (SPEC section 9.2): they are
- * removed from the scene and from the lists of the checks (`ids`, `allow`, `ignore`); a check that
- * names a hidden object by itself is `skip`. `state` only names the state in the messages.
+ * One check with `hidden` objects removed (SPEC 9.2). They leave the lists (`ids`, `allow`,
+ * `ignore`); a check that names a hidden object by itself is `skip`. `visible` is `scene` without
+ * those objects. `raster`, when given, is the object raster of `visible` shared by the run.
  */
-/** One check with `hidden` objects removed. `visible` is `scene` without those objects. */
 export function checkInState(
   scene: Scene,
   spec: CheckSpec,
   hidden: ReadonlySet<string>,
   state: string,
   visible: Scene = withoutObjects(scene, hidden),
+  raster?: ObjectRaster,
 ): CheckResult {
   const restricted = restrict(scene, spec, hidden);
   if (typeof restricted === "string") return canonical(skipResult(spec, `object "${restricted}" is hidden in state "${state}"`));
-  return runCheck(visible, restricted);
+  return runCheck(visible, restricted, raster);
 }
 
 export function runChecksHiding(
@@ -72,7 +75,9 @@ export function runChecksHiding(
   state: string,
   visible: Scene = withoutObjects(scene, hidden),
 ): readonly CheckResult[] {
-  return (scene.checks ?? []).map((spec) => checkInState(scene, spec, hidden, state, visible));
+  const specs = scene.checks ?? [];
+  const raster = specs.some((spec) => spec.check === "visible_share") ? objectRaster(visible) : undefined;
+  return specs.map((spec) => checkInState(scene, spec, hidden, state, visible, raster));
 }
 
 /** Run every check of the scene as it is in a state. An unknown state is `E_USAGE`. */

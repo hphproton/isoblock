@@ -155,6 +155,13 @@ function checkErrors(scene: Scene, check: CheckSpec, names: Names, pools: Pools)
       const c = check as Extract<CheckSpec, { check: "sort_consistency" }>;
       return [...(c.area === undefined ? [] : need(names.zones, pools.zone, "zone", c.area, owner)), ...objects(c.ids)];
     }
+    case "visible_share": {
+      const c = check as Extract<CheckSpec, { check: "visible_share" }>;
+      return [
+        ...(c.region === undefined ? [] : need(names.regions, pools.region, "region", c.region, owner)),
+        ...objects(c.ids),
+      ];
+    }
     default:
       return [];
   }

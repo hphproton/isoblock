@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- `export --target masks` writes the object raster of a state into a folder: a 16-bit `labels.png`, full and visible mask PNGs per object and per tag, and `masks.json`. `--grow` adds a band of pixels around each mask for detail the block does not show. `--state` draws one state. The scene format stays `isoblock/1`. The runtime file stays `isoblock-runtime/3`.
+- `visibility` reports, for a frame region or the whole frame, how much of each object shows and how much of the region the objects cover.
+- `occluders` lists the objects that hide part of an actor somewhere in a flat lane or a zone, by the painter's order, with how many positions and the largest overlap.
+- The check `visible_share`. Listed objects, by `ids` or by `tag`, must show at least `min` of their own pixels in a region. `compare` prints the row `visible_share <id> (% shown)` as a whole percent. In the editor the row waits until a drag ends, like `reachable` and `sort_consistency`.
+
 ## 0.12.0
 
 Stage 12: heights and cameras. The scene format stays `isoblock/1`. The runtime file becomes `isoblock-runtime/3`.

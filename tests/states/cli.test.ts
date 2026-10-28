@@ -99,7 +99,7 @@ describe("cli: export --state", () => {
     expect(unknown.err).toMatch(/^error E_USAGE: unknown state 'night'/);
     const runtime = exec(["export", yard, "--target", "runtime", "--state", "closed"]);
     expect([runtime.code, runtime.out]).toEqual([2, ""]);
-    expect(runtime.err).toMatch(/^error E_USAGE: --state applies to the gen-bbox target only/);
+    expect(runtime.err).toMatch(/^error E_USAGE: --state applies to gen-bbox and masks/);
   });
 });
 

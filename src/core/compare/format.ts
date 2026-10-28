@@ -15,6 +15,7 @@ function valueCell(check: string, value: number | null, status: CheckStatus): st
   else if (check === "min_screen_size") text = String(Math.floor(value + 0.5 + EPS));
   else if (check === "lane_reaches") text = String(Math.round(value));
   else if (check === "visible") text = String(Math.round(value * 100));
+  else if (check === "visible_share") text = String(Math.floor(value * 100 + 0.5 + EPS));
   else text = plain(value);
   return status === "fail" ? `${text} ${CROSS}` : text;
 }

@@ -208,7 +208,7 @@
           "check": {
             "enum": [
               "in_region", "no_overlap", "clearance", "lane_clear", "lane_reaches", "lane_apart", "reachable",
-              "capacity", "visible", "min_screen_size", "sort_consistency", "state_stable"
+              "capacity", "visible", "min_screen_size", "sort_consistency", "visible_share", "state_stable"
             ]
           }
         },
@@ -224,6 +224,7 @@
           { "$ref": "#/definitions/checkCapacity" },
           { "$ref": "#/definitions/checkMinScreenSize" },
           { "$ref": "#/definitions/checkSortConsistency" },
+          { "$ref": "#/definitions/checkVisibleShare" },
           { "$ref": "#/definitions/checkNotImplemented" }
         ],
         "discriminator": { "propertyName": "check" }
@@ -484,6 +485,24 @@
         "ids": { "$ref": "#/definitions/idList" },
         "level": { "type": "number" }
       }
+    },
+    "checkVisibleShare": {
+      "type": "object",
+      "required": ["id", "check", "min"],
+      "additionalProperties": false,
+      "patternProperties": { "^x-": {} },
+      "properties": {
+        "id": { "type": "string" },
+        "check": { "const": "visible_share" },
+        "ids": { "$ref": "#/definitions/idList" },
+        "tag": { "type": "string", "minLength": 1 },
+        "region": { "type": "string", "minLength": 1 },
+        "min": { "type": "number", "minimum": 0, "maximum": 1 }
+      },
+      "oneOf": [
+        { "required": ["ids"], "not": { "required": ["tag"] } },
+        { "required": ["tag"], "not": { "required": ["ids"] } }
+      ]
     },
     "checkNotImplemented": {
       "type": "object",
