@@ -256,7 +256,7 @@ Not in stage 12: paths between levels in `reachable`, a relation that puts an ob
 
 **Done when:** all tests pass, `npm run test:godot` passes, earlier fixtures still match except the runtime files of `tests/fixtures/runtime/`, which those of `tests/fixtures/runtime3/` replace, the workflow `ci` passes on the branch, `npm run check:publish` reports nothing, the branch is named `builder/stage-12`, its session log names the tool and model, gives the test counts with skipped tests and ends with the pull request's title and description, and the stage 12 criteria in SPEC section 17 hold.
 
-## Stage 13 · open
+## Stage 13 · done (0.13.0)
 
 Masks and visibility (SPEC sections 9, 9.6, 10, 11, 11.1, 11.3, 11.4, 14, 14.1, 16, 17, 18). Core, CLI and the editor's check panel. No change to the scene format beyond the new check, no change to the runtime file, no new dependency. Fixtures, all in new files so that the suite of release 0.12.0 still passes on this branch: `tests/fixtures/masks/` (the scene `plaza.scene.json` with an axes-form camera at 2:1, an overhanging part, a raised panel, a flat mat, an object of no pixel, one outside the frame and one the frame cuts, tags, a walkable and a blocked zone, a lane, three regions and two states; `cases.json` with 4 masks cases and their expected folders, 3 visibility cases, 4 occluders cases on `plaza` and `levels`, and the `visible_share` results of `plaza` in three states; `invalid/` with 4 broken scenes).
 

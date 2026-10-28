@@ -1,6 +1,8 @@
 # Changelog
 
-## Unreleased
+## 0.13.0
+
+Stage 13: masks and visibility. The scene format stays `isoblock/1`; the runtime file stays `isoblock-runtime/3`.
 
 ### Added
 
