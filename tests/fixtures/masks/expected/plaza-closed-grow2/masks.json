@@ -1,0 +1,358 @@
+{
+  "schema": "isoblock-masks/1",
+  "scene": "plaza",
+  "state": "closed",
+  "frame": {
+    "w": 480,
+    "h": 320
+  },
+  "grow": 2,
+  "labels": "labels.png",
+  "objects": [
+    {
+      "id": "wall",
+      "index": 1,
+      "type": "wall",
+      "tags": [
+        "back"
+      ],
+      "full": {
+        "file": "full/1.png",
+        "box": [
+          204,
+          48,
+          443,
+          219
+        ],
+        "pixels": 14009
+      },
+      "visible": {
+        "file": "visible/1.png",
+        "pixels": 9136
+      },
+      "share": 0.652152
+    },
+    {
+      "id": "tower",
+      "index": 2,
+      "type": "tower",
+      "tags": [
+        "back"
+      ],
+      "full": {
+        "file": "full/2.png",
+        "box": [
+          353,
+          0,
+          421,
+          232
+        ],
+        "pixels": 14240
+      },
+      "visible": {
+        "file": "visible/2.png",
+        "pixels": 14240
+      },
+      "share": 1
+    },
+    {
+      "id": "stool",
+      "index": 3,
+      "type": "stool",
+      "tags": [
+        "seat"
+      ],
+      "full": {
+        "file": "full/3.png",
+        "box": [
+          224,
+          124,
+          254,
+          158
+        ],
+        "pixels": 630
+      },
+      "visible": {
+        "file": "visible/3.png",
+        "pixels": 0
+      },
+      "share": 0
+    },
+    {
+      "id": "kiosk",
+      "index": 4,
+      "type": "kiosk",
+      "tags": [
+        "shop"
+      ],
+      "full": {
+        "file": "full/4.png",
+        "box": [
+          172,
+          99,
+          266,
+          197
+        ],
+        "pixels": 5685
+      },
+      "visible": {
+        "file": "visible/4.png",
+        "pixels": 4964
+      },
+      "share": 0.873175
+    },
+    {
+      "id": "mat",
+      "index": 5,
+      "type": "mat",
+      "tags": [
+        "floor"
+      ],
+      "full": {
+        "file": "full/5.png",
+        "box": [
+          256,
+          180,
+          340,
+          224
+        ],
+        "pixels": 1576
+      },
+      "visible": {
+        "file": "visible/5.png",
+        "pixels": 1576
+      },
+      "share": 1
+    },
+    {
+      "id": "planter",
+      "index": 6,
+      "type": "planter",
+      "tags": [],
+      "full": {
+        "file": "full/6.png",
+        "box": [
+          217,
+          191,
+          273,
+          245
+        ],
+        "pixels": 1976
+      },
+      "visible": {
+        "file": "visible/6.png",
+        "pixels": 1677
+      },
+      "share": 0.848684
+    },
+    {
+      "id": "bench_a",
+      "index": 7,
+      "type": "bench",
+      "tags": [
+        "seat"
+      ],
+      "full": {
+        "file": "full/7.png",
+        "box": [
+          180,
+          204,
+          244,
+          254
+        ],
+        "pixels": 1620
+      },
+      "visible": {
+        "file": "visible/7.png",
+        "pixels": 1620
+      },
+      "share": 1
+    },
+    {
+      "id": "bench_b",
+      "index": 8,
+      "type": "bench",
+      "tags": [
+        "seat"
+      ],
+      "full": null,
+      "visible": null,
+      "share": null
+    },
+    {
+      "id": "lamp",
+      "index": 9,
+      "type": "lamp",
+      "tags": [
+        "street"
+      ],
+      "full": {
+        "file": "full/9.png",
+        "box": [
+          182,
+          104,
+          199,
+          208
+        ],
+        "pixels": 1258
+      },
+      "visible": {
+        "file": "visible/9.png",
+        "pixels": 1258
+      },
+      "share": 1
+    },
+    {
+      "id": "sign",
+      "index": 10,
+      "type": "panel",
+      "tags": [
+        "street"
+      ],
+      "full": {
+        "file": "full/10.png",
+        "box": [
+          301,
+          131,
+          347,
+          177
+        ],
+        "pixels": 1038
+      },
+      "visible": {
+        "file": "visible/10.png",
+        "pixels": 1038
+      },
+      "share": 1
+    },
+    {
+      "id": "pebble",
+      "index": 11,
+      "type": "pebble",
+      "tags": [],
+      "full": null,
+      "visible": null,
+      "share": null
+    },
+    {
+      "id": "crate_far",
+      "index": 12,
+      "type": "planter",
+      "tags": [],
+      "full": null,
+      "visible": null,
+      "share": null
+    }
+  ],
+  "groups": [
+    {
+      "tag": "back",
+      "ids": [
+        "wall",
+        "tower"
+      ],
+      "full": {
+        "file": "groups/full/1.png",
+        "box": [
+          204,
+          0,
+          443,
+          232
+        ],
+        "pixels": 24409
+      },
+      "visible": {
+        "file": "groups/visible/1.png",
+        "pixels": 23376
+      },
+      "share": 0.95768
+    },
+    {
+      "tag": "seat",
+      "ids": [
+        "stool",
+        "bench_a",
+        "bench_b"
+      ],
+      "full": {
+        "file": "groups/full/2.png",
+        "box": [
+          180,
+          124,
+          254,
+          254
+        ],
+        "pixels": 2250
+      },
+      "visible": {
+        "file": "groups/visible/2.png",
+        "pixels": 1620
+      },
+      "share": 0.72
+    },
+    {
+      "tag": "shop",
+      "ids": [
+        "kiosk"
+      ],
+      "full": {
+        "file": "groups/full/3.png",
+        "box": [
+          172,
+          99,
+          266,
+          197
+        ],
+        "pixels": 5685
+      },
+      "visible": {
+        "file": "groups/visible/3.png",
+        "pixels": 4964
+      },
+      "share": 0.873175
+    },
+    {
+      "tag": "floor",
+      "ids": [
+        "mat"
+      ],
+      "full": {
+        "file": "groups/full/4.png",
+        "box": [
+          256,
+          180,
+          340,
+          224
+        ],
+        "pixels": 1576
+      },
+      "visible": {
+        "file": "groups/visible/4.png",
+        "pixels": 1576
+      },
+      "share": 1
+    },
+    {
+      "tag": "street",
+      "ids": [
+        "lamp",
+        "sign"
+      ],
+      "full": {
+        "file": "groups/full/5.png",
+        "box": [
+          182,
+          104,
+          347,
+          208
+        ],
+        "pixels": 2296
+      },
+      "visible": {
+        "file": "groups/visible/5.png",
+        "pixels": 2296
+      },
+      "share": 1
+    }
+  ]
+}

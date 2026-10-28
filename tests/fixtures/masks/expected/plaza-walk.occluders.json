@@ -1,0 +1,23 @@
+{
+  "scene": "plaza",
+  "state": null,
+  "area": {
+    "kind": "lane",
+    "id": "walk",
+    "level": 0
+  },
+  "actor": [
+    0.5,
+    0.5,
+    1.7
+  ],
+  "step": 0.25,
+  "positions": 90,
+  "occluders": [
+    {
+      "id": "bench_b",
+      "positions": 1,
+      "area": 22.19
+    }
+  ]
+}

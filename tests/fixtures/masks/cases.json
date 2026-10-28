@@ -1,0 +1,245 @@
+{
+  "tolerance": {
+    "pixels": 2,
+    "labelPixels": 10,
+    "share": 0.001,
+    "box": 1,
+    "area": 0.05
+  },
+  "masks": [
+    {
+      "name": "plaza-default",
+      "scene": "tests/fixtures/masks/plaza.scene.json",
+      "state": null,
+      "grow": 0,
+      "expected": "expected/plaza-default"
+    },
+    {
+      "name": "plaza-closed-grow2",
+      "scene": "tests/fixtures/masks/plaza.scene.json",
+      "state": "closed",
+      "grow": 2,
+      "expected": "expected/plaza-closed-grow2"
+    },
+    {
+      "name": "levels-closed",
+      "scene": "tests/fixtures/levels/levels.scene.json",
+      "state": "closed",
+      "grow": 0,
+      "expected": "expected/levels-closed"
+    }
+  ],
+  "visibility": [
+    {
+      "name": "plaza-focus",
+      "scene": "tests/fixtures/masks/plaza.scene.json",
+      "state": null,
+      "region": "focus",
+      "expected": "expected/plaza-focus.visibility.json"
+    },
+    {
+      "name": "plaza-closed",
+      "scene": "tests/fixtures/masks/plaza.scene.json",
+      "state": "closed",
+      "region": null,
+      "expected": "expected/plaza-closed.visibility.json"
+    },
+    {
+      "name": "levels-view",
+      "scene": "tests/fixtures/levels/levels.scene.json",
+      "state": null,
+      "region": "view",
+      "expected": "expected/levels-view.visibility.json"
+    }
+  ],
+  "occluders": [
+    {
+      "name": "plaza-walk",
+      "scene": "tests/fixtures/masks/plaza.scene.json",
+      "state": null,
+      "lane": "walk",
+      "actor": [
+        0.5,
+        0.5,
+        1.7
+      ],
+      "step": 0.25,
+      "expected": "expected/plaza-walk.occluders.json"
+    },
+    {
+      "name": "plaza-square",
+      "scene": "tests/fixtures/masks/plaza.scene.json",
+      "state": "closed",
+      "zone": "square",
+      "actor": [
+        0.5,
+        0.5,
+        1.7
+      ],
+      "step": 0.5,
+      "expected": "expected/plaza-square.occluders.json"
+    },
+    {
+      "name": "levels-walk",
+      "scene": "tests/fixtures/levels/levels.scene.json",
+      "state": null,
+      "lane": "walk",
+      "actor": [
+        0.5,
+        0.5,
+        1.7
+      ],
+      "step": 0.25,
+      "expected": "expected/levels-walk.occluders.json"
+    },
+    {
+      "name": "levels-deck",
+      "scene": "tests/fixtures/levels/levels.scene.json",
+      "state": "closed",
+      "zone": "deck_top",
+      "actor": [
+        0.5,
+        0.5,
+        1.7
+      ],
+      "step": 0.25,
+      "expected": "expected/levels-deck.occluders.json"
+    }
+  ],
+  "checks": [
+    {
+      "scene": "tests/fixtures/masks/plaza.scene.json",
+      "state": null,
+      "checks": [
+        {
+          "id": "seats_shown",
+          "check": "visible_share",
+          "status": "fail",
+          "value": 0,
+          "threshold": 0.5,
+          "ids": [
+            "stool"
+          ],
+          "shares": [
+            0
+          ]
+        },
+        {
+          "id": "street_shown",
+          "check": "visible_share",
+          "status": "pass",
+          "value": 1,
+          "threshold": 0.95,
+          "ids": [],
+          "shares": []
+        },
+        {
+          "id": "shop_shown",
+          "check": "visible_share",
+          "status": "pass",
+          "value": 0.913731,
+          "threshold": 0.9,
+          "ids": [],
+          "shares": []
+        },
+        {
+          "id": "far_shown",
+          "check": "visible_share",
+          "status": "skip",
+          "value": null,
+          "threshold": null,
+          "ids": []
+        }
+      ]
+    },
+    {
+      "scene": "tests/fixtures/masks/plaza.scene.json",
+      "state": "closed",
+      "checks": [
+        {
+          "id": "seats_shown",
+          "check": "visible_share",
+          "status": "fail",
+          "value": 0,
+          "threshold": 0.5,
+          "ids": [
+            "stool"
+          ],
+          "shares": [
+            0
+          ]
+        },
+        {
+          "id": "street_shown",
+          "check": "visible_share",
+          "status": "pass",
+          "value": 1,
+          "threshold": 0.95,
+          "ids": [],
+          "shares": []
+        },
+        {
+          "id": "shop_shown",
+          "check": "visible_share",
+          "status": "fail",
+          "value": 0.873175,
+          "threshold": 0.9,
+          "ids": [
+            "kiosk"
+          ],
+          "shares": [
+            0.873175
+          ]
+        },
+        {
+          "id": "far_shown",
+          "check": "visible_share",
+          "status": "skip",
+          "value": null,
+          "threshold": null,
+          "ids": []
+        }
+      ]
+    },
+    {
+      "scene": "tests/fixtures/masks/plaza.scene.json",
+      "state": "quiet",
+      "checks": [
+        {
+          "id": "seats_shown",
+          "check": "visible_share",
+          "status": "skip",
+          "value": null,
+          "threshold": null,
+          "ids": []
+        },
+        {
+          "id": "street_shown",
+          "check": "visible_share",
+          "status": "pass",
+          "value": 1,
+          "threshold": 0.95,
+          "ids": [],
+          "shares": []
+        },
+        {
+          "id": "shop_shown",
+          "check": "visible_share",
+          "status": "pass",
+          "value": 1,
+          "threshold": 0.9,
+          "ids": [],
+          "shares": []
+        },
+        {
+          "id": "far_shown",
+          "check": "visible_share",
+          "status": "skip",
+          "value": null,
+          "threshold": null,
+          "ids": []
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "scene": "levels",
+  "state": "closed",
+  "area": {
+    "kind": "zone",
+    "id": "deck_top",
+    "level": 3
+  },
+  "actor": [
+    0.5,
+    0.5,
+    1.7
+  ],
+  "step": 0.25,
+  "positions": 220,
+  "occluders": [
+    {
+      "id": "crate_up",
+      "positions": 19,
+      "area": 1265.32
+    }
+  ]
+}

@@ -1,0 +1,408 @@
+{
+  "schema": "isoblock/1",
+  "id": "plaza",
+  "meta": {
+    "version": 1,
+    "status": "draft"
+  },
+  "units": {
+    "name": "u",
+    "note": "synthetic unit"
+  },
+  "camera": {
+    "angleU": 26.565051,
+    "angleV": 153.434949,
+    "pxPerUnit": 36,
+    "verticalScale": 1,
+    "origin": [
+      200,
+      92
+    ]
+  },
+  "frame": {
+    "w": 480,
+    "h": 320,
+    "regions": [
+      {
+        "id": "view",
+        "rect": [
+          0,
+          0,
+          480,
+          280
+        ]
+      },
+      {
+        "id": "focus",
+        "rect": [
+          120,
+          70,
+          360,
+          250
+        ]
+      },
+      {
+        "id": "panel",
+        "rect": [
+          0,
+          280,
+          480,
+          320
+        ],
+        "blocksScene": true
+      }
+    ]
+  },
+  "types": {
+    "wall": {
+      "size": [
+        7,
+        0.3,
+        1.4
+      ]
+    },
+    "kiosk": {
+      "size": [
+        1.6,
+        1.2,
+        2.1
+      ],
+      "parts": [
+        {
+          "id": "counter",
+          "box": [
+            0,
+            0,
+            0,
+            1.6,
+            1.2,
+            1.1
+          ]
+        },
+        {
+          "id": "post",
+          "box": [
+            0.7,
+            0.5,
+            1.1,
+            0.9,
+            0.7,
+            1.9
+          ]
+        },
+        {
+          "id": "roof",
+          "box": [
+            -0.3,
+            -0.3,
+            1.9,
+            1.9,
+            1.5,
+            2.1
+          ]
+        }
+      ]
+    },
+    "bench": {
+      "size": [
+        1.4,
+        0.45,
+        0.45
+      ]
+    },
+    "stool": {
+      "size": [
+        0.4,
+        0.4,
+        0.5
+      ]
+    },
+    "planter": {
+      "size": [
+        0.8,
+        0.8,
+        0.7
+      ]
+    },
+    "lamp": {
+      "size": [
+        0.2,
+        0.2,
+        2.6
+      ]
+    },
+    "panel": {
+      "size": [
+        1.2,
+        0.1,
+        0.6
+      ]
+    },
+    "mat": {
+      "size": [
+        1.5,
+        1,
+        0
+      ]
+    },
+    "pebble": {
+      "size": [
+        0,
+        0,
+        0.3
+      ]
+    },
+    "tower": {
+      "size": [
+        1,
+        1,
+        6
+      ]
+    }
+  },
+  "objects": [
+    {
+      "id": "wall",
+      "type": "wall",
+      "pos": [
+        0.5,
+        0
+      ],
+      "tags": [
+        "back"
+      ]
+    },
+    {
+      "id": "tower",
+      "type": "tower",
+      "pos": [
+        6.2,
+        0.4
+      ],
+      "tags": [
+        "back"
+      ]
+    },
+    {
+      "id": "stool",
+      "type": "stool",
+      "pos": [
+        2.2,
+        1.0
+      ],
+      "tags": [
+        "seat"
+      ]
+    },
+    {
+      "id": "kiosk",
+      "type": "kiosk",
+      "pos": [
+        2.0,
+        1.6
+      ],
+      "tags": [
+        "shop"
+      ]
+    },
+    {
+      "id": "mat",
+      "type": "mat",
+      "pos": [
+        4.2,
+        1.4
+      ],
+      "tags": [
+        "floor"
+      ]
+    },
+    {
+      "id": "planter",
+      "type": "planter",
+      "pos": [
+        4.6,
+        3.2
+      ]
+    },
+    {
+      "id": "bench_a",
+      "type": "bench",
+      "pos": [
+        4.0,
+        4.1
+      ],
+      "tags": [
+        "seat"
+      ]
+    },
+    {
+      "id": "bench_b",
+      "type": "bench",
+      "pos": [
+        1.2,
+        3.6
+      ],
+      "rot": 90,
+      "tags": [
+        "seat"
+      ]
+    },
+    {
+      "id": "lamp",
+      "type": "lamp",
+      "pos": [
+        3.2,
+        3.5
+      ],
+      "tags": [
+        "street"
+      ]
+    },
+    {
+      "id": "sign",
+      "type": "panel",
+      "pos": [
+        5.6,
+        2.3,
+        1.8
+      ],
+      "tags": [
+        "street"
+      ]
+    },
+    {
+      "id": "pebble",
+      "type": "pebble",
+      "pos": [
+        3.0,
+        2.0
+      ]
+    },
+    {
+      "id": "crate_far",
+      "type": "planter",
+      "pos": [
+        40,
+        2
+      ]
+    }
+  ],
+  "zones": [
+    {
+      "id": "square",
+      "kind": "walkable",
+      "points": [
+        [
+          0.4,
+          0.4
+        ],
+        [
+          7.6,
+          0.4
+        ],
+        [
+          7.6,
+          6.4
+        ],
+        [
+          0.4,
+          6.4
+        ]
+      ]
+    },
+    {
+      "id": "pool",
+      "kind": "blocked",
+      "points": [
+        [
+          5.8,
+          4.6
+        ],
+        [
+          7.2,
+          4.6
+        ],
+        [
+          7.2,
+          5.8
+        ],
+        [
+          5.8,
+          5.8
+        ]
+      ]
+    }
+  ],
+  "lanes": [
+    {
+      "id": "walk",
+      "kind": "walk",
+      "width": 1,
+      "points": [
+        [
+          0.6,
+          5.4
+        ],
+        [
+          7.4,
+          5.4
+        ]
+      ]
+    }
+  ],
+  "states": {
+    "closed": {
+      "hide": [
+        "bench_b"
+      ],
+      "hideParts": {
+        "kiosk": [
+          "roof"
+        ]
+      }
+    },
+    "quiet": {
+      "hide": [
+        "lamp"
+      ],
+      "hideRegions": [
+        "focus"
+      ]
+    }
+  },
+  "checks": [
+    {
+      "id": "seats_shown",
+      "check": "visible_share",
+      "tag": "seat",
+      "region": "focus",
+      "min": 0.5,
+      "ids": [
+        "stool"
+      ]
+    },
+    {
+      "id": "street_shown",
+      "check": "visible_share",
+      "ids": [
+        "lamp",
+        "sign"
+      ],
+      "min": 0.95
+    },
+    {
+      "id": "shop_shown",
+      "check": "visible_share",
+      "tag": "shop",
+      "min": 0.9
+    },
+    {
+      "id": "far_shown",
+      "check": "visible_share",
+      "ids": [
+        "crate_far"
+      ],
+      "min": 0.5
+    }
+  ]
+}

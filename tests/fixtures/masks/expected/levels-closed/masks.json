@@ -1,0 +1,311 @@
+{
+  "schema": "isoblock-masks/1",
+  "scene": "levels",
+  "state": "closed",
+  "frame": {
+    "w": 1200,
+    "h": 900
+  },
+  "grow": 0,
+  "labels": "labels.png",
+  "objects": [
+    {
+      "id": "post_a",
+      "index": 1,
+      "type": "post",
+      "tags": [],
+      "full": {
+        "file": "full/1.png",
+        "box": [
+          334,
+          289,
+          361,
+          410
+        ],
+        "pixels": 3120
+      },
+      "visible": {
+        "file": "visible/1.png",
+        "pixels": 2476
+      },
+      "share": 0.79359
+    },
+    {
+      "id": "post_b",
+      "index": 2,
+      "type": "post",
+      "tags": [],
+      "full": {
+        "file": "full/2.png",
+        "box": [
+          685,
+          233,
+          713,
+          355
+        ],
+        "pixels": 3229
+      },
+      "visible": {
+        "file": "visible/2.png",
+        "pixels": 2969
+      },
+      "share": 0.91948
+    },
+    {
+      "id": "deck",
+      "index": 3,
+      "type": "deck",
+      "tags": [],
+      "full": {
+        "file": "full/3.png",
+        "box": [
+          325,
+          174,
+          721,
+          339
+        ],
+        "pixels": 28573
+      },
+      "visible": {
+        "file": "visible/3.png",
+        "pixels": 25977
+      },
+      "share": 0.909145
+    },
+    {
+      "id": "crate_up",
+      "index": 4,
+      "type": "crate",
+      "tags": [],
+      "full": {
+        "file": "full/4.png",
+        "box": [
+          511,
+          179,
+          579,
+          257
+        ],
+        "pixels": 4194
+      },
+      "visible": {
+        "file": "visible/4.png",
+        "pixels": 4194
+      },
+      "share": 1
+    },
+    {
+      "id": "mat",
+      "index": 5,
+      "type": "mat",
+      "tags": [],
+      "full": {
+        "file": "full/5.png",
+        "box": [
+          425,
+          365,
+          535,
+          411
+        ],
+        "pixels": 2498
+      },
+      "visible": {
+        "file": "visible/5.png",
+        "pixels": 1610
+      },
+      "share": 0.644516
+    },
+    {
+      "id": "crate2",
+      "index": 6,
+      "type": "crate",
+      "tags": [],
+      "full": {
+        "file": "full/6.png",
+        "box": [
+          649,
+          289,
+          718,
+          367
+        ],
+        "pixels": 4237
+      },
+      "visible": {
+        "file": "visible/6.png",
+        "pixels": 2680
+      },
+      "share": 0.632523
+    },
+    {
+      "id": "crate",
+      "index": 7,
+      "type": "crate",
+      "tags": [],
+      "full": {
+        "file": "full/7.png",
+        "box": [
+          730,
+          249,
+          798,
+          326
+        ],
+        "pixels": 4194
+      },
+      "visible": {
+        "file": "visible/7.png",
+        "pixels": 4194
+      },
+      "share": 1
+    },
+    {
+      "id": "side_wall",
+      "index": 8,
+      "type": "wall",
+      "tags": [],
+      "full": {
+        "file": "full/8.png",
+        "box": [
+          350,
+          401,
+          964,
+          647
+        ],
+        "pixels": 45132
+      },
+      "visible": {
+        "file": "visible/8.png",
+        "pixels": 45132
+      },
+      "share": 1
+    },
+    {
+      "id": "kiosk",
+      "index": 9,
+      "type": "kiosk",
+      "tags": [],
+      "full": {
+        "file": "full/9.png",
+        "box": [
+          468,
+          378,
+          580,
+          500
+        ],
+        "pixels": 7901
+      },
+      "visible": {
+        "file": "visible/9.png",
+        "pixels": 7901
+      },
+      "share": 1
+    },
+    {
+      "id": "figure",
+      "index": 10,
+      "type": "figure",
+      "tags": [],
+      "full": {
+        "file": "full/10.png",
+        "box": [
+          483,
+          371,
+          517,
+          462
+        ],
+        "pixels": 2814
+      },
+      "visible": {
+        "file": "visible/10.png",
+        "pixels": 1724
+      },
+      "share": 0.612651
+    },
+    {
+      "id": "plinth",
+      "index": 11,
+      "type": "plinth",
+      "tags": [],
+      "full": {
+        "file": "full/11.png",
+        "box": [
+          629,
+          396,
+          697,
+          439
+        ],
+        "pixels": 1840
+      },
+      "visible": {
+        "file": "visible/11.png",
+        "pixels": 1216
+      },
+      "share": 0.66087
+    },
+    {
+      "id": "vase",
+      "index": 12,
+      "type": "vase",
+      "tags": [],
+      "full": {
+        "file": "full/12.png",
+        "box": [
+          645,
+          388,
+          681,
+          421
+        ],
+        "pixels": 924
+      },
+      "visible": {
+        "file": "visible/12.png",
+        "pixels": 924
+      },
+      "share": 1
+    },
+    {
+      "id": "mast",
+      "index": 13,
+      "type": "mast",
+      "tags": [
+        "static"
+      ],
+      "full": {
+        "file": "full/13.png",
+        "box": [
+          811,
+          174,
+          832,
+          357
+        ],
+        "pixels": 3749
+      },
+      "visible": {
+        "file": "visible/13.png",
+        "pixels": 3749
+      },
+      "share": 1
+    }
+  ],
+  "groups": [
+    {
+      "tag": "static",
+      "ids": [
+        "mast"
+      ],
+      "full": {
+        "file": "groups/full/1.png",
+        "box": [
+          811,
+          174,
+          832,
+          357
+        ],
+        "pixels": 3749
+      },
+      "visible": {
+        "file": "groups/visible/1.png",
+        "pixels": 3749
+      },
+      "share": 1
+    }
+  ]
+}

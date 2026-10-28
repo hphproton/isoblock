@@ -178,7 +178,7 @@ Conventions:
 Schema rules (`schema/isoblock-1.json`):
 
 - Required top-level keys: `schema`, `id`, `units`, `camera`, `frame`, `types`, `objects`. Optional: `strips`, `zones`, `lanes`, `relations`, `checks`, `states`, `assumptions`, `meta`.
-- Required fields inside: `units.name`; `camera.origin` and either `angleU`, `angleV`, `pxPerUnit` (`verticalScale` defaults to 1) or, from stage 12, `elevation` and `scale` (`direction` defaults to 45), with no key of the other form; `frame.w`, `h`, `regions`; region `id`, `rect` (`blocksScene` optional); strip `id`, `v`; type `size`; part `id`, `box`; anchor `id`, `at`; object `id`, `type`, `pos` (2 numbers, or 3 from stage 12; `rot` defaults to 0); zone `id` (`kind`, `points`, a ground polygon of at least 3 `[u, v]` points, and from stage 12 `h` are optional); lane `id`, `width`, `points` (at least 2, each of 2 numbers, or 3 from stage 12; `h` optional from stage 12); relation `id`, `rel`; check `id`, `check` plus the parameters sections 9.1 to 9.4 require; assumption `path`, `value`. Everything else shown in the example is optional.
+- Required fields inside: `units.name`; `camera.origin` and either `angleU`, `angleV`, `pxPerUnit` (`verticalScale` defaults to 1) or, from stage 12, `elevation` and `scale` (`direction` defaults to 45), with no key of the other form; `frame.w`, `h`, `regions`; region `id`, `rect` (`blocksScene` optional); strip `id`, `v`; type `size`; part `id`, `box`; anchor `id`, `at`; object `id`, `type`, `pos` (2 numbers, or 3 from stage 12; `rot` defaults to 0); zone `id` (`kind`, `points`, a ground polygon of at least 3 `[u, v]` points, and from stage 12 `h` are optional); lane `id`, `width`, `points` (at least 2, each of 2 numbers, or 3 from stage 12; `h` optional from stage 12); relation `id`, `rel`; check `id`, `check` plus the parameters sections 9.1 to 9.6 require; assumption `path`, `value`. Everything else shown in the example is optional.
 - Strict where this spec defines a shape: unknown keys are errors (catches typos). Keys starting with `x-` are always allowed, for extensions.
 - `zones[]` requires `id`. `states.<name>` is an object whose keys are `hide` and, from stage 12, `hideParts` and `hideRegions` (plus `x-` keys), all optional: `hide` is an array of object ids, `hideParts` an object whose keys are object ids and whose values are arrays of part ids, `hideRegions` an array of frame region ids. A state hides; moving objects in a state is not scheduled. `relations[]` requires `rel` from section 7; `order_along` needs `ids`, every other `rel` needs `a`.
 - `kind`, `dir` and `facing` are free strings. Vocabulary checks belong to a project profile.
@@ -269,6 +269,7 @@ Definitions (footprints, corners and centers as in 9.1; `EPS` and the lane shape
 | `visible` | The required part of an object (for example its upper 45%) is occluded no more than a threshold. Uses rays toward the camera through parts |
 | `min_screen_size` | On-screen height of an object is at least a pixel value (legibility). From stage 9 it can measure only the vertical extent of the parts, for example a character's height on screen |
 | `sort_consistency` | An engine that sorts one key per sprite (section 13.4) draws a test actor and the objects in their geometric order; reports objects where it does not, with the area drawn wrong |
+| `visible_share` | Each listed object shows at least a share of its own pixels in a frame region, measured on the object raster of section 14.1 (from stage 13, section 9.6) |
 | `state_stable` | Static objects keep their position across states |
 
 Result shape: `{ id, check, status: pass|fail|warn|skip, value, threshold, ids[], message }`. `message` is one line.
@@ -414,13 +415,35 @@ Tolerance and EPS as in 9.1. A scene without base heights, flat objects, zone or
 - `states.NAME.hideRegions` hides frame regions: a hidden region is not drawn. `in_region` and `lane_reaches` that name it are `skip`, with a message that names the region and the state. Everything else keeps the region: the view region of `solve`, of `describe` and of the editor's Add is the same in every state.
 - `describe --states` and the runtime file list the hidden parts and regions (Appendix B, section 13.7).
 
+### 9.6 Exact definition for stage 13
+
+Tolerance and EPS as in 9.1; shares compare within 0.001.
+
+| `check` | Parameters | `value` |
+|---|---|---|
+| `visible_share` | `ids` (object ids) or `tag` (a tag), exactly one of the two; `region` (optional frame region id; default the whole raster); `min` (0 to 1) | The smallest share of the examined objects, rounded to 6 decimals |
+
+Computation:
+
+1. The object raster of section 14.1, in the state of the run.
+2. **Region pixels:** the pixels whose centers (i + 0.5, j + 0.5) have x0 ≤ x < x1 and y0 ≤ y < y1, with `[x0, y0, x1, y1]` the region's `rect`; without `region`, every pixel of the raster. Half-open edges make regions that share an edge share no pixel.
+3. **Examined objects:** the listed objects (those in `ids`, or those whose `tags` contain `tag`) that are drawn and whose full mask (section 14.1) has at least one region pixel. An object of no full pixel there (outside the region or the frame, or too small to cover a pixel center) is not examined.
+4. For each examined object, F = its full pixels and V = its visible pixels among the region pixels; its **share** is V / F. It fails when its share is below `min − EPS`.
+
+Threshold, ids and extra fields:
+
+- `threshold = min`; `ids` = the failing objects, in the order of `objects`; `shares` = their shares, rounded to 6 decimals, in the same order (`[]` when none fails). `fail` when an object fails, else `pass`.
+- No examined object: `skip`, with a message that says no listed object is drawn in the region. A region that the state hides: `skip`, as `in_region` (9.5). Under a state the lists lose the hidden objects (9.2); a tag names only the objects that are drawn.
+- Schema and references (section 6): exactly one of `ids` and `tag`; `tag` a non-empty string; `min` a number from 0 to 1, required; `region` names a frame region and `ids` objects, with the suggestions of section 6. A tag that no object has is not an error: the check is `skip`.
+- One raster per state serves every `visible_share` check of a run.
+
 ## 10. Editor (web page)
 
 - **Two views:** isometric with the scene camera, and a top-down plan (more precise dragging, nothing hidden).
 - **Drag:** screen to ground, grid snap, keep h. Locked objects cannot be dragged and show a lock icon. A drag changes `pos` only; snap applies to `pos` (default step 0.1). A press becomes a drag after the pointer moves 3 px (mouse), 4 px (pen) or 8 px (touch).
 - **Plan view:** u to the right, v down; objects drawn by their top faces.
 - **Property panel:** numbers with units; a lock toggle per property; provisional mark for assumptions.
-- **Check panel:** pass/fail updates live; tapping a row highlights the objects involved. From stage 8, during a drag the rows of `reachable` and `sort_consistency` keep their last result and show that it is out of date; the drop, or a cancelled drag, re-runs them.
+- **Check panel:** pass/fail updates live; tapping a row highlights the objects involved. From stage 8, during a drag the rows of `reachable` and `sort_consistency` keep their last result and show that it is out of date; the drop, or a cancelled drag, re-runs them. From stage 13 the rows of `visible_share` do the same.
 - **Toggleable overlays:** strips, lanes, zones, anchors, frame regions; occlusion rays and sort points (not scheduled).
 - **State switch (stage 11):** a select with the accessible name `State` lists `default`, then the states of the scene in file order. In a state, both views leave out the objects it hides (as `render --state`); a hidden object cannot be selected or dragged and is no longer selected; the check panel shows the results of `check --state <name>` on the current scene. `default` shows every object; a state of the scene named `default` is not listed again, and choosing `default` then shows that state, as `--state default` does. Switching is not an edit: no history step, nothing in the file changes, and it does not make the page unsaved. A newly opened file shows `default`; when the state shown no longer exists, the switch goes back to `default`.
 - **Edits (stage 11):** each edit below is one history step, undone and redone as one, and changes the scene exactly as the short command named with it (section 12) would, written in the saved format. When that command would not apply (`patch` would exit 2 or 3), the scene does not change and a notice gives the reason. Controls are found by their accessible names:
@@ -434,7 +457,7 @@ Tolerance and EPS as in 9.1. A scene without base heights, flat objects, zone or
 - **History:** undo, redo; saved versions with notes; compare two versions.
 - **Export:** frame image, scene file, engine package, generation boxes.
 - **Touch:** one-finger drag, two-finger zoom, large hit targets.
-- **Performance:** 60 fps with 200 objects on a mid-range phone. Canvas 2D; redraw only on change. From stage 8, checks that search a grid (`reachable`, `sort_consistency`) re-run when a drag ends, not on every pointer move, so that dragging keeps the frame rate on scenes that use them. Other edits (a property, undo, redo, a loaded file) re-run every check they involve at once.
+- **Performance:** 60 fps with 200 objects on a mid-range phone. Canvas 2D; redraw only on change. From stage 8, checks that search a grid (`reachable`, `sort_consistency`, and from stage 13 `visible_share`, which rasterizes the frame) re-run when a drag ends, not on every pointer move, so that dragging keeps the frame rate on scenes that use them. Other edits (a property, undo, redo, a loaded file) re-run every check they involve at once.
 - **Storage:** reads and writes scene files; no hidden state outside the file. Saved files are JSON with 2-space indentation and a final newline; keys keep their order, keys added by an edit come last, an empty `locks` list is removed, and numbers are written as JSON numbers (`2.0` becomes `2`).
 - **Assumptions:** editing a provisional number updates its `assumptions[].value`; the entry stays until a person settles it (stage 11, Edits) or removes it from the file.
 
@@ -451,7 +474,9 @@ isoblock describe scene.json [--relations] [--states]   # compact summary for ag
 isoblock patch    scene.json patch.txt|- [-o out.json] [--dry-run] [--json]
 isoblock diff     a.json b.json [--json]
 isoblock compare  scene.json --variant A=a.patch --variant B=b.patch [--state NAME] [--format text|md|json] [--relations] [--render]
-isoblock export   scene.json --target runtime|gen-bbox [-o out.json] [--bbox-units px|norm1000] [--bbox-order xyxy|yxyx] [--state NAME]
+isoblock export   scene.json --target runtime|gen-bbox|masks [-o out.json|dir] [--bbox-units px|norm1000] [--bbox-order xyxy|yxyx] [--state NAME] [--grow N]
+isoblock visibility scene.json [--region ID] [--state NAME] [--json]               # stage 13 (section 11.3)
+isoblock occluders  scene.json --actor w,d,h (--lane ID | --zone ID) [--step S] [--state NAME] [--json]   # stage 13 (section 11.4)
 ```
 
 Commands and flags arrive in the stages listed in section 17. A command, flag, export target or output format not available in the current stage is a usage error (exit 2) that names the stage that adds it, or says it is not scheduled. Examples in stage 1: `--state` (stage 6), `render -o out.png` (stage 5). `compare --render` and the export targets `godot`, `phaser` and `tiled` are not scheduled.
@@ -472,9 +497,15 @@ Stage 11 adds:
 
 Stage 12 adds no command and no flag. The new check parameters are those of section 9.5; `--state` covers hidden parts and regions; `render` and `export` take both camera forms.
 
+Stage 13 adds:
+
+- `export --target masks -o <dir> [--state NAME] [--grow N]` writes the masks of section 14.1 into the folder `<dir>`. `-o` is required; `--grow` takes an integer from 0 to 64 (default 0) and belongs to `masks`; `--bbox-units` and `--bbox-order` with `masks`, and `--grow` with another target, are usage errors.
+- `visibility` (section 11.3) and `occluders` (section 11.4).
+- The check `visible_share` (section 9.6).
+
 `render` requires `-o`; the file extension selects the format: `.svg`, or `.png` from stage 5 (section 14).
 
-`--state NAME` (stage 6) applies to `check`, `render`, `compare` and `export --target gen-bbox`: the command works on the scene in that state (section 9.2); hidden objects are not drawn and get no generation box. An unknown state name is a usage error, `default` included unless the scene defines it. `check --json --state` prints `{ "scene", "results" }` as without a state. With `export --target runtime` it is a usage error: the runtime file carries all states (section 13.7).
+`--state NAME` (stage 6) applies to `check`, `render`, `compare` and `export --target gen-bbox`, and from stage 13 to `export --target masks`, `visibility` and `occluders`: the command works on the scene in that state (section 9.2); hidden objects are not drawn and get no generation box. An unknown state name is a usage error, `default` included unless the scene defines it. `check --json --state` prints `{ "scene", "results" }` as without a state. With `export --target runtime` it is a usage error: the runtime file carries all states (section 13.7).
 
 `export` writes to `-o`, else to stdout, in the saved format of section 10. `--target` is required; `-o` naming the input file is a usage error. `--bbox-units` and `--bbox-order` belong to `gen-bbox`; with `runtime` they are a usage error.
 
@@ -492,7 +523,7 @@ Exit codes:
 | 3 | `patch`: the patch touches a lock (`E_LOCK`) |
 | 70 | Internal error (`E_INTERNAL`) |
 
-`validate`, `render`, `describe`, `diff`, `compare` and `export` exit 0 when they complete, even if checks fail.
+`validate`, `render`, `describe`, `diff`, `compare`, `export`, `visibility` and `occluders` exit 0 when they complete, even if checks fail.
 
 ### 11.1 `compare`: variants by measured values
 
@@ -504,7 +535,7 @@ Exit codes:
   - with `--relations` (stage 10): `hardViolated` and `softPenalty`. Every column is measured with the base scene's relations (section 7) on its own positions, with every object present whatever the state (`relations` has no `--state`). `hardViolated` = the ids of the hard relations whose status is `violated`, in file order; `softPenalty` = the soft penalty rounded to 6 decimals. Without the flag the two keys are absent and the two rows are not printed;
   - `checks`: every check with its label, threshold, `values` (one per column), `status` (one per column) and `delta` (value minus the base value, rounded to 6 decimals; `null` for the base and for values that are `null` or not numbers);
   - `moved`: objects present in both scenes whose `pos` moved more than 1e-9, as `count` and total `distance` (sum of ground distances, rounded to 6 decimals); `null` for the base. From stage 12 the base height is a third coordinate (0 when `pos` has two numbers): a change of it is a move, and distances are taken in (u, v, h).
-- **Check labels:** `in_region <region>[/<strip>] (objects outside)`, `no_overlap (pairs)`, `clearance <a>×<b> (<unit>)` with the ids in the order of the result's `ids`, `lane_clear <lane> (blocking objects)`, `lane_reaches <lane> (y px)` for the edges `right` and `left` and `lane_reaches <lane> (x px)` for `top` and `bottom`, `visible <target> (% occluded)`, `reachable <check id> (<unit>)`, `capacity <check id> (usable <kind>)`, `min_screen_size <target> (px)`, `sort_consistency <check id> (objects out of order)`. From stage 9: `in_region <region>[/<strip>] drawn (objects outside)` for `measure: "drawn"`, `min_screen_size <target> height (px)` for `measure: "height"`, and `lane_apart <lane>×<target id> (<unit>)`.
+- **Check labels:** `in_region <region>[/<strip>] (objects outside)`, `no_overlap (pairs)`, `clearance <a>×<b> (<unit>)` with the ids in the order of the result's `ids`, `lane_clear <lane> (blocking objects)`, `lane_reaches <lane> (y px)` for the edges `right` and `left` and `lane_reaches <lane> (x px)` for `top` and `bottom`, `visible <target> (% occluded)`, `reachable <check id> (<unit>)`, `capacity <check id> (usable <kind>)`, `min_screen_size <target> (px)`, `sort_consistency <check id> (objects out of order)`. From stage 9: `in_region <region>[/<strip>] drawn (objects outside)` for `measure: "drawn"`, `min_screen_size <target> height (px)` for `measure: "height"`, and `lane_apart <lane>×<target id> (<unit>)`. From stage 13: `visible_share <check id> (% shown)`, its cells the value as a whole percent, halves up.
 - **Variant labels:** the first comment line of the patch (section 12), else the variant name.
 - **`text` format** (Appendix D is the contract): line 1 `compare <scene id> · state <state> · base vs <names>`; line 2 `<name> = <label>` for each variant, joined with ` · `; then a table. Rows: `failing checks`; `locks touched` (count, then ` ✗ (<labels>)` when not zero); with `--relations`, `hard relations violated` (count, then ` ✗` when not zero) and `soft penalty` (2 decimals); one row per check that is `fail` or `skip` in some column, or whose value differs from the base in some column (a non-zero delta, or `null` against a number), in `checks` order; `objects moved / total (<unit>)` (`-` for the base, else `<count> / <distance>`). Cells: counts as integers; clearance values, `lane_apart` values and distances with 2 decimals; `lane_reaches` whole pixels (`none` when `null`); `visible` whole percent; `reachable` with 2 decimals (`none` when `null`); `capacity` and `sort_consistency` as integers; `min_screen_size` whole pixels, halves up; `skip` for skipped checks; ` ✗` after a value whose status is `fail` or `skip`. Columns are left-aligned; each column is as wide as its widest cell (header included, counted in Unicode code points) plus 2 spaces; trailing spaces are removed.
 - **`md` format:** the same rows as a Markdown table with the header `| metric | base | <names> |`.
@@ -520,6 +551,34 @@ Exit codes:
 - Objects are compared key by key. An array whose items, in both scenes, are all objects with a string `id` that is unique in its list is matched by `id` (an empty list qualifies); `assumptions` is matched by `path` in the same way. Every other array (`pos`, `size`, `locks`, `points`, ...) is one value. Item order is ignored.
 - Each entry is `{ "op": "add"|"remove"|"replace", "path", "from"?, "to"? }`: `add` has `to`, `remove` has `from`, `replace` has both. `path` is a JSON Pointer built from keys and matched ids (`/objects/crate2/pos`, `/relations/r3`), escaped as in RFC 6901. Entries are sorted by `path` (code point order).
 - `--json` prints `{ "a", "b", "changes" }` with the two scene ids. The text format prints `diff <a id> -> <b id>: <n> changes`, then one line per entry: `+ <path> <to>`, `- <path> <from>`, `~ <path> <from> -> <to>`, values as compact JSON.
+
+### 11.3 `visibility` (stage 13)
+
+`visibility scene.json [--region ID] [--state NAME] [--json]` measures, on the object raster of section 14.1 in that state, how much of each object shows in a frame region and how much of the region the objects cover. Without `--region` the region is the whole raster. `--json` prints, in this key order:
+
+```json
+{ "scene": "yard", "state": null,
+  "region": { "id": null, "pixels": 1000000, "covered": 57720, "share": 0.05772 },
+  "objects": [{ "id": "actor", "type": "actor", "tags": [], "full": 6262, "visible": 5038, "share": 0.804535, "cover": 0.005038 }],
+  "tags": [{ "tag": "static", "ids": ["tree"], "full": 34470, "visible": 34470, "share": 1, "cover": 0.03447 }] }
+```
+
+- `region`: `id` (`null` without `--region`); `pixels`, the region pixels of section 9.6; `covered`, those the raster gives to an object; `share` = covered / pixels.
+- `objects`: the drawn objects with at least one full pixel in the region, in file order. `full` and `visible` count their full and visible pixels in the region (section 14.1); `share` = visible / full; `cover` = visible / region pixels.
+- `tags`: one row per tag of the listed objects, in order of first appearance (objects in file order, each object's tags in its order). `ids` = the listed objects with that tag; `full` = the pixels of the union of their full masks in the region; `visible` = the sum of their visible pixels; `share` and `cover` as for objects.
+- Shares are rounded to 6 decimals. The text format prints a header with the scene, the state, the region and its covered share, then one line per object and one per tag with the same numbers; its layout is the builder's choice.
+- An unknown region, and a region that the state hides, are usage errors (`E_USAGE`).
+
+### 11.4 `occluders` (stage 13)
+
+`occluders scene.json --actor w,d,h (--lane ID | --zone ID) [--step S] [--state NAME] [--json]` lists the objects that hide part of a moving object, the actor, somewhere in a walkable area: what a game or an artist draws on a layer in front of the actors there.
+
+1. **Area and level.** `--lane`: a flat lane (9.5) with the lane shape of 9.1, at its level; a point is in the area when it lies in the lane rectangle, edges included within EPS. `--zone`: a zone of 3 or more points, at its level (`h`); in the area as in `reachable` (9.2). Exactly one of the two. An unknown lane or zone, another lane shape, a lane that is not flat and a zone of fewer than 3 points are usage errors, and so is an `--actor` that is not three numbers above 0.
+2. **Positions.** For all integers i and j, p = ((i + 0.5)·step, (j + 0.5)·step), with `step` > 0 (default 0.25). A position is used when p is in the area and not inside a zone with `kind: "blocked"`, 3 or more points and the area's level (inside as in 9.2), and the **actor box** (footprint `[p.u − w/2, p.v − d/2, p.u + w/2, p.v + d/2]`, from h = level to h = level + h) overlaps no box of a drawn object (9.5). More than 1,000,000 grid points in the bounding rectangle of the area is a usage error that asks for a larger `step`.
+3. **Hiding.** At a used position, an object hides the actor when one of its drawn parts, whose box does not intersect the actor box (9.3 step 4), needs an order with the actor box that puts the actor first (section 13.4, painter's order steps 3 and 4, with the actor box listed before the part), and the two outlines (convex hulls of the 8 projected corners, as in 9.3 step 6, not snapped) intersect with an area above EPS.
+4. `--json` prints `{ "scene", "state", "area": { "kind", "id", "level" }, "actor", "step", "positions", "occluders": [{ "id", "positions", "area" }] }`: `kind` is `lane` or `zone`; `actor` = `[w, d, h]`; `positions` = the used positions; `occluders` in file order, each object that hides the actor at one position or more, with the number of those positions and the largest intersection area of one of its parts with the actor (px², rounded to 2 decimals). The text format prints a header and one line per occluder; its layout is the builder's choice.
+
+The order is the painter's (geometric) order, not the engine rule: where `sort_consistency` (9.3) finds no mismatch, the engine draws the same objects over the actor.
 
 ## 12. AI collaboration protocol (token-efficient)
 
@@ -686,13 +745,41 @@ scene.json (git) → isoblock export --target runtime → <game>/data/scenes/<id
   - `box`: the screen bounds of every corner of every part of the object (in a state, every part it does not hide, section 9.5), intersected with the frame `[0, 0, w, h]`. An object is left out when that intersection is at most EPS wide or at most EPS high. `clipped` is `true` when the frame cut the bounds.
   - `--bbox-units px` (default): pixels rounded to 2 decimals. `norm1000`: `x · 1000 / w` and `y · 1000 / h`, rounded to integers, halves up.
   - `--bbox-order xyxy` (default): `[x0, y0, x1, y1]`. `yxyx`: `[y0, x0, y1, x1]`.
-  - `hint` only when the type has a `genHint`. Boxes follow file order. Groups are not scheduled.
+  - `hint` only when the type has a `genHint`. Boxes follow file order. `gen-bbox` has no groups; the masks of section 14.1 have them, by tag.
 - **Ground layers** (the display list of `render` and the editor): the frame background, then the strips, the zones and the lanes, under every object; the region outlines over the objects. From stage 12 the zones go in ascending height (zones of one height in file order) at their heights and the lanes at their heights, and a state leaves out the regions it hides. A zone above the ground is still drawn under every object: the object that carries a raised surface draws it.
 - **Block image** (`render -o out.png`, stage 5): the SVG that `render -o out.svg` writes, without its text elements, rasterized by `@resvg/resvg-wasm` at 1 px per frame unit with no fonts loaded. Text is left out, so the image does not depend on the fonts of the machine. `dist/isoblock.mjs` carries the WebAssembly module and needs no other file.
 - **Transparency** (from stage 9): a polygon drawn with an opacity below 1 carries it as `fill-opacity` and `stroke-opacity`, both with that value, never as the group attribute `opacity`. This holds for the SVG and therefore for the block image. With `opacity`, resvg 2.6.2 builds an off-screen layer for the shape and stops with `unreachable` (exit 70) on scenes whose shapes reach far outside the frame, such as a strip with an open bound under a semi-transparent region; with `fill-opacity` and `stroke-opacity` it draws them. Where the stroke of such a polygon covers its own fill, the two now blend, so the block images of release 0.8.0 differ along those strokes.
-- **Per-object masks:** not scheduled.
+- **Per-object masks** (stage 13): section 14.1.
 - **After generation:** a hook for external measuring tools to compare object positions in the new image with the layout. Measuring is outside the core.
 - Generation never writes back to the scene file.
+
+### 14.1 Object raster and masks (stage 13)
+
+- **Raster:** W = ⌈frame.w⌉ by H = ⌈frame.h⌉ pixels, 1 px per frame unit, as the block image. Pixel (i, j), with 0 ≤ i < W and 0 ≤ j < H, has its center at (i + 0.5, j + 0.5).
+- **Outline of a part:** the convex hull of the 8 corners of its world box (after rotation and base height; world coordinates are not rounded), projected by section 5, with each screen coordinate snapped to 1/256 px: X = ⌊256·x + 0.5⌋ and Y = ⌊256·y + 0.5⌋, in double precision. Pixel centers become (256·i + 128, 256·j + 128), so the test below is exact in integers. Collinear corners are dropped; an outline of fewer than 3 points, or of zero area, contains no pixel center.
+- **Inside (top-left rule):** order the outline's vertices so that the shoelace sum Σ (X_k·Y_(k+1) − X_(k+1)·Y_k), indices modulo the number of vertices, is positive (clockwise on the screen, y pointing down). For an edge from (X0, Y0) to (X1, Y1), E(P) = (X1 − X0)·(P.y − Y0) − (Y1 − Y0)·(P.x − X0). A pixel center P is inside when, for every edge, E(P) > 0, or E(P) = 0 and the edge is a top edge (Y0 = Y1 and X1 > X0) or a left edge (Y1 < Y0). It is the rule of section 13.6.
+- **Object raster:** take every part that is drawn in the state (not a part of a hidden object, not a hidden part, section 9.5) in the painter's order of section 13.4, computed on the scene in that state. Each pixel takes the object of the last part whose outline contains its center, else no object. Ground layers, regions and labels do not take part: a region with `blocksScene` covers no object. Because the faces of a box that face the camera cover its outline, this is the painter's raster of section 13.6 up to the snapping and the 2 decimals of the SVG.
+- **Masks:** an object's **full mask** is the set of pixels whose centers lie inside the outline of at least one of its drawn parts, whatever is drawn over them; its **visible mask** is the set of pixels the raster gives to it. A **tag group** is the set of objects whose `tags` contain that tag; its masks are the unions of theirs.
+- **Grow** by n pixels (an integer, 0 ≤ n ≤ 64): a pixel is in the grown mask when a pixel of the mask lies at most n pixels from it along x and at most n along y, within the raster. Growing gives an image tool a band around an outline for detail that the art adds.
+
+`export --target masks -o <dir>` creates the folder `<dir>` when it is missing, replaces the files it writes and leaves other files alone:
+
+- `labels.png`: the raster, a 16-bit grayscale PNG of W × H pixels. A pixel holds the 1-based position of its object in `objects` of the scene file, hidden objects counted, so the numbers are the same in every state; 0 for no object. It is never grown. A scene of more than 65,535 objects cannot be written this way: a usage error.
+- `full/<index>.png` and `visible/<index>.png`, for each object with a full pixel (`<index>` as in `labels.png`): 8-bit grayscale PNGs, 255 in the mask and 0 elsewhere, of the **box** of its grown full mask, from its first pixel to one past its last pixel along x and along y (as in section 13.6). Its visible image has the same box.
+- `groups/full/<n>.png` and `groups/visible/<n>.png`, for each tag group with a full pixel, n = 1, 2, … in the order of `groups`.
+- `masks.json`, in the saved format of section 10:
+
+```json
+{ "schema": "isoblock-masks/1", "scene": "yard", "state": null, "frame": { "w": 1000, "h": 1000 }, "grow": 0, "labels": "labels.png",
+  "objects": [{ "id": "actor", "index": 2, "type": "actor", "tags": [],
+    "full": { "file": "full/2.png", "box": [364, 335, 420, 463], "pixels": 6262 }, "visible": { "file": "visible/2.png", "pixels": 5038 }, "share": 0.804535 }],
+  "groups": [{ "tag": "static", "ids": ["tree"],
+    "full": { "file": "groups/full/1.png", "box": [383, 220, 605, 488], "pixels": 34470 }, "visible": { "file": "groups/visible/1.png", "pixels": 34470 }, "share": 1 }] }
+```
+
+  - `frame` holds W and H. `objects` lists every object of the file in file order; `full`, `visible` and `share` are `null` for a hidden object and for an object without a full pixel. `pixels` counts a mask before growing, over the whole raster; `share` = visible pixels / full pixels, rounded to 6 decimals.
+  - `groups` has one entry per tag, in order of first appearance (objects in file order, each object's tags in its order); `ids` lists every object with that tag in file order, hidden objects included; `full`, `visible` and `share` are those of its drawn objects, as for an object.
+  - The PNGs are not interlaced; their filters and compression are free, so tools compare pixels, not bytes. Same input, same pixels.
 
 ## 15. Graybox gameplay hooks
 
@@ -704,7 +791,7 @@ scene.json (git) → isoblock export --target runtime → <game>/data/scenes/<id
 ```
 src/
   core/      pure TypeScript: schema, model, projection, geometry, checks, displayList, describe (later: sort, solver, patch)
-  cli/       Node: arguments, file I/O, SVG output; PNG from stage 5 via @resvg/resvg-wasm, bundled into dist/isoblock.mjs
+  cli/       Node: arguments, file I/O, SVG output; PNG from stage 5 via @resvg/resvg-wasm, bundled into dist/isoblock.mjs; from stage 13 the mask PNGs, encoded with node:zlib (the core computes the raster)
   editor/    from stage 2: one HTML page + ES modules, no framework; draws the displayList on Canvas 2D
 schema/      isoblock-1.json
 adapters/
@@ -751,8 +838,9 @@ dist/        build output, not committed; from stage 10 also THIRD_PARTY_NOTICES
 | 10 | Agent protocol, round 2, and distribution: `--version`, `validate --json`, `check --only`, `describe --relations` and `--states`, `patch` from standard input (section 11); the short commands `add` and `remove` (section 12); name suggestions and quieter schema errors (section 6); `compare --relations` (section 11.1); `lane_reaches` on `top` and `bottom` (section 9.1); the notices in the build and continuous integration (section 16) | `check --json` on `tests/fixtures/edges/edges.scene.json` gives `edges.expected.json`; the 10 patches in `tests/fixtures/objects/` give their expected results; `compare --relations` on `yard` with the 4 variants in `tests/fixtures/compare/` gives `yard.relations.expected.json`, and its `text` and `md` output equal `yard.relations.expected.txt` and `yard.relations.expected.md` byte for byte; every case of `tests/fixtures/invalid/cases.json` meets its code, scene and detail rules; `describe --relations --states` on `yard` equals Appendix B; `patch` from standard input gives the same report and log as from a file; `npm run build` writes `dist/THIRD_PARTY_NOTICES.md` and the two header lines, and the notices test passes; the workflow passes on the branch; all tests pass; earlier fixtures still match |
 | 11 | Editor, round 2: add, duplicate, delete and nudge objects, a state switch, hiding per state, settling an assumption (section 10); the short commands `hide` and `show` (section 12); `check --failing` and `solve --patch -` (sections 8 and 11) | The 7 patches in `tests/fixtures/hide/` give their expected results; every case of `tests/fixtures/editor/cases.json` meets its expected outcome; `check --failing --json` on every top-level `tests/fixtures/*.scene.json` gives the `fail` and `skip` results of its expected file, in order, and the exit code of the full check; `solve --patch -` on every scene in `tests/fixtures/solver/` prints the bytes that `solve --patch <file>` writes; the stage 2 and stage 8 frame-time criteria still hold; the workflow passes on the branch; all tests pass; earlier fixtures still match |
 | 12 | Heights and cameras: the view form of the camera (section 5); base heights, boxes, levels and the check changes of section 9.5; zone and lane heights; states that hide parts and frame regions (section 9.5); heights in `move`, `add` and `lock` (section 12); sort keys with base heights and slices weighted by the camera (section 13.4); the runtime file `isoblock-runtime/3` (section 13.7) and the Godot adapter that reads it (section 13.8); ground layers by height (section 14); the editor items of section 10 | `tests/golden/projection.json`, its `views` included, and `tests/golden/sort-levels.json` match; every case of `tests/fixtures/levels/cases.json` meets its expected results; `describe --states` on `tests/fixtures/levels/levels.scene.json` gives `levels.describe.txt` without the check lines; the patches in `tests/fixtures/heights/` give their expected results; every case of `tests/fixtures/runtime3/cases.json` equals its runtime file as JSON and is byte-identical over two runs; every case of `tests/fixtures/levels/invalid/cases.json` meets its rules; `npm run test:godot` passes on every case of `tests/fixtures/export/cases.json`, of `tests/fixtures/godot/cases.json` and of `tests/fixtures/levels/godot.json`; every case of `tests/fixtures/editor/cases.json` and of `tests/fixtures/levels/editor/cases.json` meets its expected outcome; the stage 2 and stage 8 frame-time criteria still hold; the workflow passes on the branch; all tests pass; earlier fixtures still match, except the runtime files of `tests/fixtures/runtime/`, which those of `tests/fixtures/runtime3/` replace |
+| 13 | Masks and visibility: the object raster and `export --target masks` (section 14.1); `visibility` and `occluders` (sections 11.3 and 11.4); the check `visible_share` (section 9.6) in `check`, `compare` and the editor's check panel | Every case of `tests/fixtures/masks/cases.json` meets its expected results: the `masks` cases their folders, the `visibility` and `occluders` cases their files, the `checks` cases their check results; every case of `tests/fixtures/masks/invalid/cases.json` meets its rules; the stage 2 and stage 8 frame-time criteria still hold; the workflow passes on the branch; all tests pass; earlier fixtures still match |
 
-Export targets `godot`, `phaser` and `tiled`, the check `state_stable` and states that move objects are not scheduled. Also not scheduled, but asked for by users of the tool: a relation that puts an object on another and paths between levels in `reachable` (stairs, ramps); parts above a clear height that may overhang the footprint without blocking the ground under them; a slice length per type, or slices along the short axis, for long thin objects; a report or check of the share of every object that shows in a frame region, and of the share of a region that each object or tag covers; the tallest object a point may hold without occluding given objects and lanes; road markings generated from lanes and zones with road attributes; leaving out the objects and zones that a frame region does not show; `sort_consistency` results that do not flip when an object moves by less than `step`; short commands that hide parts and regions.
+Export targets `godot`, `phaser` and `tiled`, the check `state_stable` and states that move objects are not scheduled. Also not scheduled, but asked for by users of the tool: a relation that puts an object on another and paths between levels in `reachable` (stairs, ramps); parts above a clear height that may overhang the footprint without blocking the ground under them; a slice length per type, or slices along the short axis, for long thin objects; the tallest object a point may hold without occluding given objects and lanes; road markings generated from lanes and zones with road attributes; leaving out the objects and zones that a frame region does not show; `sort_consistency` results that do not flip when an object moves by less than `step`; short commands that hide parts and regions.
 
 Edge fixture (stage 10): `tests/fixtures/edges/edges.scene.json` with `edges.expected.json`, in the format of the stage 1 check fixtures.
 
@@ -767,6 +855,16 @@ Invalid fixtures (stage 10): `tests/fixtures/invalid/cases.json` = `{ cases: [{ 
 Godot fixtures: `tests/fixtures/godot/cases.json` = `{ actorLimit, cases }`, each case `{ name, scene, states, instantiate, unmapped, actor }` (from stage 12 the points of an actor's `path` may have a third number, the height it stands on); `scene` is a path from the repository root. The harness exports the runtime file of the scene and builds it. When `instantiate` lists types, it maps each to a scene that draws, in white and relative to the object's pivot, the faces of the parts of the first object of that type (a case lists only types whose objects share one rotation), and gives each instance its object's color through `modulate`; `build` must return `unmapped` (otherwise `null` and the map is empty). It then applies the states of `states` in order (`null` = `""`, the default) and checks section 13.6 after each, against `render --state <state>` (or `render`). With `actor` = `{ size, path }`, it adds an actor of `size` at the first point of `path` in the last state, in a color of its own, and moves it to each next point: at each point the whole frame differs from the reference of section 13.6 in at most `actorLimit` more pixels than the frame of that state without the actor. The maintainer checked every actor position with the reference implementation: free, and without mismatch against any sprite.
 
 Level fixtures (stage 12): `tests/fixtures/levels/` holds the scene `levels.scene.json` and the files below. They are kept apart from the earlier fixture lists so that release 0.11.0 passes its own suite on the branch that opens stage 12. `cases.json` = `{ tolerance, cases }`, each case `{ scene, state, checks, genBbox }`. `check --json`, with `--state <state>` unless `state` is `null`, matches `checks` in the format of the measure fixtures, where `pairs`, `occluders`, `positions` and `worst` compare as in the check and sort fixtures; `export --target gen-bbox`, with the same state, matches `genBbox` (a file in `tests/fixtures/levels/`, as the stage 5 `gen-bbox` files, `px` tolerance 0.02) unless it is `null`. `scene` is a path from the repository root. `levels.describe.txt` holds the output of `describe --states` on `levels.scene.json` without its check lines. `godot.json` holds Godot cases in the format of the Godot fixtures, on `godot.scene.json`: `levels.scene.json` with `crate2` moved off `post_b`, a plinth that is one sprite under this camera and no checks, because `levels` itself has an overlapping pair and a static mismatch (section 13.6, Q-027); `editor/cases.json` holds editor cases in the format of the editor fixtures, with their expected files in `editor/`; `invalid/cases.json` holds invalid cases in the format of the invalid fixtures, with their files in `invalid/`.
+
+Mask fixtures (stage 13): `tests/fixtures/masks/` holds the scene `plaza.scene.json`, `cases.json`, the expected results in `expected/` and `invalid/`, apart from the earlier fixture lists so that release 0.12.0 passes its own suite on the branch that opens stage 13. `cases.json` = `{ tolerance, masks, visibility, occluders, checks }`; `scene` is a path from the repository root and `expected` a path in `tests/fixtures/masks/`:
+
+- `masks`, each `{ name, scene, state, grow, expected }`: `export --target masks -o <dir>`, with `--state <state>` unless `state` is `null` and `--grow <grow>`, writes a `masks.json` equal to `<expected>/masks.json` as JSON (same keys, file names and lists), with `pixels` within `tolerance.pixels`, `share` within `tolerance.share` and box edges within `tolerance.box`; each mask image, placed at its box, differs from the expected image placed at its box in at most `tolerance.pixels` pixels, and `labels.png` from the expected one in at most `tolerance.labelPixels` pixels.
+- `visibility`, each `{ name, scene, state, region, expected }`: `visibility --json` (with `--region` unless `region` is `null`, and `--state`) equals the expected file: lists and ids exactly, region pixels exactly, other counts within `tolerance.pixels`, shares and covers within `tolerance.share`.
+- `occluders`, each `{ name, scene, state, lane or zone, actor, step, expected }`: `occluders --json --actor <w,d,h> --lane|--zone <id> --step <step>` (and `--state`) equals the expected file: `positions`, ids and the positions of each occluder exactly, `area` within `tolerance.area`.
+- `checks`, each `{ scene, state, checks }`: `check --json` (with `--state`) matches `checks` as the measure fixtures do: `status`, `threshold` and `ids` exactly, `value` and `shares` within `tolerance.share`.
+- `invalid/cases.json` holds invalid cases in the format of the invalid fixtures, with their files in `invalid/`.
+
+The expected results come from the maintainer's reference implementation. Two implementations of section 14.1 can differ in the last bits of a projected coordinate, which can move a snapped vertex by 1/256 px and a few pixels along an edge; the tolerances absorb that.
 
 Measure fixtures (stage 9): `tests/fixtures/measures/cases.json` = `{ tolerance, cases }`, each case `{ scene, state, checks }`: `check --json`, with `--state <state>` unless `state` is `null`, matches `checks` in the format of the check fixtures: `status`, `threshold` and `ids` exactly, `value` within the tolerance, and `outside` and `overlap`, where the expected result has them, within `tolerance.value`; a result that the expected file gives without `outside` or `overlap` must not have them. `scene` is a path from the repository root.
 
@@ -806,6 +904,8 @@ Versions: the maintainer sets `version` in `package.json` in the release commit 
 - **Zones are drawn under every object, whatever their height** (section 14). A raised walkable surface shows as the object that carries it.
 - **One key per sprite and base heights.** A sprite's key adds twice its base height (section 13.4). At a low elevation the ground terms outweigh it, so an object or an actor on the far side of a wide raised object can be drawn before the slice it stands on; `sort_consistency` with `level` measures it, and a raised surface made of narrower objects has less of it.
 - **`reachable` stays on one level.** A path that changes level by stairs or a ramp is not checked; a lane can show it.
+- **Masks are of blocks.** The masks of section 14.1 cover the parts' boxes at 1 px per frame unit; art drawn inside or past them differs, which is what growing a mask leaves room for. A region with `blocksScene` is an interface over the scene and covers no object in the raster.
+- **`occluders` follows the geometric order.** It lists what the painter's order draws over the actor; an engine that sorts one key per sprite draws the same only where `sort_consistency` finds no mismatch.
 
 ## 19. Open questions
 

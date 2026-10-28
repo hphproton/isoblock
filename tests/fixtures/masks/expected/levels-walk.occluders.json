@@ -1,0 +1,53 @@
+{
+  "scene": "levels",
+  "state": null,
+  "area": {
+    "kind": "lane",
+    "id": "walk",
+    "level": 0
+  },
+  "actor": [
+    0.5,
+    0.5,
+    1.7
+  ],
+  "step": 0.25,
+  "positions": 433,
+  "occluders": [
+    {
+      "id": "post_b",
+      "positions": 15,
+      "area": 2309.98
+    },
+    {
+      "id": "deck",
+      "positions": 65,
+      "area": 330.8
+    },
+    {
+      "id": "crate2",
+      "positions": 23,
+      "area": 1313.53
+    },
+    {
+      "id": "crate",
+      "positions": 8,
+      "area": 840.82
+    },
+    {
+      "id": "kiosk",
+      "positions": 58,
+      "area": 1117.45
+    },
+    {
+      "id": "figure",
+      "positions": 21,
+      "area": 751.86
+    },
+    {
+      "id": "mast",
+      "positions": 19,
+      "area": 1766.33
+    }
+  ]
+}

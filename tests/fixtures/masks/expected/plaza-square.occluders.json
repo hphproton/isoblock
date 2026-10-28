@@ -1,0 +1,53 @@
+{
+  "scene": "plaza",
+  "state": "closed",
+  "area": {
+    "kind": "zone",
+    "id": "square",
+    "level": 0
+  },
+  "actor": [
+    0.5,
+    0.5,
+    1.7
+  ],
+  "step": 0.5,
+  "positions": 131,
+  "occluders": [
+    {
+      "id": "tower",
+      "positions": 3,
+      "area": 1591.97
+    },
+    {
+      "id": "stool",
+      "positions": 4,
+      "area": 321.83
+    },
+    {
+      "id": "kiosk",
+      "positions": 15,
+      "area": 1140.31
+    },
+    {
+      "id": "planter",
+      "positions": 8,
+      "area": 548.84
+    },
+    {
+      "id": "bench_a",
+      "positions": 5,
+      "area": 293.22
+    },
+    {
+      "id": "lamp",
+      "positions": 8,
+      "area": 912.66
+    },
+    {
+      "id": "sign",
+      "positions": 16,
+      "area": 794
+    }
+  ]
+}
