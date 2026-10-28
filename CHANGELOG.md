@@ -1,6 +1,8 @@
 # Changelog
 
-## Unreleased
+## 0.14.0
+
+Stage 14: the editor explains. The scene format stays `isoblock/1` (checks take `warn`); the runtime file stays `isoblock-runtime/3`.
 
 ### Added
 

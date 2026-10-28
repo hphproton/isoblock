@@ -274,7 +274,7 @@ Not in stage 13: editor overlays of masks, visible shares and occluders (planned
 
 **Done when:** all tests pass, `npm run test:godot` passes, earlier fixtures still match, the workflow `ci` passes on the branch, `npm run check:publish` reports nothing, the branch is named `builder/stage-13`, its session log names the tool and model, gives the test counts with skipped tests and ends with the pull request's title and description, and the stage 13 criteria in SPEC section 17 hold.
 
-## Stage 14 · open
+## Stage 14 · done (0.14.0)
 
 The editor explains (SPEC sections 6, 9, 9.7, 10, 11, 11.1, 12, 17, 18, Appendix B). Core, CLI and editor. The scene format grows without a break (`isoblock/1` stays: the check parameter `warn`); no change to the runtime file, no new dependency. Fixtures, all in new files so that the suite of release 0.13.0 still passes on this branch: `tests/fixtures/explain/` (the scene `margins.scene.json`, whose checks carry warning margins on all seven checks that take one, in four states; `cases.json` with its check results in every state, its `WARN` lines of `describe` in `margins.describe.txt` and two `compare` cases in `compare/`; `patches/` with the patches 47 to 60 for parts and regions in `hide` and `show`; `editor/cases.json` with 8 editor cases and their expected files; `editor/overlays.json` with 19 cases that compare the relation panel, Solve, the overlays and the check panel with the command line; `invalid/` with 4 broken scenes).
 
