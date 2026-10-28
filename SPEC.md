@@ -766,7 +766,7 @@ scene.json (git) → isoblock export --target runtime → <game>/data/scenes/<id
 
 - `labels.png`: the raster, a 16-bit grayscale PNG of W × H pixels. A pixel holds the 1-based position of its object in `objects` of the scene file, hidden objects counted, so the numbers are the same in every state; 0 for no object. It is never grown. A scene of more than 65,535 objects cannot be written this way: a usage error.
 - `full/<index>.png` and `visible/<index>.png`, for each object with a full pixel (`<index>` as in `labels.png`): 8-bit grayscale PNGs, 255 in the mask and 0 elsewhere, of the **box** of its grown full mask, from its first pixel to one past its last pixel along x and along y (as in section 13.6). Its visible image has the same box.
-- `groups/full/<n>.png` and `groups/visible/<n>.png`, for each tag group with a full pixel, n = 1, 2, … in the order of `groups`.
+- `groups/full/<n>.png` and `groups/visible/<n>.png`, for each tag group with a full pixel: those groups are numbered n = 1, 2, … in the order of `groups`; a group without a full pixel has no file and takes no number.
 - `masks.json`, in the saved format of section 10:
 
 ```json

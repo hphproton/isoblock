@@ -196,6 +196,7 @@
       "index": 9,
       "type": "lamp",
       "tags": [
+        "light",
         "street"
       ],
       "full": {
@@ -345,13 +346,34 @@
       "share": 1
     },
     {
+      "tag": "light",
+      "ids": [
+        "lamp"
+      ],
+      "full": {
+        "file": "groups/full/5.png",
+        "box": [
+          184,
+          106,
+          197,
+          206
+        ],
+        "pixels": 1258
+      },
+      "visible": {
+        "file": "groups/visible/5.png",
+        "pixels": 1258
+      },
+      "share": 1
+    },
+    {
       "tag": "street",
       "ids": [
         "lamp",
         "sign"
       ],
       "full": {
-        "file": "groups/full/5.png",
+        "file": "groups/full/6.png",
         "box": [
           184,
           106,
@@ -361,7 +383,7 @@
         "pixels": 2296
       },
       "visible": {
-        "file": "groups/visible/5.png",
+        "file": "groups/visible/6.png",
         "pixels": 2296
       },
       "share": 1
