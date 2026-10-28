@@ -2,6 +2,7 @@ import { EPS, rectCorners, rectGap, rectIntersectionArea } from "../geometry";
 import { clipPolygonToRect, polygonDistance, shoelace } from "../polygon";
 import type { CheckResult, LaneApartCheck, Scene } from "../types";
 import { laneShape } from "./laneShape";
+import { marginStatus } from "./margin";
 import { round6, skipResult } from "./result";
 
 function nameOf(target: string): string {
@@ -12,8 +13,9 @@ function result(spec: LaneApartCheck, distance: number, overlap: number, target:
   const min = spec.min ?? 0;
   const value = round6(distance);
   const area = round6(overlap);
-  const pass = overlap <= EPS && distance >= min - EPS;
-  const apart = pass
+  const passing = overlap <= EPS && distance >= min - EPS;
+  const status = marginStatus(passing, value, min, spec.warn, "lower");
+  const apart = status !== "fail"
     ? `lane ${spec.lane} is ${value} from ${target} (overlap ${area})`
     : area > EPS
       ? `lane ${spec.lane} overlaps ${target} by ${area}`
@@ -21,7 +23,7 @@ function result(spec: LaneApartCheck, distance: number, overlap: number, target:
   return {
     id: spec.id,
     check: spec.check,
-    status: pass ? "pass" : "fail",
+    status,
     value,
     threshold: min,
     ids: [spec.lane, target],

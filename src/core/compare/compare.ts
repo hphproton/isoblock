@@ -103,7 +103,8 @@ function relationMeasures(base: Scene, scenes: readonly Scene[]): Pick<Compariso
  * Apply each variant to a copy of the base scene, run the base scene's checks on every result and
  * measure (SPEC section 11.1). Locks are ignored but recorded. With `state`, every column is
  * evaluated in that state of the base scene (SPEC section 9.2): the objects it hides are not
- * present, so they are not checked and not counted as moved. `relations` adds the relation rows;
+ * checked. `moved` still compares positions in the scene files, so a hidden object that moves
+ * is counted (the explain compare fixture). `relations` adds the relation rows;
  * those are measured with every object present, whatever the state. Throws like `applyVariant`; an
  * unknown state is `E_USAGE`.
  */
@@ -135,7 +136,7 @@ export function compareVariants(base: Scene, variants: readonly VariantInput[], 
     failing: columns.map(failingCount),
     locksTouched: [[], ...applied.map((a) => a.locks)],
     ...(relations ? relationMeasures(base, full) : {}),
-    moved: [null, ...applied.map((a) => movedOf(present(base), present(a.scene)))],
+    moved: [null, ...applied.map((a) => movedOf(base, a.scene))],
     checks: (base.checks ?? []).map((spec, i) => rowOf(spec, base.units.name, columns, i)),
   };
 }

@@ -1,5 +1,6 @@
 import { footprint, rectsOverlap, worldPoint, type Rect } from "../geometry";
 import type { CapacityCheck, CheckResult, Scene } from "../types";
+import { marginStatus } from "./margin";
 import { inObjectOrder } from "./result";
 
 const DEFAULT_BODY = [0.5, 0.5] as const;
@@ -51,7 +52,7 @@ export function checkCapacity(scene: Scene, spec: CapacityCheck): CheckResult {
   return {
     id: spec.id,
     check: spec.check,
-    status: accepted.length >= spec.min ? "pass" : "fail",
+    status: marginStatus(accepted.length >= spec.min, accepted.length, spec.min, spec.warn, "lower"),
     value: accepted.length,
     threshold: spec.min,
     ids: inObjectOrder(scene, new Set(list.map((c) => c.object))),

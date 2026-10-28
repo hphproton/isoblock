@@ -10,7 +10,10 @@ import type {
   LaneClearCheck,
   LaneReachesCheck,
   MinScreenSizeCheck,
+  ReachableCheck,
   Scene,
+  VisibleCheck,
+  VisibleShareCheck,
 } from "./types";
 
 const TIMES = "\u00d7";
@@ -18,6 +21,55 @@ const APPROX = "\u2248";
 
 function join(items: readonly string[]): string {
   return items.join(", ");
+}
+
+/** Whole number, halves up (SPEC Appendix B, warning lines). */
+function whole(n: number): number {
+  return Math.floor(n + 0.5 + EPS);
+}
+
+function percentUp(fraction: number): number {
+  return whole(fraction * 100);
+}
+
+/** The text after `WARN <id> <check> ` (SPEC Appendix B). */
+function warnBody(scene: Scene, spec: CheckSpec, r: CheckResult): string {
+  const warn = "warn" in spec && typeof (spec as { warn?: number }).warn === "number" ? (spec as { warn: number }).warn : 0;
+  switch (spec.check) {
+    case "clearance": {
+      const s = spec as ClearanceCheck;
+      return `${r.ids.join(TIMES)}: gap ${fmt(r.value ?? 0)}, within ${fmt(warn)} of ${fmt(s.min)}`;
+    }
+    case "lane_apart": {
+      const s = spec as LaneApartCheck;
+      const target = s.target.replace(/^(?:lane|zone):/, "");
+      return `${s.lane}${TIMES}${target}: ${fmt(r.value ?? 0)}, within ${fmt(warn)} of ${fmt(s.min ?? 0)}`;
+    }
+    case "visible": {
+      const s = spec as VisibleCheck;
+      return `${r.ids[0]}: ${percentUp(r.value ?? 0)}% occluded, within ${percentUp(warn)}% of ${percentUp(s.maxOccluded)}%`;
+    }
+    case "reachable": {
+      const s = spec as ReachableCheck;
+      const who = join(r.ids) || "path";
+      return `${who}: path of ${fmt(r.value ?? 0)} ${scene.units.name}, within ${fmt(warn)} of ${fmt(s.max ?? 0)}`;
+    }
+    case "capacity": {
+      const s = spec as CapacityCheck;
+      return `${s.kind}: ${plain(r.value ?? 0)} usable, within ${plain(warn)} of ${plain(s.min)}`;
+    }
+    case "min_screen_size": {
+      const s = spec as MinScreenSizeCheck;
+      const tall = s.measure === "height" ? " px tall" : " px";
+      return `${s.target}: ${whole(r.value ?? 0)}${tall}, within ${whole(warn)} px of ${whole(s.min)} px`;
+    }
+    case "visible_share": {
+      const s = spec as VisibleShareCheck;
+      return `${join(r.ids)}: ${percentUp(r.value ?? 0)}% shown, within ${percentUp(warn)}% of ${percentUp(s.min)}%`;
+    }
+    default:
+      return r.message;
+  }
 }
 
 /** Text after `<STATUS> <id> <check> `, per the templates of SPEC Appendix B. */
@@ -80,6 +132,7 @@ export function checkLines(scene: Scene, results: readonly CheckResult[]): strin
     if (r.status === "pass") return [];
     const spec = specs.get(r.id);
     const label = r.status.toUpperCase();
+    if (r.status === "warn" && spec !== undefined) return [`WARN ${r.id} ${r.check} ${warnBody(scene, spec, r)}`];
     if (r.status === "skip" || spec === undefined) return [`${label} ${r.id} ${r.check}: ${r.message}`];
     return [`${label} ${r.id} ${r.check} ${body(spec, r)}`];
   });

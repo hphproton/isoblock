@@ -1,6 +1,7 @@
 import { EPS, footprint, sizeBox, takesSpace, type Rect } from "../geometry";
 import type { CheckResult, ReachableCheck, Scene, Vec2, Zone } from "../types";
 import { resolvePoint, type ResolvedPoint } from "./points";
+import { marginStatus } from "./margin";
 import { inObjectOrder, round6, skipResult } from "./result";
 import { buildGrid, MAX_CELLS, nearestFree, shortestMoves } from "./walkGrid";
 
@@ -67,11 +68,12 @@ export function checkReachable(scene: Scene, spec: ReachableCheck): CheckResult 
   const moves = shortestMoves(grid, start.cell, target.cell);
   if (moves < 0) return failure(spec, ids, "no walkable path");
   const value = round6(moves * step);
-  const ok = spec.max === undefined || value <= spec.max + EPS;
+  const passing = spec.max === undefined || value <= spec.max + EPS;
+  const status = marginStatus(passing, value, spec.max ?? value, spec.warn, "upper");
   return {
     id: spec.id,
     check: spec.check,
-    status: ok ? "pass" : "fail",
+    status,
     value,
     threshold: spec.max ?? null,
     ids,
