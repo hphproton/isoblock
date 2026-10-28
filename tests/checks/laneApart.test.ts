@@ -69,16 +69,21 @@ describe("lane_apart", () => {
     expect([r.status, r.value, r.overlap]).toEqual(["pass", 0.5, 0]);
   });
 
-  it("skips an unsupported lane shape and a zone with fewer than 3 points, with no overlap", () => {
+  it("measures a diagonal lane and skips a zone with fewer than 3 points", () => {
     const diag = apart({ lane: "diag", target: "lane:a" });
+    expect(diag.status).not.toBe("skip");
+    expect(diag.ids).toEqual(["diag", "a"]);
+    expect(diag).toHaveProperty("overlap");
     const empty = apart({ target: "zone:empty" });
-    for (const r of [diag, empty]) {
-      expect(r.status).toBe("skip");
-      expect(r.ids).toEqual([]);
-      expect(r.value).toBeNull();
-      expect(r).not.toHaveProperty("overlap");
-    }
-    expect(diag.message).toContain("not parallel");
+    expect(empty.status).toBe("skip");
+    expect(empty.ids).toEqual([]);
+    expect(empty.value).toBeNull();
+    expect(empty).not.toHaveProperty("overlap");
     expect(empty.message).toBe('zone "empty" has 0 points; a zone needs 3 or more');
+    const gone = apart({ lane: "a", target: "lane:b" }, {
+      lanes: [{ id: "a", width: 1, points: [[0, 0], [0, 0]] }, { id: "b", width: 1, points: [[0, 2], [4, 2]] }],
+    });
+    expect(gone.status).toBe("skip");
+    expect(gone).not.toHaveProperty("overlap");
   });
 });

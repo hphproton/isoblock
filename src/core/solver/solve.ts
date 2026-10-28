@@ -2,8 +2,9 @@ import { round6 } from "../checks/result";
 import type { Rect } from "../geometry";
 import { followAssumptions } from "../patch/apply";
 import { evaluateRelations, type RelationResult } from "../relations/evaluate";
-import type { Pos, Scene } from "../types";
+import type { Pos, Rot, Scene } from "../types";
 import { buildModel, type SolverModel } from "./model";
+import { solveWithRotation } from "./rotate";
 import { scoreOf, search } from "./search";
 
 /** Perturbations after the first local optimum: for the proposal, and for each solution test of the conflict set. */
@@ -16,6 +17,12 @@ export interface MovedObject {
   readonly to: Pos;
 }
 
+export interface TurnedObject {
+  readonly id: string;
+  readonly from: Rot;
+  readonly to: Rot;
+}
+
 /** The report of SPEC section 8 (`--json`). */
 export interface SolveReport {
   readonly scene: string;
@@ -24,6 +31,8 @@ export interface SolveReport {
   readonly softPenalty: number;
   readonly distance: number;
   readonly moved: readonly MovedObject[];
+  /** Present when the solve used `--rotate`: the objects whose `rot` changed, in object order. */
+  readonly turned?: readonly TurnedObject[];
   readonly conflict: readonly string[];
   readonly relations: readonly RelationResult[];
 }
@@ -65,10 +74,22 @@ function proposalOf(scene: Scene, rects: readonly Rect[]): Scene {
   return followAssumptions({ ...scene, objects }) as Scene;
 }
 
+function samePos(a: Pos, b: Pos): boolean {
+  return a[0] === b[0] && a[1] === b[1] && (a as readonly number[])[2] === (b as readonly number[])[2];
+}
+
 function movedObjects(before: Scene, after: Scene): MovedObject[] {
   return before.objects.flatMap((o, i) => {
     const to = (after.objects[i] as Scene["objects"][number]).pos;
-    return to === o.pos ? [] : [{ id: o.id, from: o.pos, to }];
+    return samePos(o.pos, to) ? [] : [{ id: o.id, from: o.pos, to }];
+  });
+}
+
+function turnedObjects(before: Scene, after: Scene): TurnedObject[] {
+  return before.objects.flatMap((object, index) => {
+    const from = object.rot ?? 0;
+    const to = (after.objects[index] as Scene["objects"][number]).rot ?? 0;
+    return from === to ? [] : [{ id: object.id, from, to }];
   });
 }
 
@@ -77,7 +98,36 @@ function movedObjects(before: Scene, after: Scene): MovedObject[] {
  * in `only`, when given) to grid positions that meet the hard relations and the view and overlap
  * constraints, with the smallest soft penalty and then the smallest distance. Deterministic.
  */
-export function solveScene(scene: Scene, only?: readonly string[]): SolveOutcome {
+export function solveScene(scene: Scene, only?: readonly string[], rotate = false): SolveOutcome {
+  if (rotate) return solveRotated(scene, only);
+  return solveFixed(scene, only);
+}
+
+function solveRotated(scene: Scene, only?: readonly string[]): SolveOutcome {
+  const found = solveWithRotation(scene, only, solveFixed);
+  const proposal = found.proposal;
+  const relations = evaluateRelations(proposal);
+  const solved = found.report.status === "solved";
+  const model = buildModel(scene, only);
+  const hard = model.relations.flatMap((relation, index) => (relation.hard && relation.measure !== null ? [index] : []));
+  const conflict = solved ? [] : minimalConflict(model, hard).map((index) => model.relations[index]?.relation.id as string);
+  return {
+    proposal,
+    report: {
+      scene: scene.id,
+      status: solved ? "solved" : "conflict",
+      hardViolated: relations.results.filter((result) => result.hard && result.status === "violated").map((result) => result.id),
+      softPenalty: round6(relations.softPenalty) + 0,
+      distance: found.distance,
+      moved: movedObjects(scene, proposal),
+      turned: turnedObjects(scene, proposal),
+      conflict,
+      relations: relations.results,
+    },
+  };
+}
+
+function solveFixed(scene: Scene, only?: readonly string[]): SolveOutcome {
   const model = buildModel(scene, only);
   const hard = model.relations.flatMap((p, k) => (p.hard && p.measure !== null ? [k] : []));
   const found = search(model, { hard, soft: true, perturbations: PERTURBATIONS });

@@ -61,7 +61,6 @@ describe("describe: check lines", () => {
     expect(laneLines).toContain(`FAIL c4 lane_reaches L2: meets right edge at y${APPROX}1366 (view y 150-1000)`);
     expect(laneLines).toContain("FAIL c5 lane_reaches L3: does not reach right edge");
     expect(laneLines.filter((l) => l.startsWith("SKIP"))).toEqual([
-      expect.stringMatching(/^SKIP c6 lane_clear: /),
       expect.stringMatching(/^SKIP c7 reachable: /),
     ]);
 

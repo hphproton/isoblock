@@ -20,6 +20,7 @@ const file = JSON.parse(readFileSync(join(repoRoot, "tests/fixtures/explain/edit
     overlay: string | null;
     drag?: { object: string; dx: number; dy: number };
     only?: string | null;
+    rotate?: boolean;
     then?: "Apply" | "Discard";
     check?: string;
     area?: string;
@@ -150,8 +151,10 @@ async function proposalCase(page: Page, c: (typeof file.cases)[number], path: st
     await page.mouse.click(at[0], at[1]);
     await page.getByRole("checkbox", { name: "Only the selected object", exact: true }).check();
   }
+  if (c.rotate === true) await page.getByRole("checkbox", { name: "Turn objects", exact: true }).check();
+  else if (c.rotate === false) await page.getByRole("checkbox", { name: "Turn objects", exact: true }).uncheck();
   await page.getByRole("button", { name: "Solve", exact: true }).click();
-  const args = ["solve", "--json", path, ...(c.only ? ["--only", c.only] : [])];
+  const args = ["solve", "--json", path, ...(c.only ? ["--only", c.only] : []), ...(c.rotate ? ["--rotate"] : [])];
   const want = JSON.parse(runCli(args).stdout) as { status: string; conflict: string[]; moved: unknown[] };
   expect(await ev(page, 'window.isoblock.overlay("proposal")')).toEqual(want);
   if (want.status === "conflict") {
@@ -173,7 +176,7 @@ async function proposalCase(page: Page, c: (typeof file.cases)[number], path: st
     const source = join(dir, "scene.json");
     const out = join(dir, "out.json");
     writeFileSync(source, readFileSync(path));
-    const solveArgs = ["solve", source, "--patch", "-", ...(c.only ? ["--only", c.only] : [])];
+    const solveArgs = ["solve", source, "--patch", "-", ...(c.only ? ["--only", c.only] : []), ...(c.rotate ? ["--rotate"] : [])];
     const patch = runCli(solveArgs);
     expect(patch.status === 0 || patch.status === 1, patch.stderr).toBe(true);
     const applied = runCli(["patch", source, "-", "-o", out], patch.stdout);
@@ -271,6 +274,32 @@ async function occludersCase(page: Page, c: (typeof file.cases)[number], scene: 
     rmSync(dir, { recursive: true, force: true });
   }
 }
+
+const pathsFile = JSON.parse(readFileSync(join(repoRoot, "tests/fixtures/paths/editor/overlays.json"), "utf8")) as typeof file;
+
+describe.skipIf(!hasBrowser)("path editor overlays (SPEC 10, 17)", () => {
+  it("finds the 8 cases", () => {
+    expect(pathsFile.cases).toHaveLength(8);
+  });
+
+  for (const c of pathsFile.cases) {
+    it(c.name, async () => {
+      const source = parseScene(readFileSync(scenePath(c.scene), "utf8"));
+      const { page, context, errors } = await openEditor(browser, fixtureName(c.scene));
+      await chooseState(page, c.state);
+      const opened = await ev<string>(page, "window.isoblock.text()");
+      if (c.overlay === "relations") await relationsCase(page, c, scenePath(c.scene));
+      else if (c.overlay === "proposal") await proposalCase(page, c, scenePath(c.scene), opened);
+      else if (c.overlay === "sortPoints") await sortCase(page, c, source);
+      else if (c.overlay === "rays") await raysCase(page, c, source);
+      else if (c.overlay === "masks") await masksCase(page, c, source);
+      else if (c.overlay === "occluders") await occludersCase(page, c, source);
+      else await warnCase(page, c, source);
+      expect(errors, c.name).toEqual([]);
+      await context.close();
+    }, 60_000);
+  }
+});
 
 async function warnCase(page: Page, c: (typeof file.cases)[number], scene: Scene): Promise<void> {
   const rows = await page.locator("#checks-list button.check").evaluateAll((nodes) =>

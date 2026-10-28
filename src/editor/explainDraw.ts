@@ -2,6 +2,7 @@ import { typeRgb } from "../core/colors";
 import { baseHeight, footprint, worldParts, type Box } from "../core/geometry";
 import { planCamera } from "../core/planView";
 import { project } from "../core/projection";
+import { facingFigure } from "../core/relations/facing";
 import { resolveTarget } from "../core/relations/targets";
 import { evaluateRelations } from "../core/relations/evaluate";
 import type { Camera, Relation, Scene, Vec2, Vec3 } from "../core/types";
@@ -110,27 +111,37 @@ function targetPoint(scene: Scene, relation: Relation, from: Vec2): Vec3 | null 
   return null;
 }
 
-function relationLines(scene: Scene): { id: string; hard: boolean; violated: boolean; points: Vec3[] }[] {
+function relationLines(scene: Scene): { id: string; hard: boolean; violated: boolean; points: Vec3[]; arrow: readonly [Vec3, Vec3] | null }[] {
   const results = evaluateRelations(scene).results;
   const byId = new Map((scene.relations ?? []).map((relation) => [relation.id, relation]));
-  const lines: { id: string; hard: boolean; violated: boolean; points: Vec3[] }[] = [];
+  const lines: { id: string; hard: boolean; violated: boolean; points: Vec3[]; arrow: readonly [Vec3, Vec3] | null }[] = [];
   for (const result of results) {
     if (result.status === "skip") continue;
     const relation = byId.get(result.id);
     if (relation === undefined) continue;
+    const row = { id: relation.id, hard: result.hard, violated: result.status === "violated", arrow: null };
+    if (relation.rel === "facing") {
+      const figure = facingFigure(scene, resolveTarget(scene, relation.a), resolveTarget(scene, relation.b));
+      if (figure === null) continue;
+      const from: Vec3 = [figure.from[0], figure.from[1], 0];
+      const to: Vec3 = [figure.to[0], figure.to[1], 0];
+      const tip: Vec3 = [figure.from[0] + figure.front[0] * 0.6, figure.from[1] + figure.front[1] * 0.6, 0];
+      lines.push({ ...row, points: [from, to], arrow: [from, tip] });
+      continue;
+    }
     if (relation.rel === "order_along") {
       const points = (relation.ids ?? []).flatMap((id) => {
         const at = center(scene, id);
         return at === null ? [] : [[at[0], at[1], 0] as Vec3];
       });
-      if (points.length >= 2) lines.push({ id: relation.id, hard: result.hard, violated: result.status === "violated", points });
+      if (points.length >= 2) lines.push({ ...row, points });
       continue;
     }
     const from = relation.a === undefined ? null : center(scene, relation.a);
     if (from === null) continue;
     const to = targetPoint(scene, relation, from);
     if (to === null) continue;
-    lines.push({ id: relation.id, hard: result.hard, violated: result.status === "violated", points: [[from[0], from[1], 0], to] });
+    lines.push({ ...row, points: [[from[0], from[1], 0], to] });
   }
   return lines;
 }
@@ -182,6 +193,7 @@ function paintRelations(ctx: CanvasRenderingContext2D, camera: Camera, scale: nu
     ctx.strokeStyle = item.violated ? VIOLATED : SATISFIED;
     ctx.lineWidth = (item.violated && item.hard ? 3.5 : 1.6) / scale;
     line(ctx, camera, item.points);
+    if (item.arrow !== null) line(ctx, camera, item.arrow);
     const mid = item.points[Math.floor(item.points.length / 2)] as Vec3;
     const at = project(camera, mid[0], mid[1], mid[2]);
     ctx.font = `${11 / scale}px sans-serif`;
@@ -232,26 +244,31 @@ function paintOccluders(ctx: CanvasRenderingContext2D, camera: Camera, scale: nu
   }
   if (kind !== "plan") return;
   ctx.fillStyle = MARK;
-  for (const [u, v] of state.occluderPoints) dot(ctx, camera, [u, v, report.area.level], 2 / scale);
+  const mark = report.area.level ?? 0;
+  for (const [u, v] of state.occluderPoints) dot(ctx, camera, [u, v, mark], 2 / scale);
 }
 
 function paintGhosts(ctx: CanvasRenderingContext2D, camera: Camera, scale: number, state: EditorState, scene: Scene): void {
   const proposal = state.proposal;
-  if (proposal === null || proposal.report.moved.length === 0) return;
+  if (proposal === null) return;
   const shown = sceneShown(scene, state.shownState);
   const moved = new Map(proposal.report.moved.map((item) => [item.id, item.to]));
+  const turned = new Map((proposal.report.turned ?? []).map((item) => [item.id, item.to]));
+  if (moved.size === 0 && turned.size === 0) return;
   const ghost: Scene = {
     ...shown,
     objects: shown.objects.map((object) => {
       const pos = moved.get(object.id);
-      return pos === undefined ? object : { ...object, pos };
+      const rot = turned.get(object.id);
+      if (pos === undefined && rot === undefined) return object;
+      return { ...object, ...(pos === undefined ? {} : { pos }), ...(rot === undefined ? {} : { rot }) };
     }),
   };
   ctx.strokeStyle = GHOST;
   ctx.setLineDash([6 / scale, 4 / scale]);
   ctx.lineWidth = 1.5 / scale;
   for (const object of ghost.objects) {
-    if (!moved.has(object.id)) continue;
+    if (!moved.has(object.id) && !turned.has(object.id)) continue;
     for (const part of worldParts(ghost, object)) strokeBox(ctx, camera, part.box);
     const before = shown.objects.find((item) => item.id === object.id);
     if (before === undefined) continue;

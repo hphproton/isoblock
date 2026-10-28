@@ -1,16 +1,23 @@
-import type { Lane, Scene, Strip, Zone } from "../types";
+import { parseAnchorRef } from "../checks/points";
+import type { Anchor, Lane, Scene, Strip, Zone } from "../types";
 
-/** A relation target after resolution (SPEC section 6): object, zone, lane or strip edge. */
+/** A relation target after resolution (SPEC section 6): object, zone, lane, strip edge or, for `facing`, an anchor. */
 export type Target =
   | { readonly kind: "object"; readonly name: string; readonly index: number }
   | { readonly kind: "zone"; readonly name: string; readonly zone: Zone }
   | { readonly kind: "lane"; readonly name: string; readonly lane: Lane }
   | { readonly kind: "strip"; readonly name: string; readonly strip: Strip; readonly bound: number | null }
+  | { readonly kind: "anchor"; readonly name: string; readonly index: number; readonly anchor: Anchor }
   | { readonly kind: "none"; readonly name: string };
 
 /** Resolve a target name of a valid scene. An absent name is `none`. */
 export function resolveTarget(scene: Scene, name: string | undefined): Target {
   if (name === undefined) return { kind: "none", name: "" };
+  if (name.startsWith("anchor:")) {
+    const found = parseAnchorRef(scene, name);
+    if (found === null) return { kind: "none", name };
+    return { kind: "anchor", name, index: scene.objects.indexOf(found.object), anchor: found.anchor };
+  }
   if (name.startsWith("zone:")) {
     const zone = (scene.zones ?? []).find((z) => z.id === name.slice(5));
     if (zone) return { kind: "zone", name, zone };
@@ -37,6 +44,7 @@ const KIND_NAMES: Readonly<Record<Target["kind"], string>> = {
   zone: "a zone",
   lane: "a lane",
   strip: "a strip edge",
+  anchor: "an anchor",
   none: "nothing",
 };
 

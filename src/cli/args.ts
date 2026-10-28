@@ -44,6 +44,8 @@ export type Parsed =
       readonly json: boolean;
       /** Object ids of `--only`; absent when every object may move. */
       readonly only?: readonly string[];
+      /** `--rotate`: the solver may turn movable objects (SPEC section 8). */
+      readonly rotate?: boolean;
       readonly output?: string;
       readonly patchOutput?: string;
     }
@@ -110,7 +112,7 @@ export const USAGE = [
   "  isoblock describe <scene.json> [--relations] [--states]",
   "                                             compact summary for agents",
   "  isoblock relations <scene.json> [--json]   measure the scene's relations",
-  "  isoblock solve    <scene.json> [--only a,b] [-o <proposal.json>] [--patch <moves.patch|->] [--json]",
+  "  isoblock solve    <scene.json> [--only a,b] [--rotate] [-o <proposal.json>] [--patch <moves.patch|->] [--json]",
   "                                             propose positions that meet the relations",
   "  isoblock patch    <scene.json> <patch|-> [-o <out.json>] [--dry-run] [--json]",
   "                                             apply a patch (JSON Patch or short commands)",
@@ -148,6 +150,7 @@ const FLAG_COMMANDS: Readonly<Record<string, readonly string[]>> = {
   "--relations": ["describe", "compare"],
   "--states": ["describe"],
   "--patch": ["solve"],
+  "--rotate": ["solve"],
   "--dry-run": ["patch"],
   "--variant": ["compare"],
   "--format": ["compare"],
@@ -183,6 +186,7 @@ interface Scanned {
   readonly relations: boolean;
   readonly states: boolean;
   readonly failing: boolean;
+  readonly rotate: boolean;
   readonly variants: readonly string[];
   /** The value of each flag that takes one, except `--variant`, which may repeat. */
   readonly values: Readonly<Record<string, string>>;
@@ -197,6 +201,7 @@ function scan(command: string, rest: readonly string[]): Scanned {
   let relations = false;
   let states = false;
   let failing = false;
+  let rotate = false;
   for (let i = 0; i < rest.length; i++) {
     const [flag, inline] = split(rest[i] as string);
     // `-` is the patch file name that means standard input, not a flag.
@@ -213,6 +218,7 @@ function scan(command: string, rest: readonly string[]): Scanned {
     else if (flag === "--relations") relations = true;
     else if (flag === "--states") states = true;
     else if (flag === "--failing") failing = true;
+    else if (flag === "--rotate") rotate = true;
     else {
       const value = inline ?? rest[++i];
       if (value === undefined) throw usage(`flag '${flag}' needs a value`);
@@ -220,7 +226,7 @@ function scan(command: string, rest: readonly string[]): Scanned {
       else values[flag] = value;
     }
   }
-  return { positional, json, dryRun, relations, states, failing, variants, values };
+  return { positional, json, dryRun, relations, states, failing, rotate, variants, values };
 }
 
 /** `--only a,b`: ids separated by commas, none empty; repeated ids count once. */
@@ -235,6 +241,7 @@ function parseSolve(file: string, s: Scanned): Parsed {
   if (patchOutput === "-" && s.json) throw usage("solve --patch - writes to standard output and cannot be combined with --json");
   return {
     kind: "solve", file, json: s.json,
+    ...(s.rotate ? { rotate: true } : {}),
     ...(only === undefined ? {} : { only: parseOnly(only, "object ids") }),
     ...(output === undefined ? {} : { output }),
     ...(patchOutput === undefined ? {} : { patchOutput }),

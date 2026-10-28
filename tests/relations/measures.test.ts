@@ -71,7 +71,7 @@ describe("gap and against", () => {
     expect(one(objects, { a: "a", rel: "against", b: "b", gap: [0, 0.5] }).status).toBe("satisfied");
   });
 
-  it("measures against a lane rectangle and skips other lane shapes", () => {
+  it("measures against a lane rectangle and a bent lane", () => {
     const lanes = {
       lanes: [
         { id: "L", width: 1, points: [[0, 5], [10, 5]] },
@@ -79,7 +79,7 @@ describe("gap and against", () => {
       ],
     };
     expect(one([box("a", [2, 2])], { a: "a", rel: "against", b: "lane:L" }, lanes)).toMatchObject({ violation: 1.5, ids: ["a"] });
-    expect(one([box("a", [2, 2])], { a: "a", rel: "against", b: "lane:bent" }, lanes).status).toBe("skip");
+    expect(one([box("a", [2, 2])], { a: "a", rel: "against", b: "lane:bent" }, lanes)).toMatchObject({ status: "violated", violation: 1.5, ids: ["a"] });
   });
 
   it("measures against a strip edge and skips an unbounded edge", () => {

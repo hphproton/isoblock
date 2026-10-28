@@ -88,8 +88,11 @@ describe("lane_reaches: edge cases", () => {
     expect(outside.threshold).toEqual([20, 80]);
   });
 
-  it("skips lane shapes that the stage does not support", () => {
-    const r = run([[0, 5], [3, 5], [3, 9]], "right");
-    expect(r.status).toBe("skip");
+  it("measures a bent lane and skips a lane with no piece", () => {
+    const bent = run([[0, 5], [3, 5], [3, 9]], "right");
+    expect(bent.status).not.toBe("skip");
+    const none = run([[1, 1], [1, 1]], "right");
+    expect(none.status).toBe("skip");
+    expect(none.value).toBeNull();
   });
 });

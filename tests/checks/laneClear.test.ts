@@ -47,14 +47,20 @@ describe("lane_clear: edge cases", () => {
     expect(r.ids).toEqual(["b"]);
   });
 
-  it("skips lanes that are not a 2-point segment parallel to u or v", () => {
-    for (const points of [[[0, 0], [5, 0], [5, 5]], [[0, 0], [3, 3]], [[1, 1], [1, 1]]]) {
-      const r = run(points, [box("a", [2, 2])]);
-      expect(r.status).toBe("skip");
-      expect(r.value).toBeNull();
-      expect(r.threshold).toBeNull();
-      expect(r.ids).toEqual([]);
-      expect(r.message).toMatch(/lane "L"/);
-    }
+  it("measures a bent lane and a diagonal lane", () => {
+    const bent = run([[0, 0], [5, 0], [5, 5]], [box("a", [2, 0])]);
+    expect(bent.status).toBe("fail");
+    expect(bent.ids).toEqual(["a"]);
+    const diagonal = run([[0, 0], [3, 3]], [box("a", [1, 1])]);
+    expect(diagonal.status).not.toBe("skip");
+  });
+
+  it("skips a lane with no piece", () => {
+    const r = run([[1, 1], [1, 1]], [box("a", [2, 2])]);
+    expect(r.status).toBe("skip");
+    expect(r.value).toBeNull();
+    expect(r.threshold).toBeNull();
+    expect(r.ids).toEqual([]);
+    expect(r.message).toMatch(/lane "L"/);
   });
 });
