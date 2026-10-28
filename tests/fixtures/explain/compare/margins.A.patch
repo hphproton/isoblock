@@ -1,0 +1,2 @@
+# crate_b moves 0.2 along u
+move crate_b u+0.2

@@ -1,0 +1,358 @@
+{
+  "scene": "margins",
+  "state": "default",
+  "variants": [
+    {
+      "name": "base",
+      "label": null
+    },
+    {
+      "name": "A",
+      "label": "crate_b moves 0.2 along u"
+    },
+    {
+      "name": "B",
+      "label": "post moves 0.3 along u"
+    },
+    {
+      "name": "C",
+      "label": "hedge moves 0.4 along v"
+    },
+    {
+      "name": "D",
+      "label": "bench moves 0.6 along u"
+    }
+  ],
+  "failing": [
+    1,
+    1,
+    0,
+    1,
+    2
+  ],
+  "locksTouched": [
+    [],
+    [],
+    [],
+    [],
+    []
+  ],
+  "moved": [
+    null,
+    {
+      "count": 1,
+      "distance": 0.2
+    },
+    {
+      "count": 1,
+      "distance": 0.3
+    },
+    {
+      "count": 1,
+      "distance": 0.4
+    },
+    {
+      "count": 1,
+      "distance": 0.6
+    }
+  ],
+  "checks": [
+    {
+      "id": "gap_ab",
+      "check": "clearance",
+      "label": "clearance crate_a×crate_b (u)",
+      "threshold": 0.5,
+      "values": [
+        0.6,
+        0.8,
+        0.6,
+        0.6,
+        0.6
+      ],
+      "status": [
+        "warn",
+        "pass",
+        "warn",
+        "warn",
+        "warn"
+      ],
+      "delta": [
+        null,
+        0.2,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "gap_bc",
+      "check": "clearance",
+      "label": "clearance crate_b×crate_c (u)",
+      "threshold": 0.5,
+      "values": [
+        1,
+        0.8,
+        1,
+        1,
+        1
+      ],
+      "status": [
+        "pass",
+        "pass",
+        "pass",
+        "pass",
+        "pass"
+      ],
+      "delta": [
+        null,
+        -0.2,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "gap_cp",
+      "check": "clearance",
+      "label": "clearance crate_c×post (u)",
+      "threshold": 0.5,
+      "values": [
+        0.3,
+        0.3,
+        0.6,
+        0.3,
+        0.3
+      ],
+      "status": [
+        "fail",
+        "fail",
+        "warn",
+        "fail",
+        "fail"
+      ],
+      "delta": [
+        null,
+        0,
+        0.3,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "gap_plain",
+      "check": "clearance",
+      "label": "clearance crate_a×figure (u)",
+      "threshold": 2.5,
+      "values": [
+        2.607681,
+        2.607681,
+        2.607681,
+        2.607681,
+        2.607681
+      ],
+      "status": [
+        "pass",
+        "pass",
+        "pass",
+        "pass",
+        "pass"
+      ],
+      "delta": [
+        null,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "lanes_apart",
+      "check": "lane_apart",
+      "label": "lane_apart walk×path (u)",
+      "threshold": 3,
+      "values": [
+        3.4,
+        3.4,
+        3.4,
+        3.4,
+        3.4
+      ],
+      "status": [
+        "warn",
+        "warn",
+        "warn",
+        "warn",
+        "warn"
+      ],
+      "delta": [
+        null,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "figure_seen",
+      "check": "visible",
+      "label": "visible figure (% occluded)",
+      "threshold": 0.4,
+      "values": [
+        0.307292,
+        0.307292,
+        0.307292,
+        0.041667,
+        0.307292
+      ],
+      "status": [
+        "warn",
+        "warn",
+        "warn",
+        "pass",
+        "warn"
+      ],
+      "delta": [
+        null,
+        0,
+        0,
+        -0.265625,
+        0
+      ]
+    },
+    {
+      "id": "reach_seat",
+      "check": "reachable",
+      "label": "reachable reach_seat (u)",
+      "threshold": 7,
+      "values": [
+        6.5,
+        6.5,
+        6.5,
+        6.5,
+        7.1
+      ],
+      "status": [
+        "warn",
+        "warn",
+        "warn",
+        "warn",
+        "fail"
+      ],
+      "delta": [
+        null,
+        0,
+        0,
+        0,
+        0.6
+      ]
+    },
+    {
+      "id": "seats",
+      "check": "capacity",
+      "label": "capacity seats (usable seat)",
+      "threshold": 2,
+      "values": [
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "status": [
+        "warn",
+        "warn",
+        "warn",
+        "warn",
+        "warn"
+      ],
+      "delta": [
+        null,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "figure_tall",
+      "check": "min_screen_size",
+      "label": "min_screen_size figure height (px)",
+      "threshold": 80,
+      "values": [
+        85,
+        85,
+        85,
+        85,
+        85
+      ],
+      "status": [
+        "warn",
+        "warn",
+        "warn",
+        "warn",
+        "warn"
+      ],
+      "delta": [
+        null,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "crate_size",
+      "check": "min_screen_size",
+      "label": "min_screen_size crate_a (px)",
+      "threshold": 100,
+      "values": [
+        100,
+        100,
+        100,
+        100,
+        100
+      ],
+      "status": [
+        "pass",
+        "pass",
+        "pass",
+        "pass",
+        "pass"
+      ],
+      "delta": [
+        null,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "street_shown",
+      "check": "visible_share",
+      "label": "visible_share street_shown (% shown)",
+      "threshold": 0.7,
+      "values": [
+        0.812144,
+        0.812144,
+        0.812144,
+        1,
+        0.812144
+      ],
+      "status": [
+        "warn",
+        "warn",
+        "warn",
+        "pass",
+        "warn"
+      ],
+      "delta": [
+        null,
+        0,
+        0,
+        0.187856,
+        0
+      ]
+    }
+  ]
+}

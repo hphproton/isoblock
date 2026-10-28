@@ -1,0 +1,18 @@
+{
+  "base": "tests/fixtures/levels/levels.scene.json",
+  "tolerance": {
+    "value": 0.01,
+    "valuePx": 1,
+    "coordinate": 0.000001
+  },
+  "exit": 2,
+  "status": "invalid",
+  "error": "E_PATCH",
+  "locks": [],
+  "diff": [],
+  "checks": [],
+  "failing": null,
+  "contains": [
+    "did you mean \"shutter\"?"
+  ]
+}

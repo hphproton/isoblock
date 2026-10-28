@@ -1,0 +1,7 @@
+WARN gap_ab clearance crate_a×crate_b: gap 0.60, within 0.25 of 0.50
+WARN lanes_apart lane_apart walk×path: 3.40, within 0.50 of 3.00
+WARN figure_seen visible figure: 31% occluded, within 15% of 40%
+WARN reach_seat reachable bench: path of 6.50 u, within 1.50 of 7.00
+WARN seats capacity seat: 2 usable, within 1 of 2
+WARN figure_tall min_screen_size figure: 85 px tall, within 10 px of 80 px
+WARN street_shown visible_share lamp: 81% shown, within 20% of 70%
