@@ -1,0 +1,176 @@
+{
+  "scene": "plaza",
+  "state": null,
+  "region": {
+    "id": "focus",
+    "pixels": 43200,
+    "covered": 22087,
+    "share": 0.511273
+  },
+  "objects": [
+    {
+      "id": "wall",
+      "type": "wall",
+      "tags": [
+        "back"
+      ],
+      "full": 8590,
+      "visible": 4756,
+      "share": 0.553667,
+      "cover": 0.110093
+    },
+    {
+      "id": "tower",
+      "type": "tower",
+      "tags": [
+        "back"
+      ],
+      "full": 729,
+      "visible": 729,
+      "share": 1,
+      "cover": 0.016875
+    },
+    {
+      "id": "stool",
+      "type": "stool",
+      "tags": [
+        "seat"
+      ],
+      "full": 630,
+      "visible": 0,
+      "share": 0,
+      "cover": 0
+    },
+    {
+      "id": "kiosk",
+      "type": "kiosk",
+      "tags": [
+        "shop"
+      ],
+      "full": 9879,
+      "visible": 9022,
+      "share": 0.91325,
+      "cover": 0.208843
+    },
+    {
+      "id": "mat",
+      "type": "mat",
+      "tags": [
+        "floor"
+      ],
+      "full": 1576,
+      "visible": 1576,
+      "share": 1,
+      "cover": 0.036481
+    },
+    {
+      "id": "planter",
+      "type": "planter",
+      "tags": [],
+      "full": 1976,
+      "visible": 1677,
+      "share": 0.848684,
+      "cover": 0.038819
+    },
+    {
+      "id": "bench_a",
+      "type": "bench",
+      "tags": [
+        "seat"
+      ],
+      "full": 1610,
+      "visible": 1610,
+      "share": 1,
+      "cover": 0.037269
+    },
+    {
+      "id": "bench_b",
+      "type": "bench",
+      "tags": [
+        "seat"
+      ],
+      "full": 421,
+      "visible": 421,
+      "share": 1,
+      "cover": 0.009745
+    },
+    {
+      "id": "lamp",
+      "type": "lamp",
+      "tags": [
+        "street"
+      ],
+      "full": 1258,
+      "visible": 1258,
+      "share": 1,
+      "cover": 0.02912
+    },
+    {
+      "id": "sign",
+      "type": "panel",
+      "tags": [
+        "street"
+      ],
+      "full": 1038,
+      "visible": 1038,
+      "share": 1,
+      "cover": 0.024028
+    }
+  ],
+  "tags": [
+    {
+      "tag": "back",
+      "ids": [
+        "wall",
+        "tower"
+      ],
+      "full": 9019,
+      "visible": 5485,
+      "share": 0.608161,
+      "cover": 0.126968
+    },
+    {
+      "tag": "seat",
+      "ids": [
+        "stool",
+        "bench_a",
+        "bench_b"
+      ],
+      "full": 2661,
+      "visible": 2031,
+      "share": 0.763247,
+      "cover": 0.047014
+    },
+    {
+      "tag": "shop",
+      "ids": [
+        "kiosk"
+      ],
+      "full": 9879,
+      "visible": 9022,
+      "share": 0.91325,
+      "cover": 0.208843
+    },
+    {
+      "tag": "floor",
+      "ids": [
+        "mat"
+      ],
+      "full": 1576,
+      "visible": 1576,
+      "share": 1,
+      "cover": 0.036481
+    },
+    {
+      "tag": "street",
+      "ids": [
+        "lamp",
+        "sign"
+      ],
+      "full": 2296,
+      "visible": 2296,
+      "share": 1,
+      "cover": 0.053148
+    }
+  ]
+}

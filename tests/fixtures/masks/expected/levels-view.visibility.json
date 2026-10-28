@@ -1,0 +1,143 @@
+{
+  "scene": "levels",
+  "state": null,
+  "region": {
+    "id": "view",
+    "pixels": 912000,
+    "covered": 108218,
+    "share": 0.11866
+  },
+  "objects": [
+    {
+      "id": "post_a",
+      "type": "post",
+      "tags": [],
+      "full": 3120,
+      "visible": 2476,
+      "share": 0.79359,
+      "cover": 0.002715
+    },
+    {
+      "id": "post_b",
+      "type": "post",
+      "tags": [],
+      "full": 3229,
+      "visible": 2969,
+      "share": 0.91948,
+      "cover": 0.003255
+    },
+    {
+      "id": "deck",
+      "type": "deck",
+      "tags": [],
+      "full": 28573,
+      "visible": 25977,
+      "share": 0.909145,
+      "cover": 0.028484
+    },
+    {
+      "id": "crate_up",
+      "type": "crate",
+      "tags": [],
+      "full": 4194,
+      "visible": 4194,
+      "share": 1,
+      "cover": 0.004599
+    },
+    {
+      "id": "mat",
+      "type": "mat",
+      "tags": [],
+      "full": 2498,
+      "visible": 554,
+      "share": 0.221777,
+      "cover": 0.000607
+    },
+    {
+      "id": "crate2",
+      "type": "crate",
+      "tags": [],
+      "full": 4237,
+      "visible": 2680,
+      "share": 0.632523,
+      "cover": 0.002939
+    },
+    {
+      "id": "crate",
+      "type": "crate",
+      "tags": [],
+      "full": 4194,
+      "visible": 4194,
+      "share": 1,
+      "cover": 0.004599
+    },
+    {
+      "id": "side_wall",
+      "type": "wall",
+      "tags": [],
+      "full": 45132,
+      "visible": 45132,
+      "share": 1,
+      "cover": 0.049487
+    },
+    {
+      "id": "kiosk",
+      "type": "kiosk",
+      "tags": [],
+      "full": 13944,
+      "visible": 13944,
+      "share": 1,
+      "cover": 0.015289
+    },
+    {
+      "id": "figure",
+      "type": "figure",
+      "tags": [],
+      "full": 2814,
+      "visible": 209,
+      "share": 0.074271,
+      "cover": 0.000229
+    },
+    {
+      "id": "plinth",
+      "type": "plinth",
+      "tags": [],
+      "full": 1840,
+      "visible": 1216,
+      "share": 0.66087,
+      "cover": 0.001333
+    },
+    {
+      "id": "vase",
+      "type": "vase",
+      "tags": [],
+      "full": 924,
+      "visible": 924,
+      "share": 1,
+      "cover": 0.001013
+    },
+    {
+      "id": "mast",
+      "type": "mast",
+      "tags": [
+        "static"
+      ],
+      "full": 3749,
+      "visible": 3749,
+      "share": 1,
+      "cover": 0.004111
+    }
+  ],
+  "tags": [
+    {
+      "tag": "static",
+      "ids": [
+        "mast"
+      ],
+      "full": 3749,
+      "visible": 3749,
+      "share": 1,
+      "cover": 0.004111
+    }
+  ]
+}

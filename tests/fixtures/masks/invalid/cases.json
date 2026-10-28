@@ -1,0 +1,41 @@
+{
+  "cases": [
+    {
+      "file": "both-ids-and-tag.invalid.json",
+      "code": "E_SCHEMA",
+      "scene": "plaza",
+      "contains": [
+        "/checks/0"
+      ],
+      "excludes": []
+    },
+    {
+      "file": "min-above-1.invalid.json",
+      "code": "E_SCHEMA",
+      "scene": "plaza",
+      "contains": [
+        "/checks/1/min"
+      ],
+      "excludes": []
+    },
+    {
+      "file": "no-ids-no-tag.invalid.json",
+      "code": "E_SCHEMA",
+      "scene": "plaza",
+      "contains": [
+        "/checks/2"
+      ],
+      "excludes": []
+    },
+    {
+      "file": "unknown-region.invalid.json",
+      "code": "E_REF",
+      "scene": "plaza",
+      "contains": [
+        "\"focs\"",
+        "did you mean \"focus\"?"
+      ],
+      "excludes": []
+    }
+  ]
+}
