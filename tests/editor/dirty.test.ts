@@ -9,7 +9,10 @@ import { loadScene } from "../helpers/fixtures";
 import { makeScene } from "../helpers/scene";
 
 const NO_IDS: ReadonlySet<string> = new Set();
-const OVERLAYS = { regions: true, strips: true, lanes: true, zones: true, anchors: false, labels: false };
+const OVERLAYS = {
+  regions: true, strips: true, lanes: true, zones: true, anchors: false, labels: false,
+  relations: false, sortPoints: false, rays: false, masks: false,
+};
 const crowd = loadScene("crowd");
 const id = "o101";
 

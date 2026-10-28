@@ -136,6 +136,10 @@ const OVERLAYS: readonly (readonly [OverlayName, string])[] = [
   ["zones", "Zones"],
   ["anchors", "Anchors"],
   ["labels", "Object labels"],
+  ["relations", "Relations"],
+  ["sortPoints", "Sort points"],
+  ["rays", "Occlusion rays"],
+  ["masks", "Masks"],
 ];
 
 /** Overlay toggles. */

@@ -5,7 +5,11 @@ import { byId } from "./dom";
 import { describeError, downloadScene, readSceneFile } from "./files";
 import { FrameLoop } from "./frames";
 import { mountAssumptions, mountEdits } from "./controls";
+import { mountOccluders } from "./occluderBar";
+import { overlayValue } from "./overlayData";
 import { mountChecks, mountOverlays, mountStatus, mountToolbar } from "./panels";
+import { mountRegions } from "./regions";
+import { mountRelations } from "./relations";
 import { mountProps } from "./props";
 import { SceneView, type ViewKind } from "./sceneView";
 import { FrameStats, type FrameSnapshot } from "./stats";
@@ -24,7 +28,10 @@ export interface IsoblockHook {
     mode: string;
     /** Ids of the checks whose rows are out of date (grid checks during a drag). */
     stale: readonly string[];
+    /** `masks` and `occluders` whose picture is from before the current drag. */
+    staleOverlays: readonly string[];
   };
+  overlay(name: string): unknown;
   screenOf(view: ViewKind, id: string): readonly [number, number] | null;
   viewport(view: ViewKind): Viewport;
   lockIcons(view: ViewKind): readonly string[];
@@ -90,7 +97,10 @@ mountStatus(store);
 mountProps(byId("props-body"), store);
 mountAssumptions(store);
 mountChecks(store);
+mountRelations(store);
+mountRegions(store);
 mountOverlays(store);
+mountOccluders(store);
 
 for (const button of document.querySelectorAll<HTMLButtonElement>("button[data-fit]")) {
   button.addEventListener("click", () => views[button.dataset.fit as ViewKind].fit());
@@ -104,9 +114,15 @@ store.subscribe((state, previous) => {
     state.overlays !== previous.overlays ||
     state.mode !== previous.mode ||
     state.opened !== previous.opened ||
-    state.shownState !== previous.shownState;
+    state.shownState !== previous.shownState ||
+    state.proposal !== previous.proposal ||
+    state.occluder !== previous.occluder ||
+    state.masksReport !== previous.masksReport ||
+    state.occludersReport !== previous.occludersReport ||
+    state.highlightRelation !== previous.highlightRelation;
   const ended = state.live === null && previous.live !== null;
-  if (ended || state.shownState !== previous.shownState) for (const view of Object.values(views)) view.markFull();
+  const full = ended || state.shownState !== previous.shownState || state.proposal !== previous.proposal || state.masksReport !== previous.masksReport || state.occludersReport !== previous.occludersReport;
+  if (full) for (const view of Object.values(views)) view.markFull();
   else if (redraw) for (const view of Object.values(views)) view.markDirty();
 });
 
@@ -166,8 +182,12 @@ window.isoblock = {
   },
   state: () => {
     const s = store.get();
-    return { fileName: s.fileName, selected: s.selected, highlight: [...s.highlightIds], dirty: isDirty(s), mode: s.mode, stale: [...s.stale] };
+    return {
+      fileName: s.fileName, selected: s.selected, highlight: [...s.highlightIds], dirty: isDirty(s), mode: s.mode,
+      stale: [...s.stale], staleOverlays: [...s.staleOverlays],
+    };
   },
+  overlay: (name) => overlayValue(store.get(), name),
   screenOf: (view, id) => views[view].screenOf(id),
   viewport: (view) => views[view].getViewport(),
   lockIcons: (view) => views[view].lockIcons(),

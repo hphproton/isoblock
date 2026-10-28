@@ -128,6 +128,12 @@ main { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1
 .overlays { display: flex; flex-wrap: wrap; gap: 4px 14px; }
 .overlays label { display: inline-flex; align-items: center; gap: 6px; min-height: var(--touch); }
 .overlays input { min-height: 0; width: 18px; height: 18px; padding: 0; }
+.occluders { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+.occluders label { display: inline-flex; align-items: center; gap: 6px; color: var(--muted); }
+.occluders input, .occluders select { max-width: 11rem; }
+.proposal { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.proposal[hidden] { display: none; }
+.relation[data-conflict="true"] { outline: 2px solid var(--fail); }
 
 @media (pointer: coarse) {
   :root { --touch: 44px; }

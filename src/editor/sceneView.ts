@@ -16,6 +16,7 @@ import { dirtyRects, type Painted } from "./dirty";
 import { createDrawCache, drawView, type DrawReport } from "./draw";
 import type { Frameable } from "./frames";
 import type { FrameStats } from "./stats";
+import { explanationsOn, paintExplanations } from "./explainDraw";
 import { sceneShown } from "./shown";
 import { currentScene, type EditorStore } from "./store";
 
@@ -238,6 +239,7 @@ export class SceneView implements Frameable {
       dpr: this.size.dpr,
       items: list.items,
     };
+    if (explanationsOn(state)) this.fullPaint = true;
     const clip = this.fullPaint ? undefined : dirtyRects(this.painted, now);
     this.report = this.stats.time("paint", () => drawView(this.ctx, {
       items: list.items,
@@ -252,6 +254,7 @@ export class SceneView implements Frameable {
       cache: this.drawCache,
       ...(clip === undefined ? {} : { clip }),
     }));
+    paintExplanations(this.ctx, this.kind, state, this.viewport, this.size.dpr);
     this.painted = now;
     this.fullPaint = false;
     this.items = list.items;

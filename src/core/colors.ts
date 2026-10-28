@@ -26,6 +26,20 @@ export function typeColors(typeName: string): FaceColors {
   };
 }
 
+/** The side shade of `typeColors` as red, green and blue, 0 to 255, for a raster tint. */
+export function typeRgb(typeName: string): readonly [number, number, number] {
+  return hslToRgb(hash(typeName) % 360, 0.45, 0.62);
+}
+
+function hslToRgb(h: number, s: number, l: number): readonly [number, number, number] {
+  const c = (1 - Math.abs(2 * l - 1)) * s;
+  const hp = h / 60;
+  const x = c * (1 - Math.abs((hp % 2) - 1));
+  const m = l - c / 2;
+  const rgb = hp < 1 ? [c, x, 0] : hp < 2 ? [x, c, 0] : hp < 3 ? [0, c, x] : hp < 4 ? [0, x, c] : hp < 5 ? [x, 0, c] : [c, 0, x];
+  return rgb.map((channel) => Math.round((channel + m) * 255)) as [number, number, number];
+}
+
 const STRIP_FILL: Readonly<Record<string, string>> = { decor: "#ddd5ea", walkable: "#d5e8d0" };
 const LANE_FILL: Readonly<Record<string, string>> = { walk: "#f6b26b", vehicle: "#6fa8dc" };
 
