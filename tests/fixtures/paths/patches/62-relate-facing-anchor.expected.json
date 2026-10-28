@@ -1,0 +1,27 @@
+{
+  "base": "tests/fixtures/paths/paths.scene.json",
+  "tolerance": {
+    "value": 0.01,
+    "valuePx": 1,
+    "coordinate": 0.000001
+  },
+  "exit": 1,
+  "status": "applied",
+  "error": null,
+  "locks": [],
+  "diff": [
+    {
+      "op": "add",
+      "path": "/relations/f6",
+      "to": {
+        "id": "f6",
+        "a": "anchor:bench/seat",
+        "rel": "facing",
+        "b": "kiosk",
+        "hard": false
+      }
+    }
+  ],
+  "checks": [],
+  "failing": 8
+}

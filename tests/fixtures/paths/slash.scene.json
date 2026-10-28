@@ -1,0 +1,86 @@
+{
+  "schema": "isoblock/1",
+  "id": "slash",
+  "units": {
+    "name": "u"
+  },
+  "camera": {
+    "angleU": 30,
+    "angleV": 150,
+    "pxPerUnit": 40,
+    "verticalScale": 1,
+    "origin": [
+      300,
+      100
+    ]
+  },
+  "frame": {
+    "w": 600,
+    "h": 400,
+    "regions": [
+      {
+        "id": "view",
+        "rect": [
+          0,
+          0,
+          600,
+          400
+        ]
+      }
+    ]
+  },
+  "types": {
+    "hut": {
+      "size": [
+        2,
+        2,
+        2
+      ],
+      "parts": [
+        {
+          "id": "b/top",
+          "box": [
+            0,
+            0,
+            1,
+            2,
+            2,
+            2
+          ]
+        },
+        {
+          "id": "low",
+          "box": [
+            0,
+            0,
+            0,
+            2,
+            2,
+            1
+          ]
+        }
+      ]
+    }
+  },
+  "objects": [
+    {
+      "id": "a",
+      "type": "hut",
+      "pos": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "a/b",
+      "type": "hut",
+      "pos": [
+        3,
+        0
+      ]
+    }
+  ],
+  "states": {
+    "s": {}
+  }
+}

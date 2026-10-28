@@ -1,0 +1,140 @@
+{
+  "schema": "isoblock/1",
+  "id": "turn-locked",
+  "units": {
+    "name": "u"
+  },
+  "camera": {
+    "angleU": 30,
+    "angleV": 150,
+    "pxPerUnit": 50,
+    "verticalScale": 1,
+    "origin": [
+      480,
+      120
+    ]
+  },
+  "frame": {
+    "w": 1000,
+    "h": 700,
+    "regions": [
+      {
+        "id": "view",
+        "rect": [
+          0,
+          0,
+          1000,
+          700
+        ]
+      }
+    ]
+  },
+  "types": {
+    "counter": {
+      "size": [
+        3,
+        1,
+        1
+      ],
+      "front": "+v"
+    },
+    "stool": {
+      "size": [
+        0.5,
+        0.5,
+        0.7
+      ]
+    },
+    "chair": {
+      "size": [
+        0.6,
+        0.6,
+        0.9
+      ],
+      "front": "+v"
+    }
+  },
+  "objects": [
+    {
+      "id": "counter",
+      "type": "counter",
+      "pos": [
+        1,
+        6
+      ],
+      "locks": [
+        "rot"
+      ]
+    },
+    {
+      "id": "stool",
+      "type": "stool",
+      "pos": [
+        9,
+        2.5
+      ],
+      "locks": [
+        "pos"
+      ]
+    },
+    {
+      "id": "chair",
+      "type": "chair",
+      "pos": [
+        3,
+        2
+      ]
+    }
+  ],
+  "zones": [
+    {
+      "id": "nook",
+      "kind": "service",
+      "points": [
+        [
+          6,
+          1
+        ],
+        [
+          7.4,
+          1
+        ],
+        [
+          7.4,
+          4.6
+        ],
+        [
+          6,
+          4.6
+        ]
+      ]
+    }
+  ],
+  "relations": [
+    {
+      "id": "r1",
+      "rel": "inside",
+      "a": "counter",
+      "b": "zone:nook",
+      "hard": true
+    },
+    {
+      "id": "r2",
+      "rel": "facing",
+      "a": "counter",
+      "b": "stool",
+      "angle": 30,
+      "hard": true
+    },
+    {
+      "id": "r3",
+      "rel": "gap",
+      "a": "counter",
+      "b": "stool",
+      "gap": [
+        1,
+        2
+      ]
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "scene": "turn",
+  "only": null,
+  "rotate": true,
+  "status": "solved",
+  "conflict": [],
+  "hardViolated": [],
+  "maxSoftPenalty": 0.5,
+  "maxDistance": 10.499524,
+  "unchanged": [
+    "stool"
+  ],
+  "rot": {
+    "counter": 270,
+    "stool": 0,
+    "chair": 0
+  },
+  "referenceSoftPenalty": 0,
+  "referenceDistance": 5.249762
+}

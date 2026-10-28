@@ -1,0 +1,59 @@
+{
+  "cases": [
+    {
+      "file": "facing-anchor-typo.invalid.json",
+      "code": "E_REF",
+      "scene": "paths",
+      "contains": [
+        "\"anchor:bench/sat\"",
+        "did you mean \"anchor:bench/seat\"?"
+      ],
+      "excludes": []
+    },
+    {
+      "file": "anchor-not-facing.invalid.json",
+      "code": "E_REF",
+      "scene": "paths",
+      "contains": [
+        "\"anchor:bench/seat\""
+      ],
+      "excludes": []
+    },
+    {
+      "file": "front-typo.invalid.json",
+      "code": "E_SCHEMA",
+      "scene": "paths",
+      "contains": [
+        "/types/bench/front"
+      ],
+      "excludes": []
+    },
+    {
+      "file": "anchor-front-typo.invalid.json",
+      "code": "E_SCHEMA",
+      "scene": "paths",
+      "contains": [
+        "/types/bench/anchors/0/front"
+      ],
+      "excludes": []
+    },
+    {
+      "file": "angle-high.invalid.json",
+      "code": "E_SCHEMA",
+      "scene": "paths",
+      "contains": [
+        "/relations/0/angle"
+      ],
+      "excludes": []
+    },
+    {
+      "file": "area-and-to-level.invalid.json",
+      "code": "E_SCHEMA",
+      "scene": "paths",
+      "contains": [
+        "/checks/8"
+      ],
+      "excludes": []
+    }
+  ]
+}
