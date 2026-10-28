@@ -180,7 +180,10 @@ describe("EditorStore: view state", () => {
 
   it("toggles overlays, with the ground layers on and anchors off by default", () => {
     const store = opened();
-    expect(store.get().overlays).toEqual({ regions: true, strips: true, lanes: true, zones: true, anchors: false, labels: false });
+    expect(store.get().overlays).toEqual({
+      regions: true, strips: true, lanes: true, zones: true, anchors: false, labels: false,
+      relations: false, sortPoints: false, rays: false, masks: false,
+    });
     store.setOverlay("anchors", true);
     expect(store.get().overlays.anchors).toBe(true);
   });

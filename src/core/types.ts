@@ -138,6 +138,8 @@ export interface ClearanceCheck {
   readonly a: string;
   readonly b: string;
   readonly min: number;
+  /** Margin on the passing side of `min`, in scene units (SPEC 9.7). */
+  readonly warn?: number;
 }
 
 export interface LaneClearCheck {
@@ -165,6 +167,8 @@ export interface LaneApartCheck {
   readonly target: string;
   /** Minimum distance. Default 0. */
   readonly min?: number;
+  /** Margin on the passing side of `min`, in scene units (SPEC 9.7). */
+  readonly warn?: number;
 }
 
 export interface VisibleCheck {
@@ -173,6 +177,8 @@ export interface VisibleCheck {
   readonly target: string;
   readonly from?: number;
   readonly maxOccluded: number;
+  /** Margin on the passing side of `maxOccluded`, a fraction from 0 to 1 (SPEC 9.7). */
+  readonly warn?: number;
 }
 
 /** A ground point: `[u, v]`, `lane:<id>` or `anchor:<object id>/<anchor id>` (SPEC section 9.2). */
@@ -188,6 +194,8 @@ export interface ReachableCheck {
   readonly step?: number;
   readonly ignore?: readonly string[];
   readonly max?: number;
+  /** Margin on the passing side of `max`, in scene units. Requires `max` (SPEC 9.7). */
+  readonly warn?: number;
   /** Walkable level. Default 0 (SPEC 9.5). */
   readonly level?: number;
   /** Clear height above `level`. Absent means no upper bound. */
@@ -199,6 +207,8 @@ export interface CapacityCheck {
   readonly check: "capacity";
   readonly kind: string;
   readonly min: number;
+  /** Margin on the passing side of `min`, in anchors (SPEC 9.7). */
+  readonly warn?: number;
   readonly body?: Vec2;
   readonly ids?: readonly string[];
   readonly allow?: readonly string[];
@@ -209,6 +219,8 @@ export interface MinScreenSizeCheck {
   readonly check: "min_screen_size";
   readonly target: string;
   readonly min: number;
+  /** Margin on the passing side of `min`, in pixels (SPEC 9.7). */
+  readonly warn?: number;
   readonly screenWidth?: number;
   /** `"bounds"` (default) or `"height"` (SPEC 9.4). */
   readonly measure?: "bounds" | "height";
@@ -239,6 +251,8 @@ export interface VisibleShareCheck {
   readonly region?: string;
   /** Minimum share, from 0 to 1. */
   readonly min: number;
+  /** Margin on the passing side of `min`, a share from 0 to 1 (SPEC 9.7). */
+  readonly warn?: number;
 }
 
 /** What one state hides (SPEC section 6). */
@@ -331,7 +345,7 @@ export interface CheckResult {
   readonly outside?: readonly number[];
   /** `lane_apart`: area of the overlap between the lane and its target. Absent when the check is skipped. */
   readonly overlap?: number;
-  /** `visible_share`: the share of each failing object, in the order of `ids`. Absent when the check is skipped. */
+  /** `visible_share`: the share of each failing object, or of each object in the margin when the status is `warn`, in the order of `ids`. Absent when the check is skipped. */
   readonly shares?: readonly number[];
   readonly message: string;
 }

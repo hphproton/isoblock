@@ -28,6 +28,12 @@ export interface OccludersReport {
   readonly occluders: readonly OccluderRow[];
 }
 
+/** The report plus the used positions, for the editor plan marks. The JSON stays the report alone. */
+export interface OccludersStudy {
+  readonly report: OccludersReport;
+  readonly points: readonly (readonly [number, number])[];
+}
+
 interface Area {
   readonly kind: "lane" | "zone";
   readonly id: string;
@@ -50,6 +56,18 @@ export function occludersReport(
   lane: string | undefined,
   zone: string | undefined,
 ): OccludersReport {
+  return occludersStudy(scene, state, actor, step, lane, zone).report;
+}
+
+/** Same measurement as `occludersReport`, also listing each used position (SPEC 11.4, editor overlay). */
+export function occludersStudy(
+  scene: Scene,
+  state: string | null,
+  actor: readonly [number, number, number],
+  step: number,
+  lane: string | undefined,
+  zone: string | undefined,
+): OccludersStudy {
   if (actor.length !== 3 || actor.some((n) => !(n > 0))) {
     throw new IsoblockError("E_USAGE", "actor must be three numbers above 0, written w,d,h");
   }
@@ -79,6 +97,7 @@ export function occludersReport(
     })),
   );
   const hits = new Map<string, { positions: number; area: number }>();
+  const points: [number, number][] = [];
   let positions = 0;
   for (let j = j0; j <= j1; j++) {
     const v = (j + 0.5) * step;
@@ -88,6 +107,7 @@ export function occludersReport(
       const actorBox: Box = { u0: u - w / 2, v0: v - d / 2, h0: area.level, u1: u + w / 2, v1: v + d / 2, h1: area.level + h };
       if (boxes.some((box) => boxesOverlap(box, actorBox))) continue;
       positions += 1;
+      points.push([u, v]);
       const info = boxInfo(actorBox, viewed.camera, c);
       const outline = boxOutline(actorBox, at);
       const best = new Map<string, number>();
@@ -111,13 +131,16 @@ export function occludersReport(
     return row === undefined ? [] : [{ id: object.id, positions: row.positions, area: round(row.area, 2) }];
   });
   return {
-    scene: scene.id,
-    state,
-    area: { kind: area.kind, id: area.id, level: area.level },
-    actor: [w, d, h],
-    step,
-    positions,
-    occluders,
+    report: {
+      scene: scene.id,
+      state,
+      area: { kind: area.kind, id: area.id, level: area.level },
+      actor: [w, d, h],
+      step,
+      positions,
+      occluders,
+    },
+    points,
   };
 }
 

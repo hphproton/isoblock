@@ -38,20 +38,24 @@ export function checkVisibleShare(scene: Scene, spec: VisibleShareCheck, raster?
     return counts.full === 0 ? [] : [{ id: object.id, share: counts.visible / counts.full }];
   });
   if (rows.length === 0) return skipResult(spec, "no listed object is drawn in the region");
+  const warn = spec.warn ?? 0;
   const failing = rows.filter((row) => row.share < spec.min - EPS);
+  const close = warn > 0 ? rows.filter((row) => row.share < spec.min + warn - EPS) : [];
   const smallest = rows.reduce((min, row) => Math.min(min, row.share), Infinity);
-  const status = failing.length === 0 ? "pass" : "fail";
-  const shown = failing.map((row) => row.id).join(", ");
+  const status = failing.length > 0 ? "fail" : close.length > 0 ? "warn" : "pass";
+  const shownRows = status === "warn" ? close : failing;
+  const shown = shownRows.map((row) => row.id).join(", ");
+  const count = `${rows.length} ${rows.length === 1 ? "object" : "objects"}`;
   return {
     id: spec.id,
     check: spec.check,
     status,
     value: round6(smallest),
     threshold: spec.min,
-    ids: failing.map((row) => row.id),
-    shares: failing.map((row) => round6(row.share)),
-    message: status === "pass"
-      ? `smallest share ${round6(smallest)} of ${rows.length} ${rows.length === 1 ? "object" : "objects"}`
-      : `${shown}: shown below ${spec.min}`,
+    ids: shownRows.map((row) => row.id),
+    shares: shownRows.map((row) => round6(row.share)),
+    message: status === "fail"
+      ? `${shown}: shown below ${spec.min}`
+      : `smallest share ${round6(smallest)} of ${count}`,
   };
 }

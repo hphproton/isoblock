@@ -51,6 +51,7 @@ function loadCases(path: string): EditorCase[] {
 
 const cases = loadCases("tests/fixtures/editor/cases.json");
 const levelCases = loadCases("tests/fixtures/levels/editor/cases.json");
+const explainCases = loadCases("tests/fixtures/explain/editor/cases.json");
 
 let browser: Browser;
 
@@ -98,7 +99,8 @@ async function runSteps(page: Parameters<typeof ev>[0], steps: readonly Step[]):
     } else if (step.state !== undefined) {
       await page.locator("select[aria-label='State']").selectOption(step.state);
     } else if (step.toggle !== undefined) {
-      await page.getByRole("checkbox", { name: step.toggle, exact: true }).click();
+      const root = step.toggle.startsWith("Region ") ? page.locator("#regions") : page.locator("#props");
+      await root.getByRole("checkbox", { name: step.toggle, exact: true }).click();
     } else if (step.settle !== undefined) {
       const short = shortAssumptionPath(await sceneOf(page), step.settle);
       await page.getByRole("button", { name: `Settle ${short}`, exact: true }).click();
@@ -155,3 +157,4 @@ function editorSuite(title: string, list: readonly EditorCase[], expectedDir: st
 
 editorSuite("editor cases", cases, join(repoRoot, "tests", "fixtures", "editor"));
 editorSuite("level editor cases", levelCases, join(repoRoot, "tests", "fixtures", "levels", "editor"));
+editorSuite("explain editor cases", explainCases, join(repoRoot, "tests", "fixtures", "explain", "editor"));

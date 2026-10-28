@@ -17,12 +17,14 @@ function valueCell(check: string, value: number | null, status: CheckStatus): st
   else if (check === "visible") text = String(Math.round(value * 100));
   else if (check === "visible_share") text = String(Math.floor(value * 100 + 0.5 + EPS));
   else text = plain(value);
-  return status === "fail" ? `${text} ${CROSS}` : text;
+  if (status === "fail") return `${text} ${CROSS}`;
+  if (status === "warn") return `${text} !`;
+  return text;
 }
 
-/** A check row shows when it fails or is skipped in some column, or a value differs from the base. */
+/** A check row shows when it fails, warns or is skipped in some column, or a value differs from the base. */
 function worthShowing(c: CompareCheck): boolean {
-  if (c.status.some((s) => s === "fail" || s === "skip")) return true;
+  if (c.status.some((s) => s === "fail" || s === "skip" || s === "warn")) return true;
   return c.values.some((value, i) => i > 0 && (c.delta[i] === null ? value !== c.values[0] : c.delta[i] !== 0));
 }
 

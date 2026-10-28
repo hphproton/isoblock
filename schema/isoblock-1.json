@@ -354,7 +354,8 @@
         "check": { "const": "clearance" },
         "a": { "type": "string", "minLength": 1 },
         "b": { "type": "string", "minLength": 1 },
-        "min": { "type": "number", "minimum": 0 }
+        "min": { "type": "number", "minimum": 0 },
+        "warn": { "type": "number", "minimum": 0 }
       }
     },
     "checkLaneClear": {
@@ -393,7 +394,8 @@
         "check": { "const": "lane_apart" },
         "lane": { "type": "string", "minLength": 1 },
         "target": { "type": "string", "pattern": "^(lane:.+|zone:.+)$" },
-        "min": { "type": "number", "minimum": 0, "default": 0 }
+        "min": { "type": "number", "minimum": 0, "default": 0 },
+        "warn": { "type": "number", "minimum": 0 }
       }
     },
     "checkVisible": {
@@ -406,7 +408,8 @@
         "check": { "const": "visible" },
         "target": { "type": "string", "minLength": 1 },
         "from": { "type": "number", "minimum": 0, "maximum": 1, "default": 0.55 },
-        "maxOccluded": { "type": "number", "minimum": 0, "maximum": 1 }
+        "maxOccluded": { "type": "number", "minimum": 0, "maximum": 1 },
+        "warn": { "type": "number", "minimum": 0, "maximum": 1 }
       }
     },
     "pointRef": {
@@ -431,8 +434,11 @@
         "ignore": { "type": "array", "items": { "type": "string" } },
         "max": { "type": "number", "minimum": 0 },
         "level": { "type": "number" },
-        "height": { "type": "number" }
-      }
+        "height": { "type": "number" },
+        "warn": { "type": "number", "minimum": 0 }
+      },
+      "if": { "required": ["warn"] },
+      "then": { "required": ["max"] }
     },
     "checkCapacity": {
       "type": "object",
@@ -444,6 +450,7 @@
         "check": { "const": "capacity" },
         "kind": { "type": "string", "minLength": 1 },
         "min": { "type": "number", "minimum": 0 },
+        "warn": { "type": "number", "minimum": 0 },
         "body": {
           "type": "array",
           "items": { "type": "number", "minimum": 0 },
@@ -465,6 +472,7 @@
         "check": { "const": "min_screen_size" },
         "target": { "type": "string", "minLength": 1 },
         "min": { "type": "number", "minimum": 0 },
+        "warn": { "type": "number", "minimum": 0 },
         "screenWidth": { "type": "number", "exclusiveMinimum": 0 },
         "measure": { "enum": ["bounds", "height"], "default": "bounds" }
       }
@@ -497,7 +505,8 @@
         "ids": { "$ref": "#/definitions/idList" },
         "tag": { "type": "string", "minLength": 1 },
         "region": { "type": "string", "minLength": 1 },
-        "min": { "type": "number", "minimum": 0, "maximum": 1 }
+        "min": { "type": "number", "minimum": 0, "maximum": 1 },
+        "warn": { "type": "number", "minimum": 0, "maximum": 1 }
       },
       "oneOf": [
         { "required": ["ids"], "not": { "required": ["tag"] } },

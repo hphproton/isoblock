@@ -274,22 +274,22 @@ Not in stage 13: editor overlays of masks, visible shares and occluders (planned
 
 **Done when:** all tests pass, `npm run test:godot` passes, earlier fixtures still match, the workflow `ci` passes on the branch, `npm run check:publish` reports nothing, the branch is named `builder/stage-13`, its session log names the tool and model, gives the test counts with skipped tests and ends with the pull request's title and description, and the stage 13 criteria in SPEC section 17 hold.
 
-## Stage 14 · open
+## Stage 14 · done (0.14.0)
 
 The editor explains (SPEC sections 6, 9, 9.7, 10, 11, 11.1, 12, 17, 18, Appendix B). Core, CLI and editor. The scene format grows without a break (`isoblock/1` stays: the check parameter `warn`); no change to the runtime file, no new dependency. Fixtures, all in new files so that the suite of release 0.13.0 still passes on this branch: `tests/fixtures/explain/` (the scene `margins.scene.json`, whose checks carry warning margins on all seven checks that take one, in four states; `cases.json` with its check results in every state, its `WARN` lines of `describe` in `margins.describe.txt` and two `compare` cases in `compare/`; `patches/` with the patches 47 to 60 for parts and regions in `hide` and `show`; `editor/cases.json` with 8 editor cases and their expected files; `editor/overlays.json` with 19 cases that compare the relation panel, Solve, the overlays and the check panel with the command line; `invalid/` with 4 broken scenes).
 
-- [ ] Warning margins (SPEC section 9.7): the parameter `warn` on `clearance`, `lane_apart`, `visible`, `reachable`, `capacity`, `min_screen_size` and `visible_share`, in the schema with its rules; status `warn` by the margin rule; `visible_share` lists the objects in the margin
-- [ ] `WARN` lines in `check` (left out by `--failing`) and in `describe` (SPEC Appendix B); ` !` cells and `warn` rows in `compare` (SPEC section 11.1)
-- [ ] Short commands `hide` and `show` with `<id>/<part>` and `region:<id>`: the argument rule, the lists they create and remove, the errors and suggestions (SPEC section 12)
-- [ ] Editor, parts and regions per state: the checkboxes `Hidden in <state>: <part>` and the section `Regions` with `Region <id> hidden in <state>` (SPEC section 10)
-- [ ] Editor, the section `Relations`: live rows as `relations --json`, `data-relation` and `data-status`, highlight on tap (SPEC section 10)
-- [ ] Editor, Solve: `Only the selected object`, `Solve`, the proposal with its ghosts, `Apply` as the patch of `solve --patch -`, `Discard`, the conflict set marked (SPEC section 10)
-- [ ] Editor, overlays: `Relations`, `Sort points`, `Occlusion rays`, `Masks`, `Occluders of` with `Actor size` and `Occluder step`; `Masks` and `Occluders of` wait for the drop (SPEC section 10)
-- [ ] Editor, script contract: `window.isoblock.overlay(name)` for `relations`, `proposal`, `sortPoints`, `rays`, `masks` and `occluders`, and `staleOverlays` in `state()` (SPEC section 10)
-- [ ] Tests load `tests/fixtures/explain/cases.json`, its patches, `editor/cases.json`, `editor/overlays.json` and `invalid/cases.json`, and compare with the expected results and the command line as SPEC section 17 says; the stage 2 and stage 8 frame-time tests still pass
-- [ ] `CHANGELOG.md` lists `warn`, the new `hide` and `show` forms and the editor's panel, Solve button and overlays
-- [ ] `docs/AGENT_GUIDE.md` covers `warn` and the `WARN` lines, `hide` and `show` for parts and regions, and `overlay(name)` and `staleOverlays` in "Driving the editor from a script"
-- [ ] Session log says `branch ready for review`
+- [x] Warning margins (SPEC section 9.7): the parameter `warn` on `clearance`, `lane_apart`, `visible`, `reachable`, `capacity`, `min_screen_size` and `visible_share`, in the schema with its rules; status `warn` by the margin rule; `visible_share` lists the objects in the margin
+- [x] `WARN` lines in `check` (left out by `--failing`) and in `describe` (SPEC Appendix B); ` !` cells and `warn` rows in `compare` (SPEC section 11.1)
+- [x] Short commands `hide` and `show` with `<id>/<part>` and `region:<id>`: the argument rule, the lists they create and remove, the errors and suggestions (SPEC section 12)
+- [x] Editor, parts and regions per state: the checkboxes `Hidden in <state>: <part>` and the section `Regions` with `Region <id> hidden in <state>` (SPEC section 10)
+- [x] Editor, the section `Relations`: live rows as `relations --json`, `data-relation` and `data-status`, highlight on tap (SPEC section 10)
+- [x] Editor, Solve: `Only the selected object`, `Solve`, the proposal with its ghosts, `Apply` as the patch of `solve --patch -`, `Discard`, the conflict set marked (SPEC section 10)
+- [x] Editor, overlays: `Relations`, `Sort points`, `Occlusion rays`, `Masks`, `Occluders of` with `Actor size` and `Occluder step`; `Masks` and `Occluders of` wait for the drop (SPEC section 10)
+- [x] Editor, script contract: `window.isoblock.overlay(name)` for `relations`, `proposal`, `sortPoints`, `rays`, `masks` and `occluders`, and `staleOverlays` in `state()` (SPEC section 10)
+- [x] Tests load `tests/fixtures/explain/cases.json`, its patches, `editor/cases.json`, `editor/overlays.json` and `invalid/cases.json`, and compare with the expected results and the command line as SPEC section 17 says; the stage 2 and stage 8 frame-time tests still pass
+- [x] `CHANGELOG.md` lists `warn`, the new `hide` and `show` forms and the editor's panel, Solve button and overlays
+- [x] `docs/AGENT_GUIDE.md` covers `warn` and the `WARN` lines, `hide` and `show` for parts and regions, and `overlay(name)` and `staleOverlays` in "Driving the editor from a script"
+- [x] Session log says `branch ready for review`
 
 Not in stage 14: creating, editing or deleting relations in the editor; overlays in `render` or the block image; switching between `compare` variants in the editor; a warning margin on checks that count objects (SPEC section 9.7); creating, renaming or deleting states in the editor; masks of zones, lanes or regions; `compare --render` and layout indicators (not scheduled). The Rust crate license texts in `THIRD_PARTY_NOTICES.md` are a maintainer task (`MAINTAINING.md`, Before distributing a build).
 

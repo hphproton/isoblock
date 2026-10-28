@@ -1,4 +1,5 @@
 import { assumptionAt } from "../core/assumptions";
+import { partNames } from "../core/states";
 import { round6 } from "../core/checks/result";
 import { moveObject, setObjectType, setRotation, setTypeSize } from "../core/edit";
 import { IsoblockError } from "../core/errors";
@@ -227,23 +228,38 @@ function buildProps(store: EditorStore, scene: Scene, object: SceneObject): { ro
   });
 
   const stateNames = Object.keys(scene.states ?? {});
+  const parts = partNames(scene, object);
   if (stateNames.length > 0) {
     const boxes = new Map<string, HTMLInputElement>();
-    const labels = stateNames.map((name) => {
-      const box = el("input", { type: "checkbox", "aria-label": `Hidden in ${name}` });
-      box.addEventListener("change", () => {
-        store.applyLine(`${box.checked ? "hide" : "show"} ${name} ${id}`);
+    const labels = stateNames.flatMap((name) => {
+      const objectBox = el("input", { type: "checkbox", "aria-label": `Hidden in ${name}` });
+      objectBox.addEventListener("change", () => {
+        store.applyLine(`${objectBox.checked ? "hide" : "show"} ${name} ${id}`);
         const now = currentScene(store.get());
-        box.checked = now?.states?.[name]?.hide?.includes(id) === true;
+        objectBox.checked = now?.states?.[name]?.hide?.includes(id) === true;
       });
-      boxes.set(name, box);
-      return el("label", {}, box, `Hidden in ${name}`);
+      boxes.set(`object\0${name}`, objectBox);
+      const partBoxes = parts.map((part) => {
+        const label = `Hidden in ${name}: ${part}`;
+        const box = el("input", { type: "checkbox", "aria-label": label });
+        box.addEventListener("change", () => {
+          store.applyLine(`${box.checked ? "hide" : "show"} ${name} ${id}/${part}`);
+          const now = currentScene(store.get());
+          box.checked = now?.states?.[name]?.hideParts?.[id]?.includes(part) === true;
+        });
+        boxes.set(`part\0${name}\0${part}`, box);
+        return el("label", {}, box, label);
+      });
+      return [el("label", {}, objectBox, `Hidden in ${name}`), ...partBoxes];
     });
     rows.push({
       node: el("div", { class: "hides" }, ...labels),
       update(s) {
-        for (const [name, box] of boxes) {
-          const on = s.states?.[name]?.hide?.includes(id) === true;
+        for (const [key, box] of boxes) {
+          const [kind, name, part] = key.split("\0");
+          const on = kind === "part"
+            ? s.states?.[name ?? ""]?.hideParts?.[id]?.includes(part ?? "") === true
+            : s.states?.[name ?? ""]?.hide?.includes(id) === true;
           if (box.checked !== on) box.checked = on;
         }
       },

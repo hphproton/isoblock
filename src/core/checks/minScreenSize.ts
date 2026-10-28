@@ -1,6 +1,7 @@
 import { EPS, indexObjects } from "../geometry";
 import { screenAxes } from "../projection";
 import type { CheckResult, MinScreenSizeCheck, Scene } from "../types";
+import { marginStatus } from "./margin";
 import { round6 } from "./result";
 import { partHeightSpan, partScreenBox } from "./screenBounds";
 
@@ -20,7 +21,7 @@ export function checkMinScreenSize(scene: Scene, spec: MinScreenSizeCheck): Chec
   return {
     id: spec.id,
     check: spec.check,
-    status: value >= spec.min - EPS ? "pass" : "fail",
+    status: marginStatus(value >= spec.min - EPS, value, spec.min, spec.warn, "lower"),
     value,
     threshold: spec.min,
     ids: [target.id],

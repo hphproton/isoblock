@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.14.0
+
+Stage 14: the editor explains. The scene format stays `isoblock/1` (checks take `warn`); the runtime file stays `isoblock-runtime/3`.
+
+### Added
+
+- Checks that have one bound take `warn`, a margin on the passing side of that bound: `clearance`, `lane_apart`, `visible`, `reachable` (with `max`), `capacity`, `min_screen_size` and `visible_share`. A result that would pass is `warn` when its value lies in the margin. `fail` and `skip` are unchanged, and `warn: 0` never warns. `check` prints `WARN` lines; `check --failing` leaves them out, and the exit code still treats `warn` as `pass`. `describe` prints one `WARN` line per warning, with the value, the margin and the bound. `compare` shows a warning row and marks the cell with ` !`. In the editor the check row reads `WARN`.
+- `hide` and `show` take a part (`hide <state> <id>/<part>`, `body` when the type has no parts) and a frame region (`hide <state> region:<id>`). `show` of the last part of an object drops that object's list. An unknown object, part, region or state suggests a near name.
+- The editor hides parts per state from the property panel and frame regions from a Regions section, with the same commands. A Relations section lists `relations --json` live, and Solve shows the solver's proposal as ghosts with Apply (the patch of `solve --patch -`, one undo step) and Discard. Overlays draw relations, sort points, occlusion rays, masks and occluders. Masks and occluders wait until a drag ends. `window.isoblock.overlay(name)` returns the data each overlay draws, and `state().staleOverlays` names the pictures that are out of date during a drag.
+
 ## 0.13.0
 
 Stage 13: masks and visibility. The scene format stays `isoblock/1`; the runtime file stays `isoblock-runtime/3`.

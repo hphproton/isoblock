@@ -4,12 +4,33 @@ import type { EditResult } from "../core/edit";
 import { canRedo, canUndo, commit, redo, startHistory, undo, type History } from "../core/history";
 import { rerunResults, searchesGrid, updateResults } from "../core/incremental";
 import { setLock } from "../core/locks";
+import type { OccludersReport } from "../core/occluders";
 import { runPatch } from "../core/patch/outcome";
+import type { ObjectRaster } from "../core/raster/raster";
+import type { VisibilityReport } from "../core/raster/visibility";
+import { evaluateRelations } from "../core/relations/evaluate";
+import { solvePatch } from "../core/solver/report";
+import type { SolveReport } from "../core/solver/solve";
 import type { CheckResult, Scene } from "../core/types";
 import { addLine, duplicateLine, nudgeLine } from "./edits";
+import { rastersDiffer, nextRasters } from "./rasters";
 import { activeStateName, keptSelection, shownStateName } from "./shown";
 
-export type OverlayName = "regions" | "strips" | "lanes" | "zones" | "anchors" | "labels";
+export type OverlayName = "regions" | "strips" | "lanes" | "zones" | "anchors" | "labels" | "relations" | "sortPoints" | "rays" | "masks";
+export type StaleOverlay = "masks" | "occluders";
+
+/** Area, actor size and step of the Occluders overlay. An empty area means it is off. */
+export interface OccluderInput {
+  readonly area: string;
+  readonly actor: string;
+  readonly step: number;
+}
+
+/** A solver proposal that is shown and not saved. `only` is the id list passed to `solve`, or null. */
+export interface ProposalView {
+  readonly report: SolveReport;
+  readonly only: readonly string[] | null;
+}
 export type ViewMode = "iso" | "plan" | "split";
 
 export interface Notice {
@@ -35,8 +56,18 @@ export interface EditorState {
   readonly stale: ReadonlySet<string>;
   readonly selected: string | null;
   readonly highlightCheck: string | null;
+  readonly highlightRelation: string | null;
   readonly highlightIds: ReadonlySet<string>;
   readonly overlays: Readonly<Record<OverlayName, boolean>>;
+  readonly occluder: OccluderInput;
+  /** Shown solver proposal. An edit, undo, redo, a drag or an opened file removes it. */
+  readonly proposal: ProposalView | null;
+  readonly masksReport: VisibilityReport | null;
+  readonly maskRaster: ObjectRaster | null;
+  readonly occludersReport: OccludersReport | null;
+  readonly occluderPoints: readonly (readonly [number, number])[];
+  /** `masks` and `occluders` whose picture is from before the current drag. */
+  readonly staleOverlays: ReadonlySet<StaleOverlay>;
   readonly snap: number;
   /** Value of the State select. Switching it is not an edit. */
   readonly shownState: string;
@@ -51,6 +82,8 @@ export interface EditorState {
 export type Listener = (state: EditorState, previous: EditorState) => void;
 
 const NO_IDS: ReadonlySet<string> = new Set();
+const NO_STALE: ReadonlySet<StaleOverlay> = new Set();
+const NO_POINTS: readonly (readonly [number, number])[] = [];
 
 const INITIAL: EditorState = {
   fileName: null,
@@ -62,8 +95,19 @@ const INITIAL: EditorState = {
   stale: NO_IDS,
   selected: null,
   highlightCheck: null,
+  highlightRelation: null,
   highlightIds: NO_IDS,
-  overlays: { regions: true, strips: true, lanes: true, zones: true, anchors: false, labels: false },
+  overlays: {
+    regions: true, strips: true, lanes: true, zones: true, anchors: false, labels: false,
+    relations: false, sortPoints: false, rays: false, masks: false,
+  },
+  occluder: { area: "", actor: "", step: 0.25 },
+  proposal: null,
+  masksReport: null,
+  maskRaster: null,
+  occludersReport: null,
+  occluderPoints: NO_POINTS,
+  staleOverlays: NO_STALE,
   snap: 0.1,
   shownState: "default",
   resultsState: null,
@@ -101,6 +145,8 @@ function blockedText(objectId: string, blocked: readonly string[]): string {
 export class EditorStore {
   private state: EditorState = INITIAL;
   private readonly listeners = new Set<Listener>();
+  /** The occluder notice currently shown, so a later success can clear that notice and no other. */
+  private occluderFault: string | null = null;
 
   get(): EditorState {
     return this.state;
@@ -113,10 +159,30 @@ export class EditorStore {
 
   private set(patch: Partial<EditorState>): void {
     const previous = this.state;
-    const next = { ...previous, ...patch };
-    if ((Object.keys(patch) as (keyof EditorState)[]).every((k) => previous[k] === next[k])) return;
+    let next: EditorState = { ...previous, ...patch };
+    if (previous.history !== next.history || (previous.live === null && next.live !== null)) {
+      if (next.proposal !== null) next = { ...next, proposal: null };
+    }
+    if (rastersDiffer(previous, next)) {
+      const built = nextRasters(previous, next);
+      next = { ...next, ...built.hold };
+      next = this.applyFault(next, built.fault);
+    }
+    const changed = (Object.keys(next) as (keyof EditorState)[]).some((key) => previous[key] !== next[key]);
+    if (!changed) return;
     this.state = next;
     for (const listener of [...this.listeners]) listener(next, previous);
+  }
+
+  private applyFault(next: EditorState, fault: string | null | undefined): EditorState {
+    if (fault === undefined) return next;
+    if (fault === null) {
+      const clear = this.occluderFault !== null && next.notice?.text === this.occluderFault;
+      this.occluderFault = null;
+      return clear ? { ...next, notice: null } : next;
+    }
+    this.occluderFault = fault;
+    return { ...next, notice: { kind: "error", text: fault } };
   }
 
   /**
@@ -136,12 +202,12 @@ export class EditorStore {
       const update = resultsInState(same ? resultsScene : null, scene, state, same ? results : [], dragging, same ? stale : NO_IDS);
       return {
         shownState, results: update.results, resultsScene: scene, resultsState: state,
-        highlightIds: idsOf(update.results, highlightCheck), stale: update.stale,
+        highlightIds: this.highlighted(update.results, highlightCheck), stale: update.stale,
       };
     }
     if (resultsScene === null || resultsState !== null) {
       const fresh = runChecks(scene);
-      return { shownState, results: fresh, resultsScene: scene, resultsState: null, highlightIds: idsOf(fresh, highlightCheck), stale: NO_IDS };
+      return { shownState, results: fresh, resultsScene: scene, resultsState: null, highlightIds: this.highlighted(fresh, highlightCheck), stale: NO_IDS };
     }
     const update = updateResults(resultsScene, scene, results, dragging ? searchesGrid : undefined);
     let next = update.results;
@@ -152,12 +218,18 @@ export class EditorStore {
       next = rerunResults(scene, next, new Set([...stale].filter((id) => !ran.has(id))));
       nextStale = NO_IDS;
     }
-    const highlightIds = next === results ? this.state.highlightIds : idsOf(next, highlightCheck);
+    const highlightIds = this.state.highlightRelation !== null || next === results ? this.state.highlightIds : idsOf(next, highlightCheck);
     return { shownState, results: next, resultsScene: scene, resultsState: null, highlightIds, stale: nextStale };
+  }
+
+  /** Ids highlighted by the check row, unless a relation row is holding the highlight. */
+  private highlighted(results: readonly CheckResult[], checkId: string | null): ReadonlySet<string> {
+    return this.state.highlightRelation !== null ? this.state.highlightIds : idsOf(results, checkId);
   }
 
   open(scene: Scene, fileName: string | null): void {
     const { overlays, snap, mode, opened } = this.state;
+    this.occluderFault = null;
     this.state = { ...INITIAL, overlays, snap, mode, opened };
     this.set({
       opened: opened + 1,
@@ -174,7 +246,40 @@ export class EditorStore {
 
   highlightCheck(checkId: string | null): void {
     const next = checkId === this.state.highlightCheck ? null : checkId;
-    this.set({ highlightCheck: next, highlightIds: idsOf(this.state.results, next) });
+    this.set({ highlightCheck: next, highlightRelation: null, highlightIds: idsOf(this.state.results, next) });
+  }
+
+  /** Highlight the objects of one relation, or clear that highlight when it is tapped again. */
+  highlightRelation(id: string | null): void {
+    const scene = currentScene(this.state);
+    const next = id !== null && id === this.state.highlightRelation ? null : id;
+    const found = next === null || scene === null ? undefined : evaluateRelations(scene).results.find((row) => row.id === next);
+    this.set({
+      highlightRelation: next,
+      highlightCheck: null,
+      highlightIds: found === undefined ? NO_IDS : new Set(found.ids),
+    });
+  }
+
+  setOccluder(patch: Partial<OccluderInput>): void {
+    this.set({ occluder: { ...this.state.occluder, ...patch } });
+  }
+
+  /** Show the solver's proposal. `only` is what `solve --only` received, or null. */
+  showProposal(report: SolveReport, only: readonly string[] | null): void {
+    const notice = report.status === "conflict" ? { kind: "error" as const, text: `conflict: ${report.conflict.join(", ")}` } : null;
+    this.set({ proposal: { report, only }, ...(notice === null ? {} : { notice }) });
+  }
+
+  discardProposal(): void {
+    this.set({ proposal: null });
+  }
+
+  /** Apply the proposal as the patch `solve --patch` prints. One history step. */
+  applyProposal(): void {
+    const proposal = this.state.proposal;
+    if (proposal === null || proposal.report.moved.length === 0) return;
+    this.applyLine(solvePatch(proposal.report));
   }
 
   setOverlay(name: OverlayName, on: boolean): void {
