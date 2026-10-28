@@ -1,0 +1,341 @@
+{
+  "schema": "isoblock/1",
+  "id": "margins",
+  "meta": {
+    "version": 1,
+    "status": "draft"
+  },
+  "units": {
+    "name": "u",
+    "note": "synthetic unit"
+  },
+  "camera": {
+    "angleU": 30,
+    "angleV": 150,
+    "pxPerUnit": 50,
+    "verticalScale": 1,
+    "origin": [
+      330,
+      150
+    ]
+  },
+  "frame": {
+    "w": 800,
+    "h": 600,
+    "regions": [
+      {
+        "id": "view",
+        "rect": [
+          0,
+          0,
+          800,
+          520
+        ]
+      },
+      {
+        "id": "bar",
+        "rect": [
+          0,
+          520,
+          800,
+          600
+        ],
+        "blocksScene": true
+      }
+    ]
+  },
+  "types": {
+    "crate": {
+      "size": [
+        1,
+        1,
+        1
+      ]
+    },
+    "post": {
+      "size": [
+        0.3,
+        0.3,
+        2
+      ]
+    },
+    "bench": {
+      "size": [
+        1.6,
+        0.5,
+        0.5
+      ],
+      "anchors": [
+        {
+          "id": "seat1",
+          "at": [
+            0.4,
+            0.25,
+            0.5
+          ],
+          "kind": "seat"
+        },
+        {
+          "id": "seat2",
+          "at": [
+            1.2,
+            0.25,
+            0.5
+          ],
+          "kind": "seat"
+        }
+      ]
+    },
+    "figure": {
+      "size": [
+        0.5,
+        0.5,
+        1.7
+      ]
+    },
+    "hedge": {
+      "size": [
+        2,
+        0.6,
+        1.6
+      ]
+    },
+    "lamp": {
+      "size": [
+        0.2,
+        0.2,
+        3
+      ]
+    }
+  },
+  "objects": [
+    {
+      "id": "crate_a",
+      "type": "crate",
+      "pos": [
+        1,
+        1
+      ]
+    },
+    {
+      "id": "crate_b",
+      "type": "crate",
+      "pos": [
+        2.6,
+        1
+      ]
+    },
+    {
+      "id": "crate_c",
+      "type": "crate",
+      "pos": [
+        4.6,
+        1
+      ]
+    },
+    {
+      "id": "post",
+      "type": "post",
+      "pos": [
+        5.9,
+        1.2
+      ],
+      "tags": [
+        "street"
+      ]
+    },
+    {
+      "id": "figure",
+      "type": "figure",
+      "pos": [
+        2.2,
+        4.6
+      ]
+    },
+    {
+      "id": "hedge",
+      "type": "hedge",
+      "pos": [
+        2,
+        5.3
+      ]
+    },
+    {
+      "id": "bench",
+      "type": "bench",
+      "pos": [
+        5.2,
+        4
+      ]
+    },
+    {
+      "id": "lamp",
+      "type": "lamp",
+      "pos": [
+        3.3,
+        4.6
+      ],
+      "tags": [
+        "street"
+      ]
+    }
+  ],
+  "zones": [
+    {
+      "id": "floor",
+      "kind": "walkable",
+      "points": [
+        [
+          0,
+          0
+        ],
+        [
+          8,
+          0
+        ],
+        [
+          8,
+          8
+        ],
+        [
+          0,
+          8
+        ]
+      ]
+    }
+  ],
+  "lanes": [
+    {
+      "id": "walk",
+      "kind": "walk",
+      "width": 0.8,
+      "points": [
+        [
+          0.4,
+          3
+        ],
+        [
+          7.6,
+          3
+        ]
+      ]
+    },
+    {
+      "id": "path",
+      "kind": "walk",
+      "width": 0.8,
+      "points": [
+        [
+          0.4,
+          7.2
+        ],
+        [
+          7.6,
+          7.2
+        ]
+      ]
+    }
+  ],
+  "states": {
+    "cleared": {
+      "hide": [
+        "hedge"
+      ]
+    },
+    "dark": {
+      "hide": [
+        "lamp"
+      ]
+    },
+    "closed": {
+      "hide": [
+        "bench"
+      ]
+    }
+  },
+  "checks": [
+    {
+      "id": "gap_ab",
+      "check": "clearance",
+      "a": "crate_a",
+      "b": "crate_b",
+      "min": 0.5,
+      "warn": 0.25
+    },
+    {
+      "id": "gap_bc",
+      "check": "clearance",
+      "a": "crate_b",
+      "b": "crate_c",
+      "min": 0.5,
+      "warn": 0.25
+    },
+    {
+      "id": "gap_cp",
+      "check": "clearance",
+      "a": "crate_c",
+      "b": "post",
+      "min": 0.5,
+      "warn": 0.25
+    },
+    {
+      "id": "gap_plain",
+      "check": "clearance",
+      "a": "crate_a",
+      "b": "figure",
+      "min": 2.5
+    },
+    {
+      "id": "lanes_apart",
+      "check": "lane_apart",
+      "lane": "walk",
+      "target": "lane:path",
+      "min": 3,
+      "warn": 0.5
+    },
+    {
+      "id": "figure_seen",
+      "check": "visible",
+      "target": "figure",
+      "maxOccluded": 0.4,
+      "warn": 0.15
+    },
+    {
+      "id": "reach_seat",
+      "check": "reachable",
+      "from": "lane:walk",
+      "to": "anchor:bench/seat1",
+      "max": 7,
+      "warn": 1.5
+    },
+    {
+      "id": "seats",
+      "check": "capacity",
+      "kind": "seat",
+      "min": 2,
+      "warn": 1
+    },
+    {
+      "id": "figure_tall",
+      "check": "min_screen_size",
+      "target": "figure",
+      "min": 80,
+      "warn": 10,
+      "measure": "height"
+    },
+    {
+      "id": "crate_size",
+      "check": "min_screen_size",
+      "target": "crate_a",
+      "min": 100,
+      "warn": 0
+    },
+    {
+      "id": "street_shown",
+      "check": "visible_share",
+      "tag": "street",
+      "min": 0.7,
+      "warn": 1.5
+    }
+  ]
+}

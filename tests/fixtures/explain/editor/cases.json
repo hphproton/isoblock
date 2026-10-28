@@ -1,0 +1,156 @@
+{
+  "cases": [
+    {
+      "name": "x01-hide-part",
+      "scene": "tests/fixtures/levels/levels.scene.json",
+      "snap": 0.1,
+      "steps": [
+        {
+          "select": "kiosk"
+        },
+        {
+          "toggle": "Hidden in open: awning"
+        }
+      ],
+      "patch": "hide open kiosk/awning\n",
+      "expected": "x01-hide-part.expected.json",
+      "refused": false,
+      "panelState": null,
+      "hidden": []
+    },
+    {
+      "name": "x02-show-part",
+      "scene": "tests/fixtures/levels/levels.scene.json",
+      "snap": 0.1,
+      "steps": [
+        {
+          "select": "kiosk"
+        },
+        {
+          "toggle": "Hidden in open: shutter"
+        }
+      ],
+      "patch": "show open kiosk/shutter\n",
+      "expected": "x02-show-part.expected.json",
+      "refused": false,
+      "panelState": null,
+      "hidden": []
+    },
+    {
+      "name": "x03-body-part",
+      "scene": "tests/fixtures/levels/levels.scene.json",
+      "snap": 0.1,
+      "steps": [
+        {
+          "select": "mast"
+        },
+        {
+          "toggle": "Hidden in bare: body"
+        }
+      ],
+      "patch": "show bare mast/body\n",
+      "expected": "x03-body-part.expected.json",
+      "refused": false,
+      "panelState": null,
+      "hidden": []
+    },
+    {
+      "name": "x04-hide-region",
+      "scene": "tests/fixtures/levels/levels.scene.json",
+      "snap": 0.1,
+      "steps": [
+        {
+          "toggle": "Region band hidden in closed"
+        }
+      ],
+      "patch": "hide closed region:band\n",
+      "expected": "x04-hide-region.expected.json",
+      "refused": false,
+      "panelState": null,
+      "hidden": []
+    },
+    {
+      "name": "x05-show-region",
+      "scene": "tests/fixtures/levels/levels.scene.json",
+      "snap": 0.1,
+      "steps": [
+        {
+          "toggle": "Region board hidden in cinema"
+        }
+      ],
+      "patch": "show cinema region:board\n",
+      "expected": "x05-show-region.expected.json",
+      "refused": false,
+      "panelState": null,
+      "hidden": []
+    },
+    {
+      "name": "x06-part-in-state",
+      "scene": "tests/fixtures/levels/levels.scene.json",
+      "snap": 0.1,
+      "steps": [
+        {
+          "state": "closed"
+        },
+        {
+          "select": "kiosk"
+        },
+        {
+          "toggle": "Hidden in closed: counter"
+        }
+      ],
+      "patch": "hide closed kiosk/counter\n",
+      "expected": "x06-part-in-state.expected.json",
+      "refused": false,
+      "panelState": "closed",
+      "hidden": []
+    },
+    {
+      "name": "x07-part-undo",
+      "scene": "tests/fixtures/levels/levels.scene.json",
+      "snap": 0.1,
+      "steps": [
+        {
+          "select": "kiosk"
+        },
+        {
+          "toggle": "Hidden in cinema: awning"
+        },
+        {
+          "undo": 1
+        }
+      ],
+      "patch": null,
+      "expected": null,
+      "refused": false,
+      "panelState": null,
+      "hidden": []
+    },
+    {
+      "name": "x08-last-part",
+      "scene": "tests/fixtures/levels/levels.scene.json",
+      "snap": 0.1,
+      "steps": [
+        {
+          "state": "open"
+        },
+        {
+          "select": "kiosk"
+        },
+        {
+          "toggle": "Hidden in open: counter"
+        },
+        {
+          "toggle": "Hidden in open: awning"
+        }
+      ],
+      "patch": "hide open kiosk/counter\nhide open kiosk/awning\n",
+      "expected": "x08-last-part.expected.json",
+      "refused": false,
+      "panelState": "open",
+      "hidden": [
+        "kiosk"
+      ]
+    }
+  ]
+}

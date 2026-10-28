@@ -1,0 +1,40 @@
+{
+  "cases": [
+    {
+      "file": "warn-on-count.invalid.json",
+      "code": "E_SCHEMA",
+      "scene": "margins",
+      "contains": [
+        "\"warn\""
+      ],
+      "excludes": []
+    },
+    {
+      "file": "warn-negative.invalid.json",
+      "code": "E_SCHEMA",
+      "scene": "margins",
+      "contains": [
+        "/checks/0/warn"
+      ],
+      "excludes": []
+    },
+    {
+      "file": "warn-share-above-1.invalid.json",
+      "code": "E_SCHEMA",
+      "scene": "margins",
+      "contains": [
+        "/checks/10/warn"
+      ],
+      "excludes": []
+    },
+    {
+      "file": "warn-without-max.invalid.json",
+      "code": "E_SCHEMA",
+      "scene": "margins",
+      "contains": [
+        "/checks/6"
+      ],
+      "excludes": []
+    }
+  ]
+}

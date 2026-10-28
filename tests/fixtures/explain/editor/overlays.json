@@ -1,0 +1,163 @@
+{
+  "cases": [
+    {
+      "name": "o01-relations",
+      "scene": "tests/fixtures/relations/relations.scene.json",
+      "state": null,
+      "overlay": "relations",
+      "drag": {
+        "object": "p6",
+        "dx": -40,
+        "dy": 0
+      }
+    },
+    {
+      "name": "o02-solve",
+      "scene": "tests/fixtures/solver/feasible.scene.json",
+      "state": null,
+      "overlay": "proposal",
+      "only": null,
+      "then": "Apply"
+    },
+    {
+      "name": "o03-solve-conflict",
+      "scene": "tests/fixtures/solver/conflict.scene.json",
+      "state": null,
+      "overlay": "proposal",
+      "only": null,
+      "then": "Discard"
+    },
+    {
+      "name": "o04-solve-only",
+      "scene": "tests/fixtures/solver/only.scene.json",
+      "state": null,
+      "overlay": "proposal",
+      "only": "e",
+      "then": "Apply"
+    },
+    {
+      "name": "o05-solve-only-conflict",
+      "scene": "tests/fixtures/solver/only.scene.json",
+      "state": null,
+      "overlay": "proposal",
+      "only": "f",
+      "then": "Apply"
+    },
+    {
+      "name": "o06-solve-perf",
+      "scene": "tests/fixtures/solver/perf.scene.json",
+      "state": null,
+      "overlay": "proposal",
+      "only": null,
+      "then": "Apply"
+    },
+    {
+      "name": "o07-sort-points",
+      "scene": "tests/fixtures/sort/court.scene.json",
+      "state": null,
+      "overlay": "sortPoints"
+    },
+    {
+      "name": "o08-sort-points-state",
+      "scene": "tests/fixtures/levels/levels.scene.json",
+      "state": "cinema",
+      "overlay": "sortPoints"
+    },
+    {
+      "name": "o09-rays",
+      "scene": "tests/fixtures/yard.scene.json",
+      "state": null,
+      "overlay": "rays",
+      "check": "c8"
+    },
+    {
+      "name": "o10-rays-state",
+      "scene": "tests/fixtures/levels/levels.scene.json",
+      "state": "closed",
+      "overlay": "rays",
+      "check": "figure_seen"
+    },
+    {
+      "name": "o11-rays-parts",
+      "scene": "tests/fixtures/levels/levels.scene.json",
+      "state": null,
+      "overlay": "rays",
+      "check": "figure_seen"
+    },
+    {
+      "name": "o12-masks",
+      "scene": "tests/fixtures/masks/plaza.scene.json",
+      "state": null,
+      "overlay": "masks",
+      "drag": {
+        "object": "kiosk",
+        "dx": 0,
+        "dy": 40
+      }
+    },
+    {
+      "name": "o13-masks-state",
+      "scene": "tests/fixtures/masks/plaza.scene.json",
+      "state": "closed",
+      "overlay": "masks",
+      "drag": {
+        "object": "kiosk",
+        "dx": 0,
+        "dy": 40
+      }
+    },
+    {
+      "name": "o14-occluders-lane",
+      "scene": "tests/fixtures/masks/plaza.scene.json",
+      "state": null,
+      "overlay": "occluders",
+      "area": "lane:walk",
+      "actor": "0.5,0.5,1.7",
+      "step": 0.25,
+      "drag": {
+        "object": "bench_a",
+        "dx": 30,
+        "dy": 0
+      }
+    },
+    {
+      "name": "o15-occluders-zone",
+      "scene": "tests/fixtures/masks/plaza.scene.json",
+      "state": "closed",
+      "overlay": "occluders",
+      "area": "zone:square",
+      "actor": "0.5,0.5,1.7",
+      "step": 0.5
+    },
+    {
+      "name": "o16-occluders-raised",
+      "scene": "tests/fixtures/levels/levels.scene.json",
+      "state": "closed",
+      "overlay": "occluders",
+      "area": "zone:deck_top",
+      "actor": "0.5,0.5,1.7",
+      "step": 0.25
+    },
+    {
+      "name": "o17-occluders-refused",
+      "scene": "tests/fixtures/masks/plaza.scene.json",
+      "state": null,
+      "overlay": "occluders",
+      "area": "lane:walk",
+      "actor": "0.5,0,1.7",
+      "step": 0.25
+    },
+    {
+      "name": "o18-warn-panel",
+      "scene": "tests/fixtures/explain/margins.scene.json",
+      "state": null,
+      "overlay": null
+    },
+    {
+      "name": "o19-warn-panel-state",
+      "scene": "tests/fixtures/explain/margins.scene.json",
+      "state": "closed",
+      "overlay": null
+    }
+  ]
+}

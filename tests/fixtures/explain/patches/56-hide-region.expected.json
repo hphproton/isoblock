@@ -1,0 +1,23 @@
+{
+  "base": "tests/fixtures/levels/levels.scene.json",
+  "tolerance": {
+    "value": 0.01,
+    "valuePx": 1,
+    "coordinate": 0.000001
+  },
+  "exit": 1,
+  "status": "applied",
+  "error": null,
+  "locks": [],
+  "diff": [
+    {
+      "op": "add",
+      "path": "/states/open/hideRegions",
+      "to": [
+        "board"
+      ]
+    }
+  ],
+  "checks": [],
+  "failing": 11
+}

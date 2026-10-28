@@ -1,0 +1,584 @@
+{
+  "tolerance": {
+    "value": 0.01,
+    "valuePx": 1,
+    "share": 0.001
+  },
+  "checks": [
+    {
+      "scene": "tests/fixtures/explain/margins.scene.json",
+      "state": null,
+      "checks": [
+        {
+          "id": "gap_ab",
+          "check": "clearance",
+          "status": "warn",
+          "value": 0.6,
+          "threshold": 0.5,
+          "ids": [
+            "crate_a",
+            "crate_b"
+          ]
+        },
+        {
+          "id": "gap_bc",
+          "check": "clearance",
+          "status": "pass",
+          "value": 1,
+          "threshold": 0.5,
+          "ids": [
+            "crate_b",
+            "crate_c"
+          ]
+        },
+        {
+          "id": "gap_cp",
+          "check": "clearance",
+          "status": "fail",
+          "value": 0.3,
+          "threshold": 0.5,
+          "ids": [
+            "crate_c",
+            "post"
+          ]
+        },
+        {
+          "id": "gap_plain",
+          "check": "clearance",
+          "status": "pass",
+          "value": 2.607681,
+          "threshold": 2.5,
+          "ids": [
+            "crate_a",
+            "figure"
+          ]
+        },
+        {
+          "id": "lanes_apart",
+          "check": "lane_apart",
+          "status": "warn",
+          "value": 3.4,
+          "threshold": 3,
+          "ids": [
+            "walk",
+            "path"
+          ],
+          "overlap": 0
+        },
+        {
+          "id": "figure_seen",
+          "check": "visible",
+          "status": "warn",
+          "value": 0.307292,
+          "threshold": 0.4,
+          "ids": [
+            "figure"
+          ],
+          "occluders": [
+            "hedge"
+          ]
+        },
+        {
+          "id": "reach_seat",
+          "check": "reachable",
+          "threshold": 7,
+          "ids": [
+            "bench"
+          ],
+          "status": "warn",
+          "value": 6.5
+        },
+        {
+          "id": "seats",
+          "check": "capacity",
+          "status": "warn",
+          "value": 2,
+          "threshold": 2,
+          "ids": [
+            "bench"
+          ],
+          "accepted": [
+            "bench/seat1",
+            "bench/seat2"
+          ],
+          "rejected": []
+        },
+        {
+          "id": "figure_tall",
+          "check": "min_screen_size",
+          "status": "warn",
+          "value": 85,
+          "threshold": 80,
+          "ids": [
+            "figure"
+          ]
+        },
+        {
+          "id": "crate_size",
+          "check": "min_screen_size",
+          "status": "pass",
+          "value": 100,
+          "threshold": 100,
+          "ids": [
+            "crate_a"
+          ]
+        },
+        {
+          "id": "street_shown",
+          "check": "visible_share",
+          "status": "warn",
+          "value": 0.812144,
+          "threshold": 0.7,
+          "ids": [
+            "lamp"
+          ],
+          "shares": [
+            0.812144
+          ]
+        }
+      ]
+    },
+    {
+      "scene": "tests/fixtures/explain/margins.scene.json",
+      "state": "cleared",
+      "checks": [
+        {
+          "id": "gap_ab",
+          "check": "clearance",
+          "status": "warn",
+          "value": 0.6,
+          "threshold": 0.5,
+          "ids": [
+            "crate_a",
+            "crate_b"
+          ]
+        },
+        {
+          "id": "gap_bc",
+          "check": "clearance",
+          "status": "pass",
+          "value": 1,
+          "threshold": 0.5,
+          "ids": [
+            "crate_b",
+            "crate_c"
+          ]
+        },
+        {
+          "id": "gap_cp",
+          "check": "clearance",
+          "status": "fail",
+          "value": 0.3,
+          "threshold": 0.5,
+          "ids": [
+            "crate_c",
+            "post"
+          ]
+        },
+        {
+          "id": "gap_plain",
+          "check": "clearance",
+          "status": "pass",
+          "value": 2.607681,
+          "threshold": 2.5,
+          "ids": [
+            "crate_a",
+            "figure"
+          ]
+        },
+        {
+          "id": "lanes_apart",
+          "check": "lane_apart",
+          "status": "warn",
+          "value": 3.4,
+          "threshold": 3,
+          "ids": [
+            "walk",
+            "path"
+          ],
+          "overlap": 0
+        },
+        {
+          "id": "figure_seen",
+          "check": "visible",
+          "status": "pass",
+          "value": 0,
+          "threshold": 0.4,
+          "ids": [
+            "figure"
+          ],
+          "occluders": []
+        },
+        {
+          "id": "reach_seat",
+          "check": "reachable",
+          "threshold": 7,
+          "ids": [
+            "bench"
+          ],
+          "status": "warn",
+          "value": 6.5
+        },
+        {
+          "id": "seats",
+          "check": "capacity",
+          "status": "warn",
+          "value": 2,
+          "threshold": 2,
+          "ids": [
+            "bench"
+          ],
+          "accepted": [
+            "bench/seat1",
+            "bench/seat2"
+          ],
+          "rejected": []
+        },
+        {
+          "id": "figure_tall",
+          "check": "min_screen_size",
+          "status": "warn",
+          "value": 85,
+          "threshold": 80,
+          "ids": [
+            "figure"
+          ]
+        },
+        {
+          "id": "crate_size",
+          "check": "min_screen_size",
+          "status": "pass",
+          "value": 100,
+          "threshold": 100,
+          "ids": [
+            "crate_a"
+          ]
+        },
+        {
+          "id": "street_shown",
+          "check": "visible_share",
+          "status": "pass",
+          "value": 1,
+          "threshold": 0.7,
+          "ids": [],
+          "shares": []
+        }
+      ]
+    },
+    {
+      "scene": "tests/fixtures/explain/margins.scene.json",
+      "state": "dark",
+      "checks": [
+        {
+          "id": "gap_ab",
+          "check": "clearance",
+          "status": "warn",
+          "value": 0.6,
+          "threshold": 0.5,
+          "ids": [
+            "crate_a",
+            "crate_b"
+          ]
+        },
+        {
+          "id": "gap_bc",
+          "check": "clearance",
+          "status": "pass",
+          "value": 1,
+          "threshold": 0.5,
+          "ids": [
+            "crate_b",
+            "crate_c"
+          ]
+        },
+        {
+          "id": "gap_cp",
+          "check": "clearance",
+          "status": "fail",
+          "value": 0.3,
+          "threshold": 0.5,
+          "ids": [
+            "crate_c",
+            "post"
+          ]
+        },
+        {
+          "id": "gap_plain",
+          "check": "clearance",
+          "status": "pass",
+          "value": 2.607681,
+          "threshold": 2.5,
+          "ids": [
+            "crate_a",
+            "figure"
+          ]
+        },
+        {
+          "id": "lanes_apart",
+          "check": "lane_apart",
+          "status": "warn",
+          "value": 3.4,
+          "threshold": 3,
+          "ids": [
+            "walk",
+            "path"
+          ],
+          "overlap": 0
+        },
+        {
+          "id": "figure_seen",
+          "check": "visible",
+          "status": "warn",
+          "value": 0.307292,
+          "threshold": 0.4,
+          "ids": [
+            "figure"
+          ],
+          "occluders": [
+            "hedge"
+          ]
+        },
+        {
+          "id": "reach_seat",
+          "check": "reachable",
+          "threshold": 7,
+          "ids": [
+            "bench"
+          ],
+          "status": "warn",
+          "value": 6.5
+        },
+        {
+          "id": "seats",
+          "check": "capacity",
+          "status": "warn",
+          "value": 2,
+          "threshold": 2,
+          "ids": [
+            "bench"
+          ],
+          "accepted": [
+            "bench/seat1",
+            "bench/seat2"
+          ],
+          "rejected": []
+        },
+        {
+          "id": "figure_tall",
+          "check": "min_screen_size",
+          "status": "warn",
+          "value": 85,
+          "threshold": 80,
+          "ids": [
+            "figure"
+          ]
+        },
+        {
+          "id": "crate_size",
+          "check": "min_screen_size",
+          "status": "pass",
+          "value": 100,
+          "threshold": 100,
+          "ids": [
+            "crate_a"
+          ]
+        },
+        {
+          "id": "street_shown",
+          "check": "visible_share",
+          "status": "pass",
+          "value": 1,
+          "threshold": 0.7,
+          "ids": [],
+          "shares": []
+        }
+      ]
+    },
+    {
+      "scene": "tests/fixtures/explain/margins.scene.json",
+      "state": "closed",
+      "checks": [
+        {
+          "id": "gap_ab",
+          "check": "clearance",
+          "status": "warn",
+          "value": 0.6,
+          "threshold": 0.5,
+          "ids": [
+            "crate_a",
+            "crate_b"
+          ]
+        },
+        {
+          "id": "gap_bc",
+          "check": "clearance",
+          "status": "pass",
+          "value": 1,
+          "threshold": 0.5,
+          "ids": [
+            "crate_b",
+            "crate_c"
+          ]
+        },
+        {
+          "id": "gap_cp",
+          "check": "clearance",
+          "status": "fail",
+          "value": 0.3,
+          "threshold": 0.5,
+          "ids": [
+            "crate_c",
+            "post"
+          ]
+        },
+        {
+          "id": "gap_plain",
+          "check": "clearance",
+          "status": "pass",
+          "value": 2.607681,
+          "threshold": 2.5,
+          "ids": [
+            "crate_a",
+            "figure"
+          ]
+        },
+        {
+          "id": "lanes_apart",
+          "check": "lane_apart",
+          "status": "warn",
+          "value": 3.4,
+          "threshold": 3,
+          "ids": [
+            "walk",
+            "path"
+          ],
+          "overlap": 0
+        },
+        {
+          "id": "figure_seen",
+          "check": "visible",
+          "status": "warn",
+          "value": 0.307292,
+          "threshold": 0.4,
+          "ids": [
+            "figure"
+          ],
+          "occluders": [
+            "hedge"
+          ]
+        },
+        {
+          "id": "reach_seat",
+          "check": "reachable",
+          "status": "skip",
+          "value": null,
+          "threshold": null,
+          "ids": []
+        },
+        {
+          "id": "seats",
+          "check": "capacity",
+          "status": "fail",
+          "value": 0,
+          "threshold": 2,
+          "ids": [],
+          "accepted": [],
+          "rejected": []
+        },
+        {
+          "id": "figure_tall",
+          "check": "min_screen_size",
+          "status": "warn",
+          "value": 85,
+          "threshold": 80,
+          "ids": [
+            "figure"
+          ]
+        },
+        {
+          "id": "crate_size",
+          "check": "min_screen_size",
+          "status": "pass",
+          "value": 100,
+          "threshold": 100,
+          "ids": [
+            "crate_a"
+          ]
+        },
+        {
+          "id": "street_shown",
+          "check": "visible_share",
+          "status": "warn",
+          "value": 0.812144,
+          "threshold": 0.7,
+          "ids": [
+            "lamp"
+          ],
+          "shares": [
+            0.812144
+          ]
+        }
+      ]
+    }
+  ],
+  "describe": {
+    "scene": "tests/fixtures/explain/margins.scene.json",
+    "expected": "margins.describe.txt"
+  },
+  "compare": [
+    {
+      "scene": "tests/fixtures/explain/margins.scene.json",
+      "state": null,
+      "variants": [
+        {
+          "name": "A",
+          "file": "compare/margins.A.patch"
+        },
+        {
+          "name": "B",
+          "file": "compare/margins.B.patch"
+        },
+        {
+          "name": "C",
+          "file": "compare/margins.C.patch"
+        },
+        {
+          "name": "D",
+          "file": "compare/margins.D.patch"
+        }
+      ],
+      "expected": {
+        "json": "compare/margins.default.expected.json",
+        "txt": "compare/margins.default.expected.txt",
+        "md": "compare/margins.default.expected.md"
+      }
+    },
+    {
+      "scene": "tests/fixtures/explain/margins.scene.json",
+      "state": "closed",
+      "variants": [
+        {
+          "name": "A",
+          "file": "compare/margins.A.patch"
+        },
+        {
+          "name": "B",
+          "file": "compare/margins.B.patch"
+        },
+        {
+          "name": "C",
+          "file": "compare/margins.C.patch"
+        },
+        {
+          "name": "D",
+          "file": "compare/margins.D.patch"
+        }
+      ],
+      "expected": {
+        "json": "compare/margins.closed.expected.json",
+        "txt": "compare/margins.closed.expected.txt",
+        "md": "compare/margins.closed.expected.md"
+      }
+    }
+  ]
+}
