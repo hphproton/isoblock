@@ -3,6 +3,7 @@ import { baseHeight, footprint, worldParts, type Box } from "../core/geometry";
 import { planCamera } from "../core/planView";
 import { project } from "../core/projection";
 import { facingFigure } from "../core/relations/facing";
+import { FACING_SHAFT, traceArrowHead } from "./facingArrow";
 import { resolveTarget } from "../core/relations/targets";
 import { evaluateRelations } from "../core/relations/evaluate";
 import type { Camera, Relation, Scene, Vec2, Vec3 } from "../core/types";
@@ -125,7 +126,7 @@ function relationLines(scene: Scene): { id: string; hard: boolean; violated: boo
       if (figure === null) continue;
       const from: Vec3 = [figure.from[0], figure.from[1], 0];
       const to: Vec3 = [figure.to[0], figure.to[1], 0];
-      const tip: Vec3 = [figure.from[0] + figure.front[0] * 0.6, figure.from[1] + figure.front[1] * 0.6, 0];
+      const tip: Vec3 = [figure.from[0] + figure.front[0] * FACING_SHAFT, figure.from[1] + figure.front[1] * FACING_SHAFT, 0];
       lines.push({ ...row, points: [from, to], arrow: [from, tip] });
       continue;
     }
@@ -190,14 +191,19 @@ function paintRelations(ctx: CanvasRenderingContext2D, camera: Camera, scale: nu
   const rest = lines.filter((item) => item.id !== state.highlightRelation);
   ctx.lineCap = "round";
   for (const item of [...rest, ...highlighted]) {
-    ctx.strokeStyle = item.violated ? VIOLATED : SATISFIED;
+    const color = item.violated ? VIOLATED : SATISFIED;
+    ctx.strokeStyle = color;
     ctx.lineWidth = (item.violated && item.hard ? 3.5 : 1.6) / scale;
     line(ctx, camera, item.points);
-    if (item.arrow !== null) line(ctx, camera, item.arrow);
+    if (item.arrow !== null) {
+      line(ctx, camera, item.arrow);
+      ctx.fillStyle = color;
+      traceArrowHead(camera, item.arrow[0], item.arrow[1], scale, ctx);
+    }
     const mid = item.points[Math.floor(item.points.length / 2)] as Vec3;
     const at = project(camera, mid[0], mid[1], mid[2]);
     ctx.font = `${11 / scale}px sans-serif`;
-    ctx.fillStyle = item.violated ? VIOLATED : SATISFIED;
+    ctx.fillStyle = color;
     ctx.fillText(item.id, at[0], at[1]);
   }
 }
