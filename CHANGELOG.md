@@ -15,6 +15,7 @@ Stage 15: lanes and levels. The scene format stays `isoblock/1` (`front` on type
 - `reachable` takes `toLevel`. The path may cross levels through the lanes that join them. Without `toLevel` the search stays on one level. `area` together with `toLevel` is a schema error.
 - The relation `facing`, with `front` (`+u`, `-u`, `+v` or `-v`) on a type or an anchor and `angle` in degrees (default 45). `a` may be `anchor:<object id>/<anchor id>`. `relate` takes `angle`.
 - `solve --rotate` may turn movable objects that are not locked, to 0, 90, 180 or 270. The report adds `turned`. The patch writes a `rot` line before that object's `move`. In the editor, **Turn objects** adds the flag, a turned object is drawn as a ghost, the Relations overlay draws `facing`, and **Occluders of** lists every lane with a piece.
+- A turned footprint stays under the view, overlap and grid rules, measured against the input scene, even when the search does not move it again. The conflict set is found with that solver. The facing mark has a head at the tip of its arrow. The patch's `move` still starts from the position `rot` gives when the proposal keeps the input position.
 
 ## 0.14.0
 
