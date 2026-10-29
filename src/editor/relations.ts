@@ -25,20 +25,26 @@ export function mountRelations(store: EditorStore): void {
   const actions = byId("relations-actions");
   const list = byId("relations-list");
   const only = el("input", { type: "checkbox", "aria-label": "Only the selected object" });
+  const turn = el("input", { type: "checkbox", "aria-label": "Turn objects" });
   const solve = el("button", { type: "button" }, "Solve");
   const summary = el("p", { class: "hint" });
   const apply = el("button", { type: "button" }, "Apply");
   const discard = el("button", { type: "button" }, "Discard");
   const proposal = el("div", { class: "proposal" }, summary, apply, discard);
-  actions.replaceChildren(el("label", {}, only, "Only the selected object"), solve, proposal);
+  actions.replaceChildren(
+    el("label", {}, only, "Only the selected object"),
+    el("label", {}, turn, "Turn objects"),
+    solve,
+    proposal,
+  );
 
   solve.addEventListener("click", () => {
     const scene = currentScene(store.get());
     if (scene === null || store.get().proposal !== null) return;
     const selected = store.get().selected;
     const ids = only.checked && selected !== null ? [selected] : undefined;
-    const outcome = solveScene(scene, ids);
-    store.showProposal(outcome.report, ids ?? null);
+    const outcome = solveScene(scene, ids, turn.checked);
+    store.showProposal(outcome.report, ids ?? null, turn.checked);
   });
   apply.addEventListener("click", () => store.applyProposal());
   discard.addEventListener("click", () => store.discardProposal());
@@ -51,8 +57,9 @@ export function mountRelations(store: EditorStore): void {
     proposal.hidden = state.proposal === null;
     if (state.proposal !== null) {
       const report = state.proposal.report;
+      const turns = report.turned?.length ?? 0;
       setText(summary, `${report.status}, ${report.moved.length} moved, soft penalty ${report.softPenalty.toFixed(2)}`);
-      apply.disabled = report.moved.length === 0;
+      apply.disabled = report.moved.length === 0 && turns === 0;
     }
     if (scene === null) {
       shown = "";

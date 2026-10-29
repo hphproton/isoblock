@@ -30,6 +30,8 @@ export interface OccluderInput {
 export interface ProposalView {
   readonly report: SolveReport;
   readonly only: readonly string[] | null;
+  /** The proposal was made with `--rotate`. */
+  readonly rotate: boolean;
 }
 export type ViewMode = "iso" | "plan" | "split";
 
@@ -266,9 +268,9 @@ export class EditorStore {
   }
 
   /** Show the solver's proposal. `only` is what `solve --only` received, or null. */
-  showProposal(report: SolveReport, only: readonly string[] | null): void {
+  showProposal(report: SolveReport, only: readonly string[] | null, rotate = false): void {
     const notice = report.status === "conflict" ? { kind: "error" as const, text: `conflict: ${report.conflict.join(", ")}` } : null;
-    this.set({ proposal: { report, only }, ...(notice === null ? {} : { notice }) });
+    this.set({ proposal: { report, only, rotate }, ...(notice === null ? {} : { notice }) });
   }
 
   discardProposal(): void {
@@ -278,8 +280,10 @@ export class EditorStore {
   /** Apply the proposal as the patch `solve --patch` prints. One history step. */
   applyProposal(): void {
     const proposal = this.state.proposal;
-    if (proposal === null || proposal.report.moved.length === 0) return;
-    this.applyLine(solvePatch(proposal.report));
+    const scene = currentScene(this.state);
+    const turns = proposal?.report.turned?.length ?? 0;
+    if (proposal === null || scene === null || (proposal.report.moved.length === 0 && turns === 0)) return;
+    this.applyLine(solvePatch(scene, proposal.report));
   }
 
   setOverlay(name: OverlayName, on: boolean): void {

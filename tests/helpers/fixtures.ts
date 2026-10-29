@@ -37,9 +37,13 @@ export function loadScene(name: string): Scene {
   return parseScene(readFixtureText(name));
 }
 
+/** Read a fixture file by its path under `tests/fixtures/`. */
+export function readFixture(relative: string): string {
+  return readFileSync(join(fixturesDir, relative), "utf8");
+}
+
 export function loadExpected(name: string): ExpectedFile {
-  const text = readFileSync(join(fixturesDir, `${name}.expected.json`), "utf8");
-  return JSON.parse(text) as ExpectedFile;
+  return JSON.parse(readFixture(`${name}.expected.json`)) as ExpectedFile;
 }
 
 /** Deep comparison where numbers match within `tol`; everything else must be equal. */
@@ -231,7 +235,7 @@ export function loadRelationsScene(): Scene {
 }
 
 export function loadRelationsExpected(): RelationsExpected {
-  return JSON.parse(readFileSync(join(relationsDir, "relations.expected.json"), "utf8")) as RelationsExpected;
+  return JSON.parse(readFixture("relations/relations.expected.json")) as RelationsExpected;
 }
 
 /** Relation results against `relations.expected.json`: every stated field, violations within its tolerance. */

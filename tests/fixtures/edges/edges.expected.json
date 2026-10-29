@@ -126,10 +126,16 @@
     {
       "id": "c10",
       "check": "lane_reaches",
-      "status": "skip",
+      "status": "fail",
       "value": null,
-      "threshold": null,
-      "ids": []
+      "threshold": [
+        0,
+        1000
+      ],
+      "ids": [
+        "bend"
+      ],
+      "message": "lane does not reach edge"
     },
     {
       "id": "c11",

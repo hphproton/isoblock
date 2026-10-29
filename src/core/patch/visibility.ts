@@ -61,17 +61,23 @@ type Target =
 
 /**
  * The second argument of `hide` and `show` (SPEC section 12): an object id, else `region:<id>`,
- * else `<id>/<part>` split at the first slash whose left side is an object id.
+ * else a part, found as an anchor is: the first split at which the object and the part both exist.
+ * When none does, the longest object id names an unknown part.
  */
 function targetOf(doc: unknown, raw: string): Target {
   const ids = objectIds(doc);
   if (ids.includes(raw)) return { kind: "object", id: raw };
   if (raw.startsWith("region:")) return { kind: "region", id: raw.slice("region:".length) };
   const known = new Set(ids);
+  let longest: { id: string; part: string } | null = null;
   for (let at = raw.indexOf("/"); at >= 0; at = raw.indexOf("/", at + 1)) {
     const id = raw.slice(0, at);
-    if (known.has(id)) return { kind: "part", id, part: raw.slice(at + 1) };
+    if (!known.has(id)) continue;
+    const part = raw.slice(at + 1);
+    longest = { id, part };
+    if (partIds(doc, id).includes(part)) return { kind: "part", id, part };
   }
+  if (longest !== null) return { kind: "part", id: longest.id, part: longest.part };
   const slash = raw.indexOf("/");
   const unknown = slash < 0 ? raw : raw.slice(0, slash);
   throw fail(`unknown object "${unknown}"${hint(unknown, ids)}`);

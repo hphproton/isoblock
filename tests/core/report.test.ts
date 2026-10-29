@@ -22,7 +22,7 @@ describe("check report", () => {
   it("uses SKIP for checks that could not be evaluated", () => {
     const scene = loadScene("lane");
     const text = formatCheckReport(scene, runChecks(scene));
-    expect(text.split("\n")[0]).toBe("scene lane: 7 checks, 2 pass, 3 fail, 0 warn, 2 skip");
+    expect(text.split("\n")[0]).toBe("scene lane: 7 checks, 3 pass, 3 fail, 0 warn, 1 skip");
     expect(text).toMatch(/\nSKIP c7 reachable: /);
   });
 

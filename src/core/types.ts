@@ -60,6 +60,8 @@ export interface Anchor {
   readonly id: string;
   readonly at: Vec3;
   readonly facing?: string;
+  /** Side the anchor faces in type coordinates (SPEC section 6). It turns with `rot`. */
+  readonly front?: "+u" | "-u" | "+v" | "-v";
   readonly kind?: string;
 }
 
@@ -67,6 +69,8 @@ export interface ObjectType {
   readonly size: Vec3;
   readonly parts?: readonly Part[];
   readonly anchors?: readonly Anchor[];
+  /** Side the type faces in type coordinates (SPEC section 6). It turns with the object's `rot`. */
+  readonly front?: "+u" | "-u" | "+v" | "-v";
   readonly genHint?: string;
 }
 
@@ -108,6 +112,8 @@ export interface Relation {
   readonly min?: number;
   readonly axis?: string;
   readonly t?: readonly [number, number];
+  /** Allowed angle of `facing`, in degrees. Default 45 (SPEC section 7). */
+  readonly angle?: number;
   readonly hard?: boolean;
   readonly weight?: number;
   readonly source?: string;
@@ -200,6 +206,8 @@ export interface ReachableCheck {
   readonly level?: number;
   /** Clear height above `level`. Absent means no upper bound. */
   readonly height?: number;
+  /** Level the path may climb to. With it, the path may cross levels (SPEC 9.8). */
+  readonly toLevel?: number;
 }
 
 export interface CapacityCheck {

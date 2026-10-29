@@ -1,6 +1,8 @@
-import { rectGap, type Rect } from "../geometry";
+import { penetration } from "../convex";
+import { EPS, rectCorners, rectGap, type Rect } from "../geometry";
 import { fmt } from "../format";
-import { laneShape } from "../checks/laneShape";
+import { lanePieces } from "../checks/lanePieces";
+import { polygonDistance } from "../polygon";
 import { band, bandMessage, overlapAmount, SATISFIED, type Band, type Measure, type Rects } from "./shared";
 import { wrongTarget, type Target } from "./targets";
 
@@ -22,10 +24,22 @@ function reachOf(a: number, target: Target, kinds: readonly Target["kind"][]): R
     return { distance: (rects) => rectGap(rects[a] as Rect, rects[b] as Rect), overlap: (rects) => overlapAmount(rects[a] as Rect, rects[b] as Rect) };
   }
   if (target.kind === "lane") {
-    const shape = laneShape(target.lane);
+    const shape = lanePieces(target.lane);
     if (!shape.ok) return shape.reason;
-    const lane = shape.rect;
-    return { distance: (rects) => rectGap(rects[a] as Rect, lane), overlap: (rects) => overlapAmount(rects[a] as Rect, lane) };
+    const pieces = shape.pieces;
+    const corners = (rects: Rects) => rectCorners(rects[a] as Rect);
+    return {
+      distance: (rects) => Math.min(...pieces.map((piece) => polygonDistance(corners(rects), piece.corners))),
+      overlap: (rects) => {
+        const foot = corners(rects);
+        let best = 0;
+        for (const piece of pieces) {
+          const depth = penetration(foot, piece.corners);
+          if (depth > EPS && depth > best) best = depth;
+        }
+        return best;
+      },
+    };
   }
   if (target.kind === "strip" && target.bound !== null) {
     const c = target.bound;

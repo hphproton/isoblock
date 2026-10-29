@@ -33,8 +33,8 @@ function checkOutputs(args: SolveArgs): void {
 export function runSolveCommand(args: SolveArgs, io: Io): number {
   checkOutputs(args);
   const scene = parseScene(io.readText(args.file));
-  const { report, proposal } = solveScene(scene, args.only);
-  const patch = args.patchOutput === undefined ? undefined : solvePatch(report);
+  const { report, proposal } = solveScene(scene, args.only, args.rotate === true);
+  const patch = args.patchOutput === undefined ? undefined : solvePatch(scene, report);
   const toStdout = args.patchOutput === "-";
   const notes: string[] = [];
   if (args.output !== undefined) {

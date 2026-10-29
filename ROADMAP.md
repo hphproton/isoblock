@@ -295,23 +295,23 @@ Not in stage 14: creating, editing or deleting relations in the editor; overlays
 
 **Done when:** all tests pass, `npm run test:godot` passes, earlier fixtures still match, the workflow `ci` passes on the branch, `npm run check:publish` reports nothing, the branch is named `builder/stage-14`, its session log names the tool and model, gives the test counts with skipped tests and ends with the pull request's title and description, and the stage 14 criteria in SPEC section 17 hold.
 
-## Stage 15 · open
+## Stage 15 · done (0.15.0)
 
 Lanes and levels (SPEC sections 6, 7, 8, 9, 9.8, 10, 11, 11.4, 12, 17, 18). Core, CLI and editor. The scene format grows without a break (`isoblock/1` stays: `front` on types and anchors, `angle` on relations, `toLevel` on `reachable`, anchors as `a` of `facing`); no change to the runtime file, no new dependency. Fixtures, all in new files so that the suite of release 0.14.0 still passes on this branch: `tests/fixtures/paths/` (the scene `paths.scene.json` with a bent walk, a diagonal trail, a ramp and bending stairs up to a terrace at height 2, a road that meets two frame edges, fronts on types and an anchor, and three states; `cases.json` with its check results in every state, its relation results and 4 occluders cases in lanes; `solver/` with 2 scenes for `solve --rotate`; `slash.scene.json` and `patches/` with the patches 61 to 67; `editor/overlays.json` with 8 editor cases; `invalid/` with 6 broken scenes; `earlier/` with the 6 earlier expected files whose results change, because this stage measures lanes that stage 14 skipped).
 
-- [ ] Lane shape (SPEC section 9.8): pieces of any polyline, surface heights, penetration and polygon distance; a lane of two points along u or v keeps its results
-- [ ] `lane_clear`, `lane_reaches` and `lane_apart` on that shape, for lanes that are not flat too (SPEC section 9.8); the results of `tests/fixtures/paths/earlier/` in place of those they replace
-- [ ] Relations: `against` and `clear_of` with any lane (SPEC section 7)
-- [ ] Relation `facing`: `front` on types and anchors, anchors as `a`, `angle`, the angle and violation, the schema, references and suggestions (SPEC sections 6 and 7); `relate ... angle` (SPEC section 12)
-- [ ] `reachable` with `toLevel`: levels, connectors, shortest length (SPEC section 9.8)
-- [ ] `occluders --lane` for any lane with a piece, with the level of the surface at each position (SPEC section 11.4)
-- [ ] `solve --rotate`: turnable objects, the objective, `turned`, `-o` and `--patch` with `rot` lines (SPEC section 8)
-- [ ] The part rule of `hide` and `show` for ids with `/` (SPEC section 12); the quieter schema details for conditions (SPEC section 6)
-- [ ] Editor: `Turn objects`, turned ghosts, `facing` in the `Relations` overlay, every lane in `Occluders of` (SPEC section 10)
-- [ ] Tests load `tests/fixtures/paths/` (cases, solver, patches, editor overlays, invalid) and the files of `paths/earlier/` in place of the earlier ones, as SPEC section 17 says; the stage 2 and stage 8 frame-time tests still pass
-- [ ] `CHANGELOG.md` lists the lane shapes, the earlier results that change (lanes that were skipped), `toLevel`, `facing` and `front`, `--rotate` and the editor items
-- [ ] `docs/AGENT_GUIDE.md` covers lane shapes and their limit at bends, `toLevel`, `facing`, `front`, `solve --rotate` and its patch, and `relate ... angle`
-- [ ] Session log says `branch ready for review`
+- [x] Lane shape (SPEC section 9.8): pieces of any polyline, surface heights, penetration and polygon distance; a lane of two points along u or v keeps its results
+- [x] `lane_clear`, `lane_reaches` and `lane_apart` on that shape, for lanes that are not flat too (SPEC section 9.8); the results of `tests/fixtures/paths/earlier/` in place of those they replace
+- [x] Relations: `against` and `clear_of` with any lane (SPEC section 7)
+- [x] Relation `facing`: `front` on types and anchors, anchors as `a`, `angle`, the angle and violation, the schema, references and suggestions (SPEC sections 6 and 7); `relate ... angle` (SPEC section 12)
+- [x] `reachable` with `toLevel`: levels, connectors, shortest length (SPEC section 9.8)
+- [x] `occluders --lane` for any lane with a piece, with the level of the surface at each position (SPEC section 11.4)
+- [x] `solve --rotate`: turnable objects, the objective, `turned`, `-o` and `--patch` with `rot` lines (SPEC section 8)
+- [x] The part rule of `hide` and `show` for ids with `/` (SPEC section 12); the quieter schema details for conditions (SPEC section 6)
+- [x] Editor: `Turn objects`, turned ghosts, `facing` in the `Relations` overlay, every lane in `Occluders of` (SPEC section 10)
+- [x] Tests load `tests/fixtures/paths/` (cases, solver, patches, editor overlays, invalid) and the files of `paths/earlier/` in place of the earlier ones, as SPEC section 17 says; the stage 2 and stage 8 frame-time tests still pass
+- [x] `CHANGELOG.md` lists the lane shapes, the earlier results that change (lanes that were skipped), `toLevel`, `facing` and `front`, `--rotate` and the editor items
+- [x] `docs/AGENT_GUIDE.md` covers lane shapes and their limit at bends, `toLevel`, `facing`, `front`, `solve --rotate` and its patch, and `relate ... angle`
+- [x] Session log says `branch ready for review`
 
 Not in stage 15: rounded bends or a width per point for lanes; `front` in the runtime file and the Godot adapter; free rotation (SPEC section 19); a relation that puts an object on another; paths between levels that do not follow a lane; `compare --render` and layout indicators (not scheduled). The Rust crate license texts in `THIRD_PARTY_NOTICES.md` are a maintainer task (`MAINTAINING.md`, Before distributing a build).
 

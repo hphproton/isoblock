@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 import { runPatch } from "../../src/core/patch/outcome";
 import { patchExitCode, patchReportJson } from "../../src/core/patch/report";
 import { parseScene } from "../../src/core/validate";
-import { expectMatchesPatch, repoRoot, type PatchExpected } from "../helpers/fixtures";
+import { expectMatchesPatch, readFixture, repoRoot, type PatchExpected } from "../helpers/fixtures";
 
 const dir = join(repoRoot, "tests", "fixtures", "heights");
 
@@ -24,7 +24,7 @@ describe("height patch fixtures", () => {
 
   for (const name of fixtureNames) {
     it(`${name} gives its expected result`, () => {
-      const expected = JSON.parse(readFileSync(join(dir, `${name}.expected.json`), "utf8")) as PatchExpected;
+      const expected = JSON.parse(readFixture(`heights/${name}.expected.json`)) as PatchExpected;
       const scene = parseScene(readFileSync(join(repoRoot, expected.base), "utf8"));
       const outcome = runPatch(scene, readFileSync(join(dir, `${name}.patch`), "utf8"));
       expectMatchesPatch(patchReportJson(outcome), expected, name);

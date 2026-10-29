@@ -9,10 +9,10 @@ import type { CheckResult } from "../../src/core/types";
 import { parseScene } from "../../src/core/validate";
 import { memoryIo } from "../helpers/cli";
 import { expectSameJson } from "../helpers/exportCases";
-import { expectMatchesExpected, repoRoot, type ExpectedFile } from "../helpers/fixtures";
+import { expectMatchesExpected, readFixture, repoRoot, type ExpectedFile } from "../helpers/fixtures";
 
 const dir = join(repoRoot, "tests", "fixtures", "levels");
-const file = JSON.parse(readFileSync(join(dir, "cases.json"), "utf8")) as {
+const file = JSON.parse(readFixture("levels/cases.json")) as {
   readonly tolerance: ExpectedFile["tolerance"];
   readonly cases: readonly { readonly scene: string; readonly state: string | null; readonly checks: readonly Record<string, unknown>[]; readonly genBbox: string | null }[];
 };

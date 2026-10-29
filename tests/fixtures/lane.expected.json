@@ -66,9 +66,9 @@
     {
       "id": "c6",
       "check": "lane_clear",
-      "status": "skip",
-      "value": null,
-      "threshold": null,
+      "status": "pass",
+      "value": 0,
+      "threshold": 0,
       "ids": []
     },
     {

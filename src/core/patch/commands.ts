@@ -92,7 +92,7 @@ function parseRelate(args: readonly string[]): Command {
     if (seen.has(name)) throw fail(`option "${name}" is given twice`);
     seen.add(name);
   };
-  const found: { gap?: readonly number[]; axis?: string; t?: readonly number[]; min?: number; weight?: number; source?: string } = {};
+  const found: { gap?: readonly number[]; axis?: string; t?: readonly number[]; min?: number; angle?: number; weight?: number; source?: string } = {};
   let id: string | undefined;
   let hard = false;
   for (let i = 0; i < options.length; i++) {
@@ -102,6 +102,7 @@ function parseRelate(args: readonly string[]): Command {
     if (name === "gap") found.gap = rangeOf(options[++i], "gap");
     else if (name === "t") found.t = rangeOf(options[++i], "t");
     else if (name === "min") found.min = numberOf(options[++i], "min");
+    else if (name === "angle") found.angle = numberOf(options[++i], "angle");
     else if (name === "weight") found.weight = numberOf(options[++i], "weight");
     else if (name === "hard") hard = true;
     else if (name === "id") id = token.slice(3);
@@ -119,6 +120,7 @@ function parseRelate(args: readonly string[]): Command {
     ...(found.axis === undefined ? {} : { axis: found.axis }),
     ...(found.t === undefined ? {} : { t: found.t }),
     ...(found.min === undefined ? {} : { min: found.min }),
+    ...(found.angle === undefined ? {} : { angle: found.angle }),
     hard,
     ...(found.weight === undefined ? {} : { weight: found.weight }),
     ...(found.source === undefined ? {} : { source: found.source }),

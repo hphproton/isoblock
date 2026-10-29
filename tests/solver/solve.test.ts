@@ -183,7 +183,7 @@ describe("solve report, patch and exit code", () => {
 
   it("writes a patch that patch applies to the same positions", () => {
     const { report, proposal } = solveScene(s);
-    const text = solvePatch(report);
+    const text = solvePatch(s, report);
     expect(text.startsWith("# solve proposal\nmove b ")).toBe(true);
     const outcome = runPatch(s, text);
     expect(outcome.status).toBe("applied");
@@ -194,7 +194,7 @@ describe("solve report, patch and exit code", () => {
     const one = scene([{ ...box("a", [1, 1]), locks: ["pos"] }, { ...box("b", [6, 1]), locks: ["pos.v"] }], [
       { id: "h", a: "b", rel: "gap", b: "a", gap: [0, 0.5], hard: true },
     ]);
-    expect(solvePatch(solveScene(one).report)).toMatch(/^# solve proposal\nmove b u-[\d.]+\n$/);
+    expect(solvePatch(one, solveScene(one).report)).toMatch(/^# solve proposal\nmove b u-[\d.]+\n$/);
   });
 
   it("exits 0 when solved and every check passes, else 1", () => {
@@ -211,7 +211,7 @@ describe("solver fixtures: the --patch output", () => {
     it(`${name}: patch applies the proposal`, () => {
       const base = loadSolverScene(name);
       const { report, proposal } = solveScene(base, loadSolverExpected(name).only ?? undefined);
-      const outcome = runPatch(base, solvePatch(report));
+      const outcome = runPatch(base, solvePatch(base, report));
       expect(outcome.status).toBe("applied");
       expect(outcome.result?.objects.map((o) => o.pos)).toEqual(proposal.objects.map((o) => o.pos));
     });

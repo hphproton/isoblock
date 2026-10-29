@@ -74,6 +74,7 @@
         "patternProperties": { "^x-": {} },
         "properties": {
           "size": { "$ref": "#/definitions/size3" },
+          "front": { "enum": ["+u", "-u", "+v", "-v"] },
           "parts": {
             "type": "array",
             "items": {
@@ -98,6 +99,7 @@
                 "id": { "type": "string", "minLength": 1 },
                 "at": { "type": "array", "items": { "type": "number" }, "minItems": 3, "maxItems": 3 },
                 "facing": { "type": "string" },
+                "front": { "enum": ["+u", "-u", "+v", "-v"] },
                 "kind": { "type": "string" }
               }
             }
@@ -189,6 +191,7 @@
           "min": { "type": "number" },
           "axis": { "type": "string" },
           "t": { "type": "array", "items": { "type": "number" }, "minItems": 2, "maxItems": 2 },
+          "angle": { "type": "number", "minimum": 0, "maximum": 180 },
           "hard": { "type": "boolean", "default": false },
           "weight": { "type": "number", "default": 1 },
           "source": { "type": "string" }
@@ -435,10 +438,12 @@
         "max": { "type": "number", "minimum": 0 },
         "level": { "type": "number" },
         "height": { "type": "number" },
+        "toLevel": { "type": "number" },
         "warn": { "type": "number", "minimum": 0 }
       },
       "if": { "required": ["warn"] },
-      "then": { "required": ["max"] }
+      "then": { "required": ["max"] },
+      "not": { "required": ["area", "toLevel"] }
     },
     "checkCapacity": {
       "type": "object",

@@ -15,10 +15,10 @@ describe("relations report", () => {
     const report = evaluateRelations(s);
     const lines = formatRelationsReport(s, report).split("\n");
     expect(lines).toHaveLength(23);
-    expect(lines[0]).toMatch(/^relations relations: 22 relations, 10 satisfied, 9 violated, 3 skipped; hard: 3 of 4 satisfied; soft penalty 17\.9605$/);
+    expect(lines[0]).toMatch(/^relations relations: 22 relations, 11 satisfied, 9 violated, 2 skipped; hard: 3 of 4 satisfied; soft penalty 17\.9605$/);
     expect(lines[1]).toMatch(/^OK r01 left_of: hard; /);
     expect(lines[2]).toMatch(/^BAD r02 right_of: screen-x separation -3\.4641, wanted 0\.50\.\.3\.00 \(violation 3\.9641\)$/);
-    expect(lines[12]).toBe("SKIP r12 facing: facing is not measured yet");
+    expect(lines[12]).toBe('SKIP r12 facing: type "box" has no front');
     expect(lines[21]).toMatch(/^BAD r21 against: hard; distance 7\.00, wanted = 0\.00 \(violation 7\.00\)$/);
   });
 

@@ -34,9 +34,9 @@ function describeError(e: ErrorObject): string {
   return `${where}: ${e.message ?? "invalid"}${extra}`;
 }
 
-/** A detail that only says the value must match one of several schemas (SPEC section 6). */
+/** A detail that only says the value must match one of several schemas, or the then or else of a condition (SPEC section 6). */
 function choice(e: ErrorObject): boolean {
-  return e.keyword === "oneOf" || e.keyword === "discriminator";
+  return e.keyword === "oneOf" || e.keyword === "discriminator" || e.keyword === "if";
 }
 
 function atOrBelow(root: string, path: string): boolean {

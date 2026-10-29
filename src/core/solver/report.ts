@@ -1,5 +1,6 @@
 import { fmt } from "../format";
-import type { CheckResult } from "../types";
+import type { CheckResult, Scene } from "../types";
+import { posForRotation } from "./place";
 import type { SolveReport } from "./solve";
 
 /** Exit code of `solve`: 0 when solved and every check of the proposal is `pass` or `warn`, else 1. */
@@ -17,6 +18,7 @@ export function solveReportJson(report: SolveReport): SolveReport {
     softPenalty: report.softPenalty,
     distance: report.distance,
     moved: report.moved,
+    ...(report.turned === undefined ? {} : { turned: report.turned }),
     conflict: report.conflict,
     relations: report.relations,
   };
@@ -33,6 +35,7 @@ function list(ids: readonly string[]): string {
 export function formatSolveReport(report: SolveReport): string {
   const lines = [`solve ${report.scene}: ${report.status}`];
   for (const m of report.moved) lines.push(`move ${m.id} ${m.from.join(",")} -> ${m.to.join(",")}`);
+  for (const turned of report.turned ?? []) lines.push(`rot ${turned.id} ${turned.from} -> ${turned.to}`);
   lines.push(`hard violated: ${list(report.hardViolated)}`);
   lines.push(`soft penalty ${fmt(report.softPenalty)}, distance ${fmt(report.distance)}`);
   if (report.status === "conflict") lines.push(`conflict: ${list(report.conflict)}`);
@@ -45,17 +48,42 @@ export function offsetText(d: number): string {
   return `${d < 0 ? "-" : "+"}${digits}`;
 }
 
+function moveLine(id: string, from: readonly number[], to: readonly number[]): string | null {
+  const axes = [
+    to[0] === from[0] ? "" : ` u${offsetText((to[0] as number) - (from[0] as number))}`,
+    to[1] === from[1] ? "" : ` v${offsetText((to[1] as number) - (from[1] as number))}`,
+  ];
+  return axes.some((axis) => axis !== "") ? `move ${id}${axes.join("")}` : null;
+}
+
 /**
  * The proposal as a short-command patch (SPEC section 8): `# solve proposal`, then one `move`
- * per moved object in object order; an axis without an offset is left out.
+ * per moved object in object order; an axis without an offset is left out. With `--rotate`, a
+ * `rot` line comes before that object's `move`, and the offsets start from the position `rot` gives,
+ * including when the proposal keeps the input position.
  */
-export function solvePatch(report: SolveReport): string {
-  const moves = report.moved.map((m) => {
-    const axes = [
-      m.to[0] === m.from[0] ? "" : ` u${offsetText(m.to[0] - m.from[0])}`,
-      m.to[1] === m.from[1] ? "" : ` v${offsetText(m.to[1] - m.from[1])}`,
-    ];
-    return `move ${m.id}${axes.join("")}`;
-  });
-  return ["# solve proposal", ...moves].map((line) => `${line}\n`).join("");
+export function solvePatch(scene: Scene, report: SolveReport): string {
+  if (report.turned === undefined || report.turned.length === 0) {
+    const moves = report.moved.flatMap((moved) => {
+      const line = moveLine(moved.id, moved.from, moved.to);
+      return line === null ? [`move ${moved.id}`] : [line];
+    });
+    return ["# solve proposal", ...moves].map((line) => `${line}\n`).join("");
+  }
+  const turned = new Map(report.turned.map((item) => [item.id, item]));
+  const moved = new Map(report.moved.map((item) => [item.id, item]));
+  const lines = ["# solve proposal"];
+  for (const object of scene.objects) {
+    const turn = turned.get(object.id);
+    const shift = moved.get(object.id);
+    if (turn !== undefined) lines.push(`rot ${object.id} ${turn.to}`);
+    if (turn === undefined && shift === undefined) continue;
+    // Offsets start at the position `rot` gives, which can differ from the input even when
+    // the proposal keeps that input position (the turn was snapped back onto the grid).
+    const from = turn !== undefined ? posForRotation(scene, object, turn.to) : (shift?.from ?? object.pos);
+    const to = shift?.to ?? object.pos;
+    const line = moveLine(object.id, from, to);
+    if (line !== null) lines.push(line);
+  }
+  return lines.map((line) => `${line}\n`).join("");
 }

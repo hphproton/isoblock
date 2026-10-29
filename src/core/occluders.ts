@@ -3,11 +3,12 @@ import { IsoblockError } from "./errors";
 import { EPS, boxesOverlap, sizeBox, worldParts, type Box } from "./geometry";
 import { orderDirection, projector } from "./projection";
 import { round } from "./round";
-import { laneLevel, laneShape } from "./checks/laneShape";
+import { insidePiece, lanePieces, surfaceHeight } from "./checks/lanePieces";
+import { laneLevel } from "./checks/laneShape";
 import { insidePolygon } from "./polygon";
 import { sceneInState } from "./states";
 import { boxOutline, convexOverlapArea } from "./sort/outline";
-import type { Scene, Zone } from "./types";
+import type { Scene } from "./types";
 
 const MAX_POINTS = 1_000_000;
 const DEFAULT_STEP = 0.25;
@@ -21,7 +22,7 @@ export interface OccluderRow {
 export interface OccludersReport {
   readonly scene: string;
   readonly state: string | null;
-  readonly area: { readonly kind: "lane" | "zone"; readonly id: string; readonly level: number };
+  readonly area: { readonly kind: "lane" | "zone"; readonly id: string; readonly level: number | null };
   readonly actor: readonly [number, number, number];
   readonly step: number;
   readonly positions: number;
@@ -37,16 +38,17 @@ export interface OccludersStudy {
 interface Area {
   readonly kind: "lane" | "zone";
   readonly id: string;
-  readonly level: number;
+  /** The flat lane's or the zone's level. `null` for a lane that is not flat (SPEC 11.4). */
+  readonly level: number | null;
+  readonly heightAt: (u: number, v: number) => number;
   readonly holds: (u: number, v: number) => boolean;
   readonly bounds: readonly [number, number, number, number];
 }
 
 /**
- * Objects that hide part of an actor somewhere in a flat lane or a zone, by the painter's order
- * (SPEC 11.4). An unknown area, a lane that is not the supported shape or is not flat, a zone of
- * fewer than 3 points, an actor that is not three numbers above 0, and a grid of more than
- * 1,000,000 points are usage errors.
+ * Objects that hide part of an actor somewhere in a lane or a zone, by the painter's order
+ * (SPEC 11.4). An unknown area, a lane without a piece, a zone of fewer than 3 points, an actor
+ * that is not three numbers above 0, and a grid of more than 1,000,000 points are usage errors.
  */
 export function occludersReport(
   scene: Scene,
@@ -84,7 +86,7 @@ export function occludersStudy(
   if (grid > MAX_POINTS) {
     throw new IsoblockError("E_USAGE", `the area covers ${grid} grid points; use a larger step`);
   }
-  const blocked = blockedZones(scene, area.level);
+  const blocked = blockedZones(scene);
   const boxes = viewed.objects.map((object) => sizeBox(viewed, object));
   const c = orderDirection(viewed.camera);
   const at = projector(viewed.camera);
@@ -103,8 +105,10 @@ export function occludersStudy(
     const v = (j + 0.5) * step;
     for (let i = i0; i <= i1; i++) {
       const u = (i + 0.5) * step;
-      if (!area.holds(u, v) || blocked.some((points) => insidePolygon(points, u, v))) continue;
-      const actorBox: Box = { u0: u - w / 2, v0: v - d / 2, h0: area.level, u1: u + w / 2, v1: v + d / 2, h1: area.level + h };
+      if (!area.holds(u, v)) continue;
+      const level = area.heightAt(u, v);
+      if (blocked.some((zone) => Math.abs(zone.level - level) <= EPS && insidePolygon(zone.points, u, v))) continue;
+      const actorBox: Box = { u0: u - w / 2, v0: v - d / 2, h0: level, u1: u + w / 2, v1: v + d / 2, h1: level + h };
       if (boxes.some((box) => boxesOverlap(box, actorBox))) continue;
       positions += 1;
       points.push([u, v]);
@@ -152,16 +156,31 @@ function span(lo: number, hi: number, step: number): readonly [number, number] {
 function laneArea(scene: Scene, id: string): Area {
   const lane = (scene.lanes ?? []).find((item) => item.id === id);
   if (lane === undefined) throw new IsoblockError("E_USAGE", `unknown lane '${id}'`);
-  const shape = laneShape(lane);
+  const shape = lanePieces(lane);
   if (!shape.ok) throw new IsoblockError("E_USAGE", shape.reason);
   const flat = laneLevel(lane);
-  if (!flat.flat) throw new IsoblockError("E_USAGE", `lane '${id}' is not flat`);
-  const { u0, v0, u1, v1 } = shape.rect;
+  let u0 = Infinity;
+  let v0 = Infinity;
+  let u1 = -Infinity;
+  let v1 = -Infinity;
+  for (const piece of shape.pieces) {
+    for (const [u, v] of piece.corners) {
+      if (u < u0) u0 = u;
+      if (v < v0) v0 = v;
+      if (u > u1) u1 = u;
+      if (v > v1) v1 = v;
+    }
+  }
+  const pieces = shape.pieces;
   return {
     kind: "lane",
     id,
-    level: flat.level,
-    holds: (u, v) => u >= u0 - EPS && u <= u1 + EPS && v >= v0 - EPS && v <= v1 + EPS,
+    level: flat.flat ? flat.level : null,
+    heightAt: (u, v) => {
+      for (const piece of pieces) if (insidePiece(piece, u, v)) return surfaceHeight(piece, u, v);
+      return flat.level;
+    },
+    holds: (u, v) => pieces.some((piece) => insidePiece(piece, u, v)),
     bounds: [u0, v0, u1, v1],
   };
 }
@@ -185,20 +204,18 @@ function zoneArea(scene: Scene, id: string): Area {
     kind: "zone",
     id,
     level: zone.h ?? 0,
+    heightAt: () => zone.h ?? 0,
     holds: (u, v) => insidePolygon(points, u, v),
     bounds: [u0, v0, u1, v1],
   };
 }
 
-function blockedZones(scene: Scene, level: number): readonly (readonly [number, number][])[] {
+function blockedZones(scene: Scene): readonly { readonly level: number; readonly points: readonly [number, number][] }[] {
   return (scene.zones ?? []).flatMap((zone) => {
-    if (!isBlocked(zone, level)) return [];
-    return [zone.points as readonly [number, number][]];
+    const points = zone.points ?? [];
+    if (zone.kind !== "blocked" || points.length < 3) return [];
+    return [{ level: zone.h ?? 0, points: points as readonly [number, number][] }];
   });
-}
-
-function isBlocked(zone: Zone, level: number): boolean {
-  return zone.kind === "blocked" && Math.abs((zone.h ?? 0) - level) <= EPS && (zone.points ?? []).length >= 3;
 }
 
 /** Text form of an occluders report. The layout is for people; tools read the JSON. */

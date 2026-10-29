@@ -32,6 +32,15 @@ function namesOf(scene: Scene): Names {
   };
 }
 
+/** Anchor names `anchor:<object id>/<anchor id>`, objects in file order and anchors in type order. */
+function anchorNames(scene: Scene): string[] {
+  const names: string[] = [];
+  for (const object of scene.objects) {
+    for (const anchor of scene.types[object.type]?.anchors ?? []) names.push(`anchor:${object.id}/${anchor.id}`);
+  }
+  return names;
+}
+
 /** A relation target: object id, `zone:<id>`, `lane:<id>` or `strip:<id>.v0|v1`. */
 function targetExists(names: Names, target: string): boolean {
   if (target.startsWith("zone:")) return names.zones.has(target.slice(5));
@@ -43,10 +52,22 @@ function targetExists(names: Names, target: string): boolean {
 
 function relationErrors(scene: Scene, names: Names, pools: Pools): string[] {
   const out: string[] = [];
+  const anchors = anchorNames(scene);
   for (const r of scene.relations ?? []) {
-    const targets = [r.a, r.b, ...(r.ids ?? [])].filter((t): t is string => t !== undefined);
-    for (const t of targets) {
-      if (!targetExists(names, t)) out.push(`relation "${r.id}" refers to unknown target "${t}"${hint(t, pools.target)}`);
+    const slots: readonly (readonly [string | undefined, boolean])[] = [
+      [r.a, r.rel === "facing"],
+      [r.b, false],
+      ...(r.ids ?? []).map((name) => [name, false] as const),
+    ];
+    for (const [name, facingAnchor] of slots) {
+      if (name === undefined) continue;
+      if (facingAnchor && name.startsWith("anchor:")) {
+        if (parseAnchorRef(scene, name) === null) {
+          out.push(`relation "${r.id}" refers to unknown target "${name}"${hint(name, [...pools.target, ...anchors])}`);
+        }
+        continue;
+      }
+      if (!targetExists(names, name)) out.push(`relation "${r.id}" refers to unknown target "${name}"${hint(name, pools.target)}`);
     }
   }
   return out;

@@ -1,10 +1,10 @@
-import { laneLevel, laneShape } from "../core/checks/laneShape";
+import { lanePieces } from "../core/checks/lanePieces";
 import type { Scene } from "../core/types";
 import { byId, el } from "./dom";
 import { currentScene, type EditorStore } from "./store";
 
 function choices(scene: Scene): { value: string; label: string }[] {
-  const lanes = (scene.lanes ?? []).filter((lane) => laneShape(lane).ok && laneLevel(lane).flat);
+  const lanes = (scene.lanes ?? []).filter((lane) => lanePieces(lane).ok);
   const zones = (scene.zones ?? []).filter((zone) => (zone.points ?? []).length >= 3);
   return [
     ...lanes.map((lane) => ({ value: `lane:${lane.id}`, label: `lane:${lane.id}` })),

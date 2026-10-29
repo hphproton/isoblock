@@ -7,7 +7,7 @@ import { runChecksInState } from "../../src/core/checks/inState";
 import { checkLines } from "../../src/core/describeChecks";
 import type { CheckResult, Scene } from "../../src/core/types";
 import { parseScene } from "../../src/core/validate";
-import { expectMatchesExpected, repoRoot, type ExpectedFile } from "../helpers/fixtures";
+import { expectMatchesExpected, readFixture, repoRoot, type ExpectedFile } from "../helpers/fixtures";
 import { memoryIo } from "../helpers/cli";
 
 interface MeasureCase {
@@ -16,7 +16,7 @@ interface MeasureCase {
   readonly checks: readonly Record<string, unknown>[];
 }
 
-const file = JSON.parse(readFileSync(join(repoRoot, "tests/fixtures/measures/cases.json"), "utf8")) as {
+const file = JSON.parse(readFixture("measures/cases.json")) as {
   readonly tolerance: ExpectedFile["tolerance"];
   readonly cases: readonly MeasureCase[];
 };
@@ -65,7 +65,6 @@ describe("measure fixtures (SPEC 9.4, 17)", () => {
     expect(lines).toContain("FAIL walks_near lane_apart walk1\u00d7walk2: 0.30 < 0.50");
     expect(lines).toContain("FAIL walks_cross lane_apart walk1\u00d7walk3: overlap 0.60");
     expect(lines).toContain("FAIL on_plaza lane_apart walk1\u00d7plaza: overlap 0.30");
-    expect(lines).toContain('SKIP diag_shape lane_apart: lane "diag" is not parallel to u or v; only axis-parallel lanes are supported');
     expect(lines).toContain('SKIP no_points lane_apart: zone "mark" has 0 points; a zone needs 3 or more');
   });
 });

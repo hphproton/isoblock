@@ -177,10 +177,14 @@
         {
           "id": "diag_shape",
           "check": "lane_apart",
-          "status": "skip",
-          "value": null,
-          "threshold": null,
-          "ids": []
+          "status": "pass",
+          "value": 2.323223,
+          "threshold": 0,
+          "ids": [
+            "diag",
+            "walk1"
+          ],
+          "overlap": 0.0
         },
         {
           "id": "no_points",
@@ -357,10 +361,14 @@
         {
           "id": "diag_shape",
           "check": "lane_apart",
-          "status": "skip",
-          "value": null,
-          "threshold": null,
-          "ids": []
+          "status": "pass",
+          "value": 2.323223,
+          "threshold": 0,
+          "ids": [
+            "diag",
+            "walk1"
+          ],
+          "overlap": 0.0
         },
         {
           "id": "no_points",

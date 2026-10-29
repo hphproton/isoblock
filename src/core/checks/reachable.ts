@@ -3,6 +3,7 @@ import type { CheckResult, ReachableCheck, Scene, Vec2, Zone } from "../types";
 import { resolvePoint, type ResolvedPoint } from "./points";
 import { marginStatus } from "./margin";
 import { inObjectOrder, round6, skipResult } from "./result";
+import { checkReachableLevels } from "./reachableLevels";
 import { buildGrid, MAX_CELLS, nearestFree, shortestMoves } from "./walkGrid";
 
 const DEFAULT_RADIUS = 0.2;
@@ -44,6 +45,7 @@ function failure(spec: ReachableCheck, ids: readonly string[], message: string):
  * is the number of moves times `step`; with `max` the path may not be longer.
  */
 export function checkReachable(scene: Scene, spec: ReachableCheck): CheckResult {
+  if (spec.toLevel !== undefined) return checkReachableLevels(scene, spec);
   const from = resolvePoint(scene, spec.from, "first");
   const to = resolvePoint(scene, spec.to, "last");
   if (from === null || to === null) return skipResult(spec, "a point of the check does not resolve");

@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.15.0
+
+Stage 15: lanes and levels. The scene format stays `isoblock/1` (`front` on types and anchors, `angle` on relations, `toLevel` on `reachable`). The runtime file stays `isoblock-runtime/3`.
+
+### Changed
+
+- A lane is a polyline. Each segment longer than zero is a piece, the segment widened by half the width and not past its ends, with a surface from one end height to the other. `lane_clear`, `lane_reaches`, `lane_apart`, `against`, `clear_of` and `occluders --lane` measure that shape. A lane of two points along u or v keeps the rectangle of earlier releases, so those results stay. What changes is the lanes those releases skipped: more than two points, a direction other than u or v, and a flat check on a lane that is not flat. The new results are in `lane` (`c6`), `edges` (`c10`), `measures` (`diag_shape`), `levels` (`steps_clear`), `relations` (`r17`) and the check changes of height patch 43, which now name `steps_clear`.
+- `occluders --lane` takes any lane with a piece. On a lane that climbs, the actor stands at the surface, and `area.level` is `null`.
+- The part form of `hide` and `show` finds the part as an anchor is found, so the parts of an id that contains `/` can be named next to an object that shares the prefix. A schema detail that only says a value must match the `then` or `else` of a condition is left out.
+
+### Added
+
+- `reachable` takes `toLevel`. The path may cross levels through the lanes that join them. Without `toLevel` the search stays on one level. `area` together with `toLevel` is a schema error.
+- The relation `facing`, with `front` (`+u`, `-u`, `+v` or `-v`) on a type or an anchor and `angle` in degrees (default 45). `a` may be `anchor:<object id>/<anchor id>`. `relate` takes `angle`.
+- `solve --rotate` may turn movable objects that are not locked, to 0, 90, 180 or 270. A turned footprint is under the view, overlap and grid rules, measured against the input scene, and the conflict set is found with the solver that turns. The report adds `turned`. The patch writes a `rot` line before that object's `move`, whose offsets run from the position `rot` gives. In the editor, **Turn objects** adds the flag, a turned object is drawn as a ghost, the Relations overlay draws `facing` as a short arrow from the facing point, and **Occluders of** lists every lane with a piece.
+
 ## 0.14.0
 
 Stage 14: the editor explains. The scene format stays `isoblock/1` (checks take `warn`); the runtime file stays `isoblock-runtime/3`.

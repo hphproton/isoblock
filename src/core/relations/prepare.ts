@@ -1,5 +1,7 @@
+import { parseAnchorRef } from "../checks/points";
 import type { Relation, Scene } from "../types";
 import { bandDistanceMeasure, clearOfMeasure } from "./distance";
+import { facingMeasure } from "./facing";
 import { insideMeasure } from "./inside";
 import { onLaneMeasure } from "./onLane";
 import { alignedMeasure, axisOf, orderAlongMeasure } from "./order";
@@ -69,15 +71,27 @@ function build(scene: Scene, r: Relation, a: Target, b: Target): Built {
     case "order_along":
       return orderAlong(scene, r);
     case "facing":
-      return "facing is not measured yet";
+      return facingMeasure(scene, a, b, r.angle ?? 45);
     default:
       return `relation "${r.rel}" is not supported`;
   }
 }
 
-/** Indexes of the objects a relation names in `a`, `b` and `ids`, ascending. */
+/** Indexes of the objects a relation names in `a`, `b` and `ids`, ascending. An anchor names its object. */
 function involved(scene: Scene, r: Relation): number[] {
-  const names = new Set([r.a, r.b, ...(r.ids ?? [])]);
+  const names = new Set<string>();
+  const add = (name: string | undefined, anchor: boolean): void => {
+    if (name === undefined) return;
+    if (anchor && name.startsWith("anchor:")) {
+      const found = parseAnchorRef(scene, name);
+      if (found !== null) names.add(found.object.id);
+      return;
+    }
+    names.add(name);
+  };
+  add(r.a, r.rel === "facing");
+  add(r.b, false);
+  for (const name of r.ids ?? []) add(name, false);
   return scene.objects.flatMap((o, i) => (names.has(o.id) ? [i] : []));
 }
 
