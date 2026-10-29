@@ -1,8 +1,9 @@
 import { round6 } from "../checks/result";
 import { footprint } from "../geometry";
 import { pointerTokens } from "../pointer";
-import type { Rot, Scene, SceneObject } from "../types";
+import type { Pos, Rot, Scene, SceneObject } from "../types";
 import { buildModel } from "./model";
+import { snap } from "./moves";
 import { posForRotation } from "./place";
 import type { SolveOutcome } from "./solve";
 
@@ -34,11 +35,19 @@ function turnableIndexes(scene: Scene, only?: readonly string[]): number[] {
   });
 }
 
+/** A coordinate the turn changes lands on the grid. One it does not change keeps its value. */
+function gridPos(before: Pos, after: Pos): Pos {
+  const u = after[0] === before[0] ? after[0] : snap(after[0]);
+  const v = after[1] === before[1] ? after[1] : snap(after[1]);
+  const h = (after as readonly number[])[2];
+  return h === undefined ? [u, v] : [u, v, h];
+}
+
 function withRotations(scene: Scene, rots: readonly number[]): Scene {
   const objects = scene.objects.map((object, index) => {
     const rot = (rots[index] ?? object.rot ?? 0) as Rot;
     if (rot === (object.rot ?? 0)) return object;
-    return { ...object, rot, pos: posForRotation(scene, object, rot) };
+    return { ...object, rot, pos: gridPos(object.pos, posForRotation(scene, object, rot)) };
   });
   return { ...scene, objects };
 }

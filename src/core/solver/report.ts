@@ -59,7 +59,8 @@ function moveLine(id: string, from: readonly number[], to: readonly number[]): s
 /**
  * The proposal as a short-command patch (SPEC section 8): `# solve proposal`, then one `move`
  * per moved object in object order; an axis without an offset is left out. With `--rotate`, a
- * `rot` line comes before that object's `move`, and the offsets start from the position `rot` gives.
+ * `rot` line comes before that object's `move`, and the offsets start from the position `rot` gives,
+ * including when the proposal keeps the input position.
  */
 export function solvePatch(scene: Scene, report: SolveReport): string {
   if (report.turned === undefined || report.turned.length === 0) {
@@ -76,9 +77,12 @@ export function solvePatch(scene: Scene, report: SolveReport): string {
     const turn = turned.get(object.id);
     const shift = moved.get(object.id);
     if (turn !== undefined) lines.push(`rot ${object.id} ${turn.to}`);
-    if (shift === undefined) continue;
-    const from = turn === undefined ? shift.from : posForRotation(scene, object, turn.to);
-    const line = moveLine(object.id, from, shift.to);
+    if (turn === undefined && shift === undefined) continue;
+    // Offsets start at the position `rot` gives, which can differ from the input even when
+    // the proposal keeps that input position (the turn was snapped back onto the grid).
+    const from = turn !== undefined ? posForRotation(scene, object, turn.to) : (shift?.from ?? object.pos);
+    const to = shift?.to ?? object.pos;
+    const line = moveLine(object.id, from, to);
     if (line !== null) lines.push(line);
   }
   return lines.map((line) => `${line}\n`).join("");

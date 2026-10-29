@@ -8,8 +8,14 @@ import type { Scene, Vec2 } from "../types";
 /** What the solver knows about a scene before it moves anything (SPEC section 8). */
 export interface SolverModel {
   readonly scene: Scene;
-  /** Footprints before solving, indexed like `scene.objects`. */
+  /** Footprints the search starts from, indexed like `scene.objects`. */
   readonly origin: readonly Rect[];
+  /**
+   * Input footprints when `origin` is a turned start. Movement, distance and the
+   * overlaps that already existed are read from these. Null when the search starts
+   * from the input.
+   */
+  readonly prior: readonly Rect[] | null;
   /** Whether the solver may change `pos[0]` (u) and `pos[1]` (v) of each object. */
   readonly freeU: readonly boolean[];
   readonly freeV: readonly boolean[];
@@ -54,9 +60,10 @@ function overlapsBefore(scene: Scene): ReadonlySet<number> {
 /**
  * Build the solver model. Movable objects are those in `only` (every object when `only` is
  * absent) without a `pos` lock; a `pos.u` or `pos.v` lock, or a pointer lock on the position,
- * fixes that coordinate. Throws `E_USAGE` when `only` names an unknown object.
+ * fixes that coordinate. `baseline` is the input scene when `scene` already carries a turn:
+ * constraints and distance are measured from it. Throws `E_USAGE` when `only` names an unknown object.
  */
-export function buildModel(scene: Scene, only?: readonly string[]): SolverModel {
+export function buildModel(scene: Scene, only?: readonly string[], baseline?: Scene): SolverModel {
   const ids = new Set(scene.objects.map((o) => o.id));
   const unknown = (only ?? []).filter((id) => !ids.has(id));
   if (unknown.length > 0) throw new IsoblockError("E_USAGE", `--only names unknown objects: ${unknown.join(", ")}`);
@@ -66,9 +73,11 @@ export function buildModel(scene: Scene, only?: readonly string[]): SolverModel 
   const origin = scene.objects.map((o) => footprint(scene, o));
   const region = scene.frame.regions.find((r) => r.blocksScene !== true);
   const project = projector(scene.camera);
+  const prior = baseline === undefined ? null : baseline.objects.map((object) => footprint(baseline, object));
   return {
     scene,
     origin,
+    prior,
     freeU: free(0),
     freeV: free(1),
     relations: prepareRelations(scene),
@@ -76,6 +85,6 @@ export function buildModel(scene: Scene, only?: readonly string[]): SolverModel 
     project: (u, v, h) => project(u, v, h),
     base: scene.objects.map((object) => baseHeight(object)),
     height: scene.objects.map((object) => (scene.types[object.type]?.size[2] ?? 0)),
-    overlappedBefore: overlapsBefore(scene),
+    overlappedBefore: overlapsBefore(baseline ?? scene),
   };
 }

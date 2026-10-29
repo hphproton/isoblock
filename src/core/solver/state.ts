@@ -40,7 +40,10 @@ export interface Change {
 function moved(model: SolverModel, rects: readonly Rect[], i: number): boolean {
   const r = rects[i] as Rect;
   const o = model.origin[i] as Rect;
-  return r.u0 !== o.u0 || r.v0 !== o.v0;
+  if (model.prior === null) return r.u0 !== o.u0 || r.v0 !== o.v0;
+  // A turn changes the footprint even when the search has not left its start.
+  const home = model.prior[i] as Rect;
+  return r.u0 !== home.u0 || r.v0 !== home.v0 || r.u1 !== home.u1 || r.v1 !== home.v1;
 }
 
 /** View constraint of one object: total distance of its corners outside the view region, in units. */
@@ -84,11 +87,15 @@ export function contribution(term: Term, v: number): number {
   return term.relation.weight * v;
 }
 
-/** Distance of an object from where it started. */
+/** Distance of an object from where it started: center to center when a turn moved the start. */
 export function travel(model: SolverModel, rects: readonly Rect[], i: number): number {
   const r = rects[i] as Rect;
   const o = model.origin[i] as Rect;
-  return Math.hypot(r.u0 - o.u0, r.v0 - o.v0);
+  if (model.prior === null) return Math.hypot(r.u0 - o.u0, r.v0 - o.v0);
+  const home = model.prior[i] as Rect;
+  const du = (r.u0 + r.u1) / 2 - (home.u0 + home.u1) / 2;
+  const dv = (r.v0 + r.v1) / 2 - (home.v0 + home.v1) / 2;
+  return Math.hypot(du, dv);
 }
 
 /** The whole score of a layout, computed from scratch. */

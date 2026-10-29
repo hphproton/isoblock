@@ -5,7 +5,7 @@ import { evaluateRelations, type RelationResult } from "../relations/evaluate";
 import type { Pos, Rot, Scene } from "../types";
 import { buildModel, type SolverModel } from "./model";
 import { solveWithRotation } from "./rotate";
-import { scoreOf, search } from "./search";
+import { scoreOf, search, type SearchResult } from "./search";
 
 /** Perturbations after the first local optimum: for the proposal, and for each solution test of the conflict set. */
 const PERTURBATIONS = 40;
@@ -93,6 +93,78 @@ function turnedObjects(before: Scene, after: Scene): TurnedObject[] {
   });
 }
 
+function hardIndexes(model: SolverModel): number[] {
+  return model.relations.flatMap((relation, index) => (relation.hard && relation.measure !== null ? [index] : []));
+}
+
+interface Pass {
+  readonly hard?: readonly number[];
+  readonly soft: boolean;
+  readonly perturbations: number;
+  /** Input scene when `scene` already carries a turn. */
+  readonly baseline?: Scene;
+}
+
+function run(scene: Scene, only: readonly string[] | undefined, pass: Pass): { model: SolverModel; found: SearchResult; proposal: Scene } {
+  const model = buildModel(scene, only, pass.baseline);
+  const hard = pass.hard ?? hardIndexes(model);
+  const found = search(model, { hard, soft: pass.soft, perturbations: pass.perturbations });
+  return { model, found, proposal: proposalOf(scene, found.rects) };
+}
+
+/** One rotation assignment, scored against the input. The caller fills the conflict set. */
+function passOutcome(
+  scene: Scene,
+  only: readonly string[] | undefined,
+  baseline: Scene,
+  hard: readonly number[] | undefined,
+  probing: boolean,
+): SolveOutcome {
+  const { found, proposal } = run(scene, only, {
+    soft: !probing,
+    perturbations: probing ? CONFLICT_PERTURBATIONS : PERTURBATIONS,
+    baseline,
+    ...(hard === undefined ? {} : { hard }),
+  });
+  const relations = evaluateRelations(proposal);
+  return {
+    proposal,
+    report: {
+      scene: baseline.id,
+      status: found.score.broken === 0 ? "solved" : "conflict",
+      hardViolated: [],
+      softPenalty: round6(relations.softPenalty) + 0,
+      distance: 0,
+      moved: [],
+      conflict: [],
+      relations: relations.results,
+    },
+  };
+}
+
+/** True when `proposal` meets `hard` and the constraints of the input scene. */
+function holds(baseline: Scene, proposal: Scene, only: readonly string[] | undefined, hard: readonly number[]): boolean {
+  const model = buildModel(proposal, only, baseline);
+  return scoreOf(model, { hard, soft: false, perturbations: 0 }, model.origin).broken === 0;
+}
+
+/**
+ * Minimal conflict set with the rotating solver (SPEC section 8). A layout that solves one
+ * trial solves every smaller one, so a solution already found is tried before a new search.
+ */
+function rotationConflict(scene: Scene, only: readonly string[] | undefined, hard: readonly number[]): number[] {
+  let set = [...hard];
+  const solved: Scene[] = [];
+  for (const k of hard) {
+    const trial = set.filter((index) => index !== k);
+    if (solved.some((proposal) => holds(scene, proposal, only, trial))) continue;
+    const found = solveWithRotation(scene, only, (rotated, ids) => passOutcome(rotated, ids, scene, trial, true));
+    if (found.report.status === "solved") solved.push(found.proposal);
+    else set = trial;
+  }
+  return set;
+}
+
 /**
  * Solve the relations of a valid scene (SPEC section 8): move the movable objects (only those
  * in `only`, when given) to grid positions that meet the hard relations and the view and overlap
@@ -104,13 +176,13 @@ export function solveScene(scene: Scene, only?: readonly string[], rotate = fals
 }
 
 function solveRotated(scene: Scene, only?: readonly string[]): SolveOutcome {
-  const found = solveWithRotation(scene, only, solveFixed);
+  const found = solveWithRotation(scene, only, (rotated, ids) => passOutcome(rotated, ids, scene, undefined, false));
   const proposal = found.proposal;
   const relations = evaluateRelations(proposal);
   const solved = found.report.status === "solved";
   const model = buildModel(scene, only);
-  const hard = model.relations.flatMap((relation, index) => (relation.hard && relation.measure !== null ? [index] : []));
-  const conflict = solved ? [] : minimalConflict(model, hard).map((index) => model.relations[index]?.relation.id as string);
+  const hard = hardIndexes(model);
+  const conflict = solved ? [] : rotationConflict(scene, only, hard).map((index) => model.relations[index]?.relation.id as string);
   return {
     proposal,
     report: {
@@ -128,12 +200,10 @@ function solveRotated(scene: Scene, only?: readonly string[]): SolveOutcome {
 }
 
 function solveFixed(scene: Scene, only?: readonly string[]): SolveOutcome {
-  const model = buildModel(scene, only);
-  const hard = model.relations.flatMap((p, k) => (p.hard && p.measure !== null ? [k] : []));
-  const found = search(model, { hard, soft: true, perturbations: PERTURBATIONS });
+  const { model, found, proposal } = run(scene, only, { soft: true, perturbations: PERTURBATIONS });
+  const hard = hardIndexes(model);
   const solved = found.score.broken === 0;
   const conflict = solved ? [] : minimalConflict(model, hard).map((k) => model.relations[k]?.relation.id as string);
-  const proposal = proposalOf(scene, found.rects);
   const moved = movedObjects(scene, proposal);
   const relations = evaluateRelations(proposal);
   const distance = moved.reduce((sum, m) => sum + Math.hypot(m.to[0] - m.from[0], m.to[1] - m.from[1]), 0);
