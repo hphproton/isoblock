@@ -3,7 +3,7 @@
   "tolerance": {
     "value": 0.01,
     "valuePx": 1,
-    "coordinate": 0.000001
+    "coordinate": 1e-06
   },
   "exit": 1,
   "status": "applied",
@@ -26,6 +26,16 @@
     }
   ],
   "checks": [
+    {
+      "id": "steps_clear",
+      "check": "lane_clear",
+      "from": "fail",
+      "to": "fail",
+      "value": [
+        1,
+        2
+      ]
+    },
     {
       "id": "sort_deck",
       "check": "sort_consistency",

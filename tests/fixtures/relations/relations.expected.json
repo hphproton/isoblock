@@ -178,8 +178,8 @@
       "id": "r17",
       "rel": "clear_of",
       "hard": false,
-      "status": "skip",
-      "violation": null,
+      "status": "satisfied",
+      "violation": 0.0,
       "ids": [
         "p3"
       ]

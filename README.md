@@ -2,7 +2,7 @@
 
 IsoBlock keeps the layout of a 2D isometric scene as data. People and AI agents edit one scene file; IsoBlock checks it against the scene's rules, renders it, and exports one approved layout to the game engine, to image generation and to graybox gameplay.
 
-Made by [Forty-Two Twice](https://10101042.xyz), an independent game studio. Status: pre-release, version 0.14.0. Scene format `isoblock/1`. Breaking changes and upgrade steps are listed in [`CHANGELOG.md`](CHANGELOG.md).
+Made by [Forty-Two Twice](https://10101042.xyz), an independent game studio. Status: pre-release, version 0.15.0. Scene format `isoblock/1`. Breaking changes and upgrade steps are listed in [`CHANGELOG.md`](CHANGELOG.md).
 
 ## Why
 
@@ -14,10 +14,10 @@ IsoBlock makes the scene file the single source of truth, checks it with exact r
 
 ## Features
 
-- **Scene file** in world units: types with parts, objects, strips, zones, lanes, relations, checks, states, per-property locks and recorded assumptions. The camera is either two ground axes or a view (elevation, direction and scale). Objects, zones and lanes may stand at a height.
-- **Checks**: `in_region`, `no_overlap`, `clearance`, `lane_clear`, `lane_reaches`, `lane_apart`, `visible` (occlusion), `reachable`, `capacity`, `min_screen_size`, `sort_consistency` and `visible_share` (how much of an object shows). Each result states pass or fail, the measured value, the threshold and the objects involved; a check with one bound may set a margin that warns before it fails.
+- **Scene file** in world units: types with parts, objects, strips, zones, lanes, relations, checks, states, per-property locks and recorded assumptions. The camera is either two ground axes or a view (elevation, direction and scale). Objects, zones and lanes may stand at a height; a lane is a polyline in any direction whose points have their own heights, so it can bend, slope or climb stairs.
+- **Checks**: `in_region`, `no_overlap`, `clearance`, `lane_clear`, `lane_reaches`, `lane_apart`, `visible` (occlusion), `reachable`, `capacity`, `min_screen_size`, `sort_consistency` and `visible_share` (how much of an object shows). Each result states pass or fail, the measured value, the threshold and the objects involved; a check with one bound may set a margin that warns before it fails. `reachable` can find a path that changes level through the lanes that join two levels.
 - **For agents**: `describe` prints a short text summary; `patch` applies short commands or JSON Patch, also from standard input, and rejects changes to locked properties; `diff` and `compare` report changes and variants by measured values; `validate --json` and `check --only` keep the output short, and a misspelled name gets a suggestion.
-- **Relations and solver**: `relations` measures every relation; `solve` places objects from them and, when they cannot all hold, reports a minimal set of conflicting hard relations.
+- **Relations and solver**: `relations` measures every relation, including whether an object or an anchor faces its target; `solve` places objects from them, may turn them in quarter turns, and, when they cannot all hold, reports a minimal set of conflicting hard relations.
 - **Render**: SVG and PNG, with no native dependencies.
 - **Export**: a runtime file (`isoblock-runtime/3`) for engines, and bounding boxes (`gen-bbox`) and masks per object and per tag (`masks`) for image generation.
 - **Visibility**: `visibility` reports how much of each object shows in a frame region and how much of the region is covered; `occluders` lists the objects that hide an actor walking in a lane or a zone.

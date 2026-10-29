@@ -295,7 +295,7 @@ Not in stage 14: creating, editing or deleting relations in the editor; overlays
 
 **Done when:** all tests pass, `npm run test:godot` passes, earlier fixtures still match, the workflow `ci` passes on the branch, `npm run check:publish` reports nothing, the branch is named `builder/stage-14`, its session log names the tool and model, gives the test counts with skipped tests and ends with the pull request's title and description, and the stage 14 criteria in SPEC section 17 hold.
 
-## Stage 15 · open
+## Stage 15 · done (0.15.0)
 
 Lanes and levels (SPEC sections 6, 7, 8, 9, 9.8, 10, 11, 11.4, 12, 17, 18). Core, CLI and editor. The scene format grows without a break (`isoblock/1` stays: `front` on types and anchors, `angle` on relations, `toLevel` on `reachable`, anchors as `a` of `facing`); no change to the runtime file, no new dependency. Fixtures, all in new files so that the suite of release 0.14.0 still passes on this branch: `tests/fixtures/paths/` (the scene `paths.scene.json` with a bent walk, a diagonal trail, a ramp and bending stairs up to a terrace at height 2, a road that meets two frame edges, fronts on types and an anchor, and three states; `cases.json` with its check results in every state, its relation results and 4 occluders cases in lanes; `solver/` with 2 scenes for `solve --rotate`; `slash.scene.json` and `patches/` with the patches 61 to 67; `editor/overlays.json` with 8 editor cases; `invalid/` with 6 broken scenes; `earlier/` with the 6 earlier expected files whose results change, because this stage measures lanes that stage 14 skipped).
 

@@ -1,4 +1,4 @@
-import { existsSync, readFileSync, readdirSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { expect } from "vitest";
@@ -37,13 +37,9 @@ export function loadScene(name: string): Scene {
   return parseScene(readFixtureText(name));
 }
 
-/**
- * Read a fixture file. Stage 15 keeps the new results of lanes that stage 14 skipped in
- * `tests/fixtures/paths/earlier/`, and those files replace the earlier ones (SPEC 17).
- */
+/** Read a fixture file by its path under `tests/fixtures/`. */
 export function readFixture(relative: string): string {
-  const replaced = join(fixturesDir, "paths", "earlier", relative);
-  return readFileSync(existsSync(replaced) ? replaced : join(fixturesDir, relative), "utf8");
+  return readFileSync(join(fixturesDir, relative), "utf8");
 }
 
 export function loadExpected(name: string): ExpectedFile {
