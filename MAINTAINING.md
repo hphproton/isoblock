@@ -75,7 +75,7 @@ The squash commit on `main` is the release, identified by `version` and commit h
 
 ## Reference implementation
 
-The maintainer computes expected results with its own implementation, kept on branch `maintainer/reference` of the private development repository and never merged. Recompute with it whenever a check, patch, `compare` or export definition changes.
+The maintainer computes expected results with its own implementation, which builders never see. It is kept in a private repository, on a branch that is never merged. Up to stage 15 that was branch `maintainer/reference` of the development repository, which is archived since 2026-11-14; the implementation was copied from there, file for file. Recompute with it whenever a check, patch, `compare` or export definition changes.
 
 ## Start the next builder session
 
@@ -91,7 +91,7 @@ Do not give builders material from any specific game or client project.
 
 ## Publication
 
-The repository was published on 2026-10-08 as a new repository with the history of the private development repository's `main`, rewritten: the same 18 commits, authors, committers, dates and messages, without the two `Claude-Session:` lines of the first squash commit, and with one quoted example phrase in a maintainer log described instead. The rewrite dropped the commit signatures. Pull requests #1 to #17, the builder branches and the reviews stay in the development repository; the numbers in commit messages and logs refer to it.
+The repository was published on 2026-10-08 as a new repository with the history of the private development repository's `main`, rewritten: the same 18 commits, authors, committers, dates and messages, without the two `Claude-Session:` lines of the first squash commit, and with one quoted example phrase in a maintainer log described instead. The rewrite dropped the commit signatures. Pull requests #1 to #17, the builder branches and the reviews stay in the development repository, which is archived since 2026-11-14; the numbers in commit messages and logs refer to it.
 
 Every later change follows the content rules of SPEC section 20 from the start: a public repository also shows every branch, the commits of every pull request (GitHub keeps them under `refs/pull/` after a branch is deleted) and the earlier versions of edited pull request descriptions and comments.
 
