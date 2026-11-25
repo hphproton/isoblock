@@ -1,0 +1,3352 @@
+{
+  "schema": "isoblock/1",
+  "id": "large",
+  "units": {
+    "name": "u",
+    "note": "synthetic unit"
+  },
+  "camera": {
+    "angleU": 26.565051,
+    "angleV": 153.434949,
+    "pxPerUnit": 36,
+    "verticalScale": 1,
+    "origin": [
+      6000,
+      300
+    ]
+  },
+  "frame": {
+    "w": 12000,
+    "h": 8000,
+    "regions": [
+      {
+        "id": "view",
+        "rect": [
+          0,
+          0,
+          12000,
+          8000
+        ]
+      }
+    ]
+  },
+  "types": {
+    "box": {
+      "size": [
+        1,
+        1,
+        1
+      ]
+    }
+  },
+  "objects": [
+    {
+      "id": "box_0",
+      "type": "box",
+      "pos": [
+        0,
+        0
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_1",
+      "type": "box",
+      "pos": [
+        1.2,
+        0
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_2",
+      "type": "box",
+      "pos": [
+        2.4,
+        0
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_3",
+      "type": "box",
+      "pos": [
+        3.6,
+        0
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_4",
+      "type": "box",
+      "pos": [
+        4.8,
+        0
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_5",
+      "type": "box",
+      "pos": [
+        6,
+        0
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_6",
+      "type": "box",
+      "pos": [
+        7.2,
+        0
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_7",
+      "type": "box",
+      "pos": [
+        8.4,
+        0
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_8",
+      "type": "box",
+      "pos": [
+        9.6,
+        0
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_9",
+      "type": "box",
+      "pos": [
+        10.8,
+        0
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_10",
+      "type": "box",
+      "pos": [
+        12,
+        0
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_11",
+      "type": "box",
+      "pos": [
+        13.2,
+        0
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_12",
+      "type": "box",
+      "pos": [
+        14.4,
+        0
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_13",
+      "type": "box",
+      "pos": [
+        15.6,
+        0
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_14",
+      "type": "box",
+      "pos": [
+        16.8,
+        0
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_15",
+      "type": "box",
+      "pos": [
+        18,
+        0
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_16",
+      "type": "box",
+      "pos": [
+        19.2,
+        0
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_17",
+      "type": "box",
+      "pos": [
+        20.4,
+        0
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_18",
+      "type": "box",
+      "pos": [
+        21.6,
+        0
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_19",
+      "type": "box",
+      "pos": [
+        22.8,
+        0
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_20",
+      "type": "box",
+      "pos": [
+        24,
+        0
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_21",
+      "type": "box",
+      "pos": [
+        25.2,
+        0
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_22",
+      "type": "box",
+      "pos": [
+        26.4,
+        0
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_23",
+      "type": "box",
+      "pos": [
+        27.6,
+        0
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_24",
+      "type": "box",
+      "pos": [
+        28.8,
+        0
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_25",
+      "type": "box",
+      "pos": [
+        30,
+        0
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_26",
+      "type": "box",
+      "pos": [
+        31.2,
+        0
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_27",
+      "type": "box",
+      "pos": [
+        32.4,
+        0
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_28",
+      "type": "box",
+      "pos": [
+        33.6,
+        0
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_29",
+      "type": "box",
+      "pos": [
+        34.8,
+        0
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_30",
+      "type": "box",
+      "pos": [
+        0,
+        1.2
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_31",
+      "type": "box",
+      "pos": [
+        1.2,
+        1.2
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_32",
+      "type": "box",
+      "pos": [
+        2.4,
+        1.2
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_33",
+      "type": "box",
+      "pos": [
+        3.6,
+        1.2
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_34",
+      "type": "box",
+      "pos": [
+        4.8,
+        1.2
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_35",
+      "type": "box",
+      "pos": [
+        6,
+        1.2
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_36",
+      "type": "box",
+      "pos": [
+        7.2,
+        1.2
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_37",
+      "type": "box",
+      "pos": [
+        8.4,
+        1.2
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_38",
+      "type": "box",
+      "pos": [
+        9.6,
+        1.2
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_39",
+      "type": "box",
+      "pos": [
+        10.8,
+        1.2
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_40",
+      "type": "box",
+      "pos": [
+        12,
+        1.2
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_41",
+      "type": "box",
+      "pos": [
+        13.2,
+        1.2
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_42",
+      "type": "box",
+      "pos": [
+        14.4,
+        1.2
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_43",
+      "type": "box",
+      "pos": [
+        15.6,
+        1.2
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_44",
+      "type": "box",
+      "pos": [
+        16.8,
+        1.2
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_45",
+      "type": "box",
+      "pos": [
+        18,
+        1.2
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_46",
+      "type": "box",
+      "pos": [
+        19.2,
+        1.2
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_47",
+      "type": "box",
+      "pos": [
+        20.4,
+        1.2
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_48",
+      "type": "box",
+      "pos": [
+        21.6,
+        1.2
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_49",
+      "type": "box",
+      "pos": [
+        22.8,
+        1.2
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_50",
+      "type": "box",
+      "pos": [
+        24,
+        1.2
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_51",
+      "type": "box",
+      "pos": [
+        25.2,
+        1.2
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_52",
+      "type": "box",
+      "pos": [
+        26.4,
+        1.2
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_53",
+      "type": "box",
+      "pos": [
+        27.6,
+        1.2
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_54",
+      "type": "box",
+      "pos": [
+        28.8,
+        1.2
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_55",
+      "type": "box",
+      "pos": [
+        30,
+        1.2
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_56",
+      "type": "box",
+      "pos": [
+        31.2,
+        1.2
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_57",
+      "type": "box",
+      "pos": [
+        32.4,
+        1.2
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_58",
+      "type": "box",
+      "pos": [
+        33.6,
+        1.2
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_59",
+      "type": "box",
+      "pos": [
+        34.8,
+        1.2
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_60",
+      "type": "box",
+      "pos": [
+        0,
+        2.4
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_61",
+      "type": "box",
+      "pos": [
+        1.2,
+        2.4
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_62",
+      "type": "box",
+      "pos": [
+        2.4,
+        2.4
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_63",
+      "type": "box",
+      "pos": [
+        3.6,
+        2.4
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_64",
+      "type": "box",
+      "pos": [
+        4.8,
+        2.4
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_65",
+      "type": "box",
+      "pos": [
+        6,
+        2.4
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_66",
+      "type": "box",
+      "pos": [
+        7.2,
+        2.4
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_67",
+      "type": "box",
+      "pos": [
+        8.4,
+        2.4
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_68",
+      "type": "box",
+      "pos": [
+        9.6,
+        2.4
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_69",
+      "type": "box",
+      "pos": [
+        10.8,
+        2.4
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_70",
+      "type": "box",
+      "pos": [
+        12,
+        2.4
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_71",
+      "type": "box",
+      "pos": [
+        13.2,
+        2.4
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_72",
+      "type": "box",
+      "pos": [
+        14.4,
+        2.4
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_73",
+      "type": "box",
+      "pos": [
+        15.6,
+        2.4
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_74",
+      "type": "box",
+      "pos": [
+        16.8,
+        2.4
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_75",
+      "type": "box",
+      "pos": [
+        18,
+        2.4
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_76",
+      "type": "box",
+      "pos": [
+        19.2,
+        2.4
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_77",
+      "type": "box",
+      "pos": [
+        20.4,
+        2.4
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_78",
+      "type": "box",
+      "pos": [
+        21.6,
+        2.4
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_79",
+      "type": "box",
+      "pos": [
+        22.8,
+        2.4
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_80",
+      "type": "box",
+      "pos": [
+        24,
+        2.4
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_81",
+      "type": "box",
+      "pos": [
+        25.2,
+        2.4
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_82",
+      "type": "box",
+      "pos": [
+        26.4,
+        2.4
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_83",
+      "type": "box",
+      "pos": [
+        27.6,
+        2.4
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_84",
+      "type": "box",
+      "pos": [
+        28.8,
+        2.4
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_85",
+      "type": "box",
+      "pos": [
+        30,
+        2.4
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_86",
+      "type": "box",
+      "pos": [
+        31.2,
+        2.4
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_87",
+      "type": "box",
+      "pos": [
+        32.4,
+        2.4
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_88",
+      "type": "box",
+      "pos": [
+        33.6,
+        2.4
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_89",
+      "type": "box",
+      "pos": [
+        34.8,
+        2.4
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_90",
+      "type": "box",
+      "pos": [
+        0,
+        3.6
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_91",
+      "type": "box",
+      "pos": [
+        1.2,
+        3.6
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_92",
+      "type": "box",
+      "pos": [
+        2.4,
+        3.6
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_93",
+      "type": "box",
+      "pos": [
+        3.6,
+        3.6
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_94",
+      "type": "box",
+      "pos": [
+        4.8,
+        3.6
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_95",
+      "type": "box",
+      "pos": [
+        6,
+        3.6
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_96",
+      "type": "box",
+      "pos": [
+        7.2,
+        3.6
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_97",
+      "type": "box",
+      "pos": [
+        8.4,
+        3.6
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_98",
+      "type": "box",
+      "pos": [
+        9.6,
+        3.6
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_99",
+      "type": "box",
+      "pos": [
+        10.8,
+        3.6
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_100",
+      "type": "box",
+      "pos": [
+        12,
+        3.6
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_101",
+      "type": "box",
+      "pos": [
+        13.2,
+        3.6
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_102",
+      "type": "box",
+      "pos": [
+        14.4,
+        3.6
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_103",
+      "type": "box",
+      "pos": [
+        15.6,
+        3.6
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_104",
+      "type": "box",
+      "pos": [
+        16.8,
+        3.6
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_105",
+      "type": "box",
+      "pos": [
+        18,
+        3.6
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_106",
+      "type": "box",
+      "pos": [
+        19.2,
+        3.6
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_107",
+      "type": "box",
+      "pos": [
+        20.4,
+        3.6
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_108",
+      "type": "box",
+      "pos": [
+        21.6,
+        3.6
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_109",
+      "type": "box",
+      "pos": [
+        22.8,
+        3.6
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_110",
+      "type": "box",
+      "pos": [
+        24,
+        3.6
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_111",
+      "type": "box",
+      "pos": [
+        25.2,
+        3.6
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_112",
+      "type": "box",
+      "pos": [
+        26.4,
+        3.6
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_113",
+      "type": "box",
+      "pos": [
+        27.6,
+        3.6
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_114",
+      "type": "box",
+      "pos": [
+        28.8,
+        3.6
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_115",
+      "type": "box",
+      "pos": [
+        30,
+        3.6
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_116",
+      "type": "box",
+      "pos": [
+        31.2,
+        3.6
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_117",
+      "type": "box",
+      "pos": [
+        32.4,
+        3.6
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_118",
+      "type": "box",
+      "pos": [
+        33.6,
+        3.6
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_119",
+      "type": "box",
+      "pos": [
+        34.8,
+        3.6
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_120",
+      "type": "box",
+      "pos": [
+        0,
+        4.8
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_121",
+      "type": "box",
+      "pos": [
+        1.2,
+        4.8
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_122",
+      "type": "box",
+      "pos": [
+        2.4,
+        4.8
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_123",
+      "type": "box",
+      "pos": [
+        3.6,
+        4.8
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_124",
+      "type": "box",
+      "pos": [
+        4.8,
+        4.8
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_125",
+      "type": "box",
+      "pos": [
+        6,
+        4.8
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_126",
+      "type": "box",
+      "pos": [
+        7.2,
+        4.8
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_127",
+      "type": "box",
+      "pos": [
+        8.4,
+        4.8
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_128",
+      "type": "box",
+      "pos": [
+        9.6,
+        4.8
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_129",
+      "type": "box",
+      "pos": [
+        10.8,
+        4.8
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_130",
+      "type": "box",
+      "pos": [
+        12,
+        4.8
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_131",
+      "type": "box",
+      "pos": [
+        13.2,
+        4.8
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_132",
+      "type": "box",
+      "pos": [
+        14.4,
+        4.8
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_133",
+      "type": "box",
+      "pos": [
+        15.6,
+        4.8
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_134",
+      "type": "box",
+      "pos": [
+        16.8,
+        4.8
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_135",
+      "type": "box",
+      "pos": [
+        18,
+        4.8
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_136",
+      "type": "box",
+      "pos": [
+        19.2,
+        4.8
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_137",
+      "type": "box",
+      "pos": [
+        20.4,
+        4.8
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_138",
+      "type": "box",
+      "pos": [
+        21.6,
+        4.8
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_139",
+      "type": "box",
+      "pos": [
+        22.8,
+        4.8
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_140",
+      "type": "box",
+      "pos": [
+        24,
+        4.8
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_141",
+      "type": "box",
+      "pos": [
+        25.2,
+        4.8
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_142",
+      "type": "box",
+      "pos": [
+        26.4,
+        4.8
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_143",
+      "type": "box",
+      "pos": [
+        27.6,
+        4.8
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_144",
+      "type": "box",
+      "pos": [
+        28.8,
+        4.8
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_145",
+      "type": "box",
+      "pos": [
+        30,
+        4.8
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_146",
+      "type": "box",
+      "pos": [
+        31.2,
+        4.8
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_147",
+      "type": "box",
+      "pos": [
+        32.4,
+        4.8
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_148",
+      "type": "box",
+      "pos": [
+        33.6,
+        4.8
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_149",
+      "type": "box",
+      "pos": [
+        34.8,
+        4.8
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_150",
+      "type": "box",
+      "pos": [
+        0,
+        6
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_151",
+      "type": "box",
+      "pos": [
+        1.2,
+        6
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_152",
+      "type": "box",
+      "pos": [
+        2.4,
+        6
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_153",
+      "type": "box",
+      "pos": [
+        3.6,
+        6
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_154",
+      "type": "box",
+      "pos": [
+        4.8,
+        6
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_155",
+      "type": "box",
+      "pos": [
+        6,
+        6
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_156",
+      "type": "box",
+      "pos": [
+        7.2,
+        6
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_157",
+      "type": "box",
+      "pos": [
+        8.4,
+        6
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_158",
+      "type": "box",
+      "pos": [
+        9.6,
+        6
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_159",
+      "type": "box",
+      "pos": [
+        10.8,
+        6
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_160",
+      "type": "box",
+      "pos": [
+        12,
+        6
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_161",
+      "type": "box",
+      "pos": [
+        13.2,
+        6
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_162",
+      "type": "box",
+      "pos": [
+        14.4,
+        6
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_163",
+      "type": "box",
+      "pos": [
+        15.6,
+        6
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_164",
+      "type": "box",
+      "pos": [
+        16.8,
+        6
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_165",
+      "type": "box",
+      "pos": [
+        18,
+        6
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_166",
+      "type": "box",
+      "pos": [
+        19.2,
+        6
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_167",
+      "type": "box",
+      "pos": [
+        20.4,
+        6
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_168",
+      "type": "box",
+      "pos": [
+        21.6,
+        6
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_169",
+      "type": "box",
+      "pos": [
+        22.8,
+        6
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_170",
+      "type": "box",
+      "pos": [
+        24,
+        6
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_171",
+      "type": "box",
+      "pos": [
+        25.2,
+        6
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_172",
+      "type": "box",
+      "pos": [
+        26.4,
+        6
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_173",
+      "type": "box",
+      "pos": [
+        27.6,
+        6
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_174",
+      "type": "box",
+      "pos": [
+        28.8,
+        6
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_175",
+      "type": "box",
+      "pos": [
+        30,
+        6
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_176",
+      "type": "box",
+      "pos": [
+        31.2,
+        6
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_177",
+      "type": "box",
+      "pos": [
+        32.4,
+        6
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_178",
+      "type": "box",
+      "pos": [
+        33.6,
+        6
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_179",
+      "type": "box",
+      "pos": [
+        34.8,
+        6
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_180",
+      "type": "box",
+      "pos": [
+        0,
+        7.2
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_181",
+      "type": "box",
+      "pos": [
+        1.2,
+        7.2
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_182",
+      "type": "box",
+      "pos": [
+        2.4,
+        7.2
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_183",
+      "type": "box",
+      "pos": [
+        3.6,
+        7.2
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_184",
+      "type": "box",
+      "pos": [
+        4.8,
+        7.2
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_185",
+      "type": "box",
+      "pos": [
+        6,
+        7.2
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_186",
+      "type": "box",
+      "pos": [
+        7.2,
+        7.2
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_187",
+      "type": "box",
+      "pos": [
+        8.4,
+        7.2
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_188",
+      "type": "box",
+      "pos": [
+        9.6,
+        7.2
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_189",
+      "type": "box",
+      "pos": [
+        10.8,
+        7.2
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_190",
+      "type": "box",
+      "pos": [
+        12,
+        7.2
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_191",
+      "type": "box",
+      "pos": [
+        13.2,
+        7.2
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_192",
+      "type": "box",
+      "pos": [
+        14.4,
+        7.2
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_193",
+      "type": "box",
+      "pos": [
+        15.6,
+        7.2
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_194",
+      "type": "box",
+      "pos": [
+        16.8,
+        7.2
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_195",
+      "type": "box",
+      "pos": [
+        18,
+        7.2
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_196",
+      "type": "box",
+      "pos": [
+        19.2,
+        7.2
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_197",
+      "type": "box",
+      "pos": [
+        20.4,
+        7.2
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_198",
+      "type": "box",
+      "pos": [
+        21.6,
+        7.2
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_199",
+      "type": "box",
+      "pos": [
+        22.8,
+        7.2
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_200",
+      "type": "box",
+      "pos": [
+        24,
+        7.2
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_201",
+      "type": "box",
+      "pos": [
+        25.2,
+        7.2
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_202",
+      "type": "box",
+      "pos": [
+        26.4,
+        7.2
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_203",
+      "type": "box",
+      "pos": [
+        27.6,
+        7.2
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_204",
+      "type": "box",
+      "pos": [
+        28.8,
+        7.2
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_205",
+      "type": "box",
+      "pos": [
+        30,
+        7.2
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_206",
+      "type": "box",
+      "pos": [
+        31.2,
+        7.2
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_207",
+      "type": "box",
+      "pos": [
+        32.4,
+        7.2
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_208",
+      "type": "box",
+      "pos": [
+        33.6,
+        7.2
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_209",
+      "type": "box",
+      "pos": [
+        34.8,
+        7.2
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_210",
+      "type": "box",
+      "pos": [
+        0,
+        8.4
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_211",
+      "type": "box",
+      "pos": [
+        1.2,
+        8.4
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_212",
+      "type": "box",
+      "pos": [
+        2.4,
+        8.4
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_213",
+      "type": "box",
+      "pos": [
+        3.6,
+        8.4
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_214",
+      "type": "box",
+      "pos": [
+        4.8,
+        8.4
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_215",
+      "type": "box",
+      "pos": [
+        6,
+        8.4
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_216",
+      "type": "box",
+      "pos": [
+        7.2,
+        8.4
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_217",
+      "type": "box",
+      "pos": [
+        8.4,
+        8.4
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_218",
+      "type": "box",
+      "pos": [
+        9.6,
+        8.4
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_219",
+      "type": "box",
+      "pos": [
+        10.8,
+        8.4
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_220",
+      "type": "box",
+      "pos": [
+        12,
+        8.4
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_221",
+      "type": "box",
+      "pos": [
+        13.2,
+        8.4
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_222",
+      "type": "box",
+      "pos": [
+        14.4,
+        8.4
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_223",
+      "type": "box",
+      "pos": [
+        15.6,
+        8.4
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_224",
+      "type": "box",
+      "pos": [
+        16.8,
+        8.4
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_225",
+      "type": "box",
+      "pos": [
+        18,
+        8.4
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_226",
+      "type": "box",
+      "pos": [
+        19.2,
+        8.4
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_227",
+      "type": "box",
+      "pos": [
+        20.4,
+        8.4
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_228",
+      "type": "box",
+      "pos": [
+        21.6,
+        8.4
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_229",
+      "type": "box",
+      "pos": [
+        22.8,
+        8.4
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_230",
+      "type": "box",
+      "pos": [
+        24,
+        8.4
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_231",
+      "type": "box",
+      "pos": [
+        25.2,
+        8.4
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_232",
+      "type": "box",
+      "pos": [
+        26.4,
+        8.4
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_233",
+      "type": "box",
+      "pos": [
+        27.6,
+        8.4
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_234",
+      "type": "box",
+      "pos": [
+        28.8,
+        8.4
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_235",
+      "type": "box",
+      "pos": [
+        30,
+        8.4
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_236",
+      "type": "box",
+      "pos": [
+        31.2,
+        8.4
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_237",
+      "type": "box",
+      "pos": [
+        32.4,
+        8.4
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_238",
+      "type": "box",
+      "pos": [
+        33.6,
+        8.4
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_239",
+      "type": "box",
+      "pos": [
+        34.8,
+        8.4
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_240",
+      "type": "box",
+      "pos": [
+        0,
+        9.6
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_241",
+      "type": "box",
+      "pos": [
+        1.2,
+        9.6
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_242",
+      "type": "box",
+      "pos": [
+        2.4,
+        9.6
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_243",
+      "type": "box",
+      "pos": [
+        3.6,
+        9.6
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_244",
+      "type": "box",
+      "pos": [
+        4.8,
+        9.6
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_245",
+      "type": "box",
+      "pos": [
+        6,
+        9.6
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_246",
+      "type": "box",
+      "pos": [
+        7.2,
+        9.6
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_247",
+      "type": "box",
+      "pos": [
+        8.4,
+        9.6
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_248",
+      "type": "box",
+      "pos": [
+        9.6,
+        9.6
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_249",
+      "type": "box",
+      "pos": [
+        10.8,
+        9.6
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_250",
+      "type": "box",
+      "pos": [
+        12,
+        9.6
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_251",
+      "type": "box",
+      "pos": [
+        13.2,
+        9.6
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_252",
+      "type": "box",
+      "pos": [
+        14.4,
+        9.6
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_253",
+      "type": "box",
+      "pos": [
+        15.6,
+        9.6
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_254",
+      "type": "box",
+      "pos": [
+        16.8,
+        9.6
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_255",
+      "type": "box",
+      "pos": [
+        18,
+        9.6
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_256",
+      "type": "box",
+      "pos": [
+        19.2,
+        9.6
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_257",
+      "type": "box",
+      "pos": [
+        20.4,
+        9.6
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_258",
+      "type": "box",
+      "pos": [
+        21.6,
+        9.6
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_259",
+      "type": "box",
+      "pos": [
+        22.8,
+        9.6
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_260",
+      "type": "box",
+      "pos": [
+        24,
+        9.6
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_261",
+      "type": "box",
+      "pos": [
+        25.2,
+        9.6
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_262",
+      "type": "box",
+      "pos": [
+        26.4,
+        9.6
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_263",
+      "type": "box",
+      "pos": [
+        27.6,
+        9.6
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_264",
+      "type": "box",
+      "pos": [
+        28.8,
+        9.6
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_265",
+      "type": "box",
+      "pos": [
+        30,
+        9.6
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_266",
+      "type": "box",
+      "pos": [
+        31.2,
+        9.6
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_267",
+      "type": "box",
+      "pos": [
+        32.4,
+        9.6
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_268",
+      "type": "box",
+      "pos": [
+        33.6,
+        9.6
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_269",
+      "type": "box",
+      "pos": [
+        34.8,
+        9.6
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_270",
+      "type": "box",
+      "pos": [
+        0,
+        10.8
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_271",
+      "type": "box",
+      "pos": [
+        1.2,
+        10.8
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_272",
+      "type": "box",
+      "pos": [
+        2.4,
+        10.8
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_273",
+      "type": "box",
+      "pos": [
+        3.6,
+        10.8
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_274",
+      "type": "box",
+      "pos": [
+        4.8,
+        10.8
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_275",
+      "type": "box",
+      "pos": [
+        6,
+        10.8
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_276",
+      "type": "box",
+      "pos": [
+        7.2,
+        10.8
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_277",
+      "type": "box",
+      "pos": [
+        8.4,
+        10.8
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_278",
+      "type": "box",
+      "pos": [
+        9.6,
+        10.8
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_279",
+      "type": "box",
+      "pos": [
+        10.8,
+        10.8
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_280",
+      "type": "box",
+      "pos": [
+        12,
+        10.8
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_281",
+      "type": "box",
+      "pos": [
+        13.2,
+        10.8
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_282",
+      "type": "box",
+      "pos": [
+        14.4,
+        10.8
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_283",
+      "type": "box",
+      "pos": [
+        15.6,
+        10.8
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_284",
+      "type": "box",
+      "pos": [
+        16.8,
+        10.8
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_285",
+      "type": "box",
+      "pos": [
+        18,
+        10.8
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_286",
+      "type": "box",
+      "pos": [
+        19.2,
+        10.8
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_287",
+      "type": "box",
+      "pos": [
+        20.4,
+        10.8
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_288",
+      "type": "box",
+      "pos": [
+        21.6,
+        10.8
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_289",
+      "type": "box",
+      "pos": [
+        22.8,
+        10.8
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_290",
+      "type": "box",
+      "pos": [
+        24,
+        10.8
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_291",
+      "type": "box",
+      "pos": [
+        25.2,
+        10.8
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_292",
+      "type": "box",
+      "pos": [
+        26.4,
+        10.8
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_293",
+      "type": "box",
+      "pos": [
+        27.6,
+        10.8
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_294",
+      "type": "box",
+      "pos": [
+        28.8,
+        10.8
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_295",
+      "type": "box",
+      "pos": [
+        30,
+        10.8
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_296",
+      "type": "box",
+      "pos": [
+        31.2,
+        10.8
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_297",
+      "type": "box",
+      "pos": [
+        32.4,
+        10.8
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_298",
+      "type": "box",
+      "pos": [
+        33.6,
+        10.8
+      ],
+      "tags": [
+        "item"
+      ]
+    },
+    {
+      "id": "box_299",
+      "type": "box",
+      "pos": [
+        34.8,
+        10.8
+      ],
+      "tags": [
+        "item"
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "id": "items_shown",
+      "check": "visible_share",
+      "tag": "item",
+      "min": 0.5
+    }
+  ]
+}

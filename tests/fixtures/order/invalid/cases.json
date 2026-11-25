@@ -1,0 +1,31 @@
+{
+  "cases": [
+    {
+      "file": "sprite-value.invalid.json",
+      "code": "E_SCHEMA",
+      "scene": "order",
+      "contains": [
+        "sprite"
+      ],
+      "excludes": []
+    },
+    {
+      "file": "engine-value.invalid.json",
+      "code": "E_SCHEMA",
+      "scene": "order",
+      "contains": [
+        "engine"
+      ],
+      "excludes": []
+    },
+    {
+      "file": "parts-value.invalid.json",
+      "code": "E_SCHEMA",
+      "scene": "order",
+      "contains": [
+        "parts"
+      ],
+      "excludes": []
+    }
+  ]
+}

@@ -1,0 +1,61 @@
+{
+  "actorLimit": 10,
+  "cases": [
+    {
+      "name": "order",
+      "scene": "tests/fixtures/order/godot.scene.json",
+      "states": [
+        null,
+        "night",
+        "bare"
+      ],
+      "instantiate": null,
+      "unmapped": null,
+      "actor": {
+        "size": [
+          0.4,
+          0.4,
+          1.6
+        ],
+        "path": [
+          [
+            1,
+            11
+          ],
+          [
+            2,
+            13.65
+          ],
+          [
+            4,
+            13.6
+          ],
+          [
+            6,
+            13.5
+          ],
+          [
+            12,
+            9
+          ],
+          [
+            15,
+            15.4
+          ],
+          [
+            17.5,
+            15
+          ],
+          [
+            21,
+            4
+          ],
+          [
+            11,
+            2
+          ]
+        ]
+      }
+    }
+  ]
+}
