@@ -82,19 +82,20 @@ func _order(root: Node2D) -> Array:
 	return root.get_node("Sprites").get_children().map(func(n: Node) -> Array: return [n.get_meta("object"), n.get_meta("slice"), n.get_meta("key")] if n.has_meta("object") else [n.get_meta("actor"), n.get_meta("key")])
 
 
-## The sprites of the file in the order of the engine rule: ascending key, the sprite list on equal keys.
+## The sprites of the file in the order rule: ascending order, the sprite list on equal orders.
 func _engine_order(data: Dictionary) -> Array:
 	var list: Array = []
+	var i := 0
 	for object in data["objects"]:
 		for k in object["sprites"].size():
-			list.append([object["id"], k, object["sprites"][k]["key"]])
-	var sorted: Array = []
+			var sprite: Dictionary = object["sprites"][k]
+			list.append([int(sprite.get("order", k)), i, [object["id"], k, sprite["key"]]])
+			i += 1
+	list.sort_custom(func(a, b): return a[0] < b[0] or (a[0] == b[0] and a[1] < b[1]))
+	var out: Array = []
 	for entry in list:
-		var at := sorted.size()
-		while at > 0 and float(sorted[at - 1][2]) > float(entry[2]):
-			at -= 1
-		sorted.insert(at, entry)
-	return sorted
+		out.append(entry[2])
+	return out
 
 
 func _tree(data: Dictionary) -> void:
@@ -123,6 +124,7 @@ func _tree(data: Dictionary) -> void:
 		var object: Dictionary = by_id[node.get_meta("object")]
 		var sprite: Dictionary = object["sprites"][node.get_meta("slice")]
 		_expect(node is Node2D and node.z_index == 0 and node.z_as_relative and not sprites.y_sort_enabled, "%s: z_index 0, relative, no y-sort" % node.name)
+		_expect(int(node.get_meta("order")) == int(sprite.get("order", node.get_meta("slice"))), "%s keeps its order" % node.name)
 		var count := 0
 		for piece in sprite["pieces"]:
 			count += Runtime.faces(data["camera"], data["cameraDir"], piece["box"]).size()
@@ -138,20 +140,21 @@ func _tree(data: Dictionary) -> void:
 	root.free()
 
 
-## Sprites with equal keys keep the order of the sprite list: objects in file order, slices in order.
+## A smaller key does not pull a sprite forward: child order follows `order`.
 func _sprite_ties(data: Dictionary) -> void:
-	for reverse in [false, true]:
-		var flat := data.duplicate(true)
-		if reverse:
-			flat["objects"].reverse()
-		var want: Array = []
-		for object in flat["objects"]:
-			for k in object["sprites"].size():
-				object["sprites"][k]["key"] = 1.0
-				want.append([object["id"], k, 1.0])
-		var root: Node2D = Runtime.build(flat)["root"]
-		_expect(_order(root) == want, "sprites with equal keys keep the order of the sprite list (objects reversed: %s)" % reverse)
-		root.free()
+	var flat: Dictionary = data.duplicate(true)
+	var n := 0
+	for object in flat["objects"]:
+		n += object["sprites"].size()
+	var i := 0
+	for object in flat["objects"]:
+		for k in object["sprites"].size():
+			object["sprites"][k]["key"] = float(i)
+			object["sprites"][k]["order"] = n - 1 - i
+			i += 1
+	var root: Node2D = Runtime.build(flat)["root"]
+	_expect(_order(root) == _engine_order(flat), "sprites are drawn by ascending order, not by key")
+	root.free()
 
 
 ## Faces that point toward the camera: three for a diagonal camera, two when it is edge-on to one side.
@@ -266,6 +269,7 @@ func _states(data: Dictionary) -> void:
 		_expect(_visible_objects(root) == all.filter(func(id: String) -> bool: return not hide.has(id)), "state %s hides the sprites of %s" % [name, hide])
 		_expect(root.get_node("Objects").get_children().all(func(n: Node) -> bool: return n.visible != hide.has(n.get_meta("id"))), "state %s hides the objects and their anchors" % name)
 		_expect(Runtime._actor(root, "a").visible, "state %s leaves the actor alone" % name)
+		_expect(_in_engine_order(root), "state %s keeps the actor at its slot" % name)
 		var unknown := Runtime.apply_state(root, "no such state")
 		_expect(unknown["code"] == "E_STATE" and _visible_objects(root).size() == all.size() - hide.size(), "an unknown state is E_STATE and changes nothing")
 	_expect(Runtime.apply_state(root, "")["code"] == "" and _visible_objects(root) == all, "\"\" shows every object")
@@ -282,6 +286,7 @@ func _actors(data: Dictionary) -> void:
 	_expect(hero.get_parent() == root.get_node("Sprites") and hero.get_meta("actor") == "hero" and game.get_parent() == hero, "the actor is a child of Sprites and holds the game's node")
 	_expect(_near(game.global_position, Runtime.project(data["camera"], 2.35, 2.9, 0.0), 1e-4), "the game's node sits at the projection of `at`")
 	_expect(hero.get_meta("key") == Runtime.sort_key(data["cameraDir"], [2.15, 2.7, 2.55, 3.1]), "the actor's key is the key of its footprint")
+	_expect(Runtime.actor_slot(root, [0.4, 0.4, 1.7], [2.35, 2.9]) == hero.get_meta("slot"), "actor_slot matches the placed slot")
 	_expect(Runtime.add_actor(root, "box", [0.5, 0.5, 1.0], Vector2(4.2, 1.3), null, Color.RED)["code"] == "", "add an actor drawn as a box")
 	var box := Runtime._actor(root, "box")
 	_expect(box.get_meta("key") == Runtime.sort_key(data["cameraDir"], [3.95, 1.05, 4.45, 1.55]), "a Vector2 position gives the key of its decimal value")
@@ -304,24 +309,34 @@ func _actors(data: Dictionary) -> void:
 	root.free()
 
 
-## Children keys never decrease, and on equal keys scene sprites come before actors.
+## Scene sprites ascend by order. Each actor sits after order <= slot and before order > slot.
+## Actors of one slot ascend by key, then by the order they were added.
 func _in_engine_order(root: Node2D) -> bool:
-	var previous := -INF
-	var actor_seen := false
+	var last_order := -1
+	var last_slot := -2
+	var last_key := -INF
+	var last_added := -1
+	var blocking := -2
 	for node in root.get_node("Sprites").get_children():
-		var key := float(node.get_meta("key"))
-		if key < previous:
-			return false
-		if key > previous:
-			actor_seen = false
-		if node.has_meta("object") and actor_seen:
-			return false
-		actor_seen = actor_seen or node.has_meta("actor")
-		previous = key
+		if node.has_meta("object"):
+			var order := int(node.get_meta("order"))
+			if order < last_order or (blocking >= -1 and order <= blocking):
+				return false
+			last_order = order
+		else:
+			var slot := int(node.get_meta("slot"))
+			var key := float(node.get_meta("key"))
+			var added: int = node.get_meta("added")
+			if slot < last_slot or (slot == last_slot and (key < last_key or (key == last_key and added < last_added))):
+				return false
+			last_slot = slot
+			last_key = key
+			last_added = added
+			blocking = slot
 	return true
 
 
-## Actors on a sprite's key: after that sprite, before the next larger key; equal actors in the order added.
+## Actors at one point share a slot and keep the order they were added.
 func _actor_ties(data: Dictionary) -> void:
 	var root: Node2D = Runtime.build(data)["root"]
 	var order := _order(root)
@@ -332,21 +347,19 @@ func _actor_ties(data: Dictionary) -> void:
 			sprite = object["sprites"][target[1]]
 	var f: Array = sprite["footprint"]
 	var at := [(float(f[0]) + float(f[2])) / 2.0, (float(f[1]) + float(f[3])) / 2.0]
-	var tie := float(target[2])
 	Runtime.add_actor(root, "first", [0.4, 0.4, 1.7], at)
-	Runtime.add_actor(root, "second", [0.2, 0.2, 1.0], at)
-	Runtime.add_actor(root, "behind", [0.4, 0.4, 1.7], [at[0] - 0.5, at[1]])
-	_expect(Runtime._actor(root, "first").get_meta("key") == tie, "an actor on the center of a sprite's footprint has the sprite's key %s" % tie)
-	var keys: Array = _order(root).map(func(e: Array) -> Variant: return e[e.size() - 1])
+	Runtime.add_actor(root, "second", [0.4, 0.4, 1.7], at)
+	var first: Node2D = Runtime._actor(root, "first")
+	var second: Node2D = Runtime._actor(root, "second")
+	_expect(int(first.get_meta("slot")) == int(second.get_meta("slot")), "actors of one size at one point share a slot")
+	_expect(Runtime.actor_slot(root, [0.4, 0.4, 1.7], at) == int(first.get_meta("slot")), "actor_slot matches the placed slot")
 	var ids: Array = _order(root).map(func(e: Array) -> Variant: return e[0])
-	var last_sprite := keys.rfind(tie) - 2
-	_expect(ids.slice(last_sprite + 1, last_sprite + 3) == ["first", "second"], "both actors come after every sprite of key %s, in the order added: %s" % [tie, ids])
-	_expect(last_sprite + 3 == keys.size() or float(keys[last_sprite + 3]) > tie, "the next child has a larger key")
-	_expect(_in_engine_order(root), "the whole list follows the engine rule")
+	_expect(ids.find("first") + 1 == ids.find("second"), "actors with one slot keep the order they were added: %s" % [ids])
+	_expect(_in_engine_order(root), "the whole list follows the order rule")
 	Runtime.move_actor(root, "first", [at[0] + 3.0, at[1]])
 	Runtime.move_actor(root, "first", at)
 	ids = _order(root).map(func(e: Array) -> Variant: return e[0])
-	_expect(ids.find("first") + 1 == ids.find("second"), "a moved actor keeps its place before an actor added later on the same key")
+	_expect(ids.find("first") + 1 == ids.find("second"), "a moved actor keeps its place before an actor added later on the same slot")
 	Runtime.remove_actor(root, "first")
 	Runtime.add_actor(root, "first", [0.4, 0.4, 1.7], at)
 	ids = _order(root).map(func(e: Array) -> Variant: return e[0])
@@ -355,7 +368,7 @@ func _actor_ties(data: Dictionary) -> void:
 
 
 func _errors(data: Dictionary) -> void:
-	for old in ["isoblock-runtime/1", "isoblock-runtime/2", ""]:
+	for old in ["isoblock-runtime/1", "isoblock-runtime/2", "isoblock-runtime/3", ""]:
 		var wrong := data.duplicate(true)
 		wrong["schema"] = old
 		var built := Runtime.build(wrong)

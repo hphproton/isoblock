@@ -49,13 +49,13 @@ describe("Godot adapter (SPEC 13.8)", () => {
 
   it("draws by the child order of one node, without z_index or y-sort (SPEC 13.8)", () => {
     expect(adapter).not.toMatch(/z_index\s*=|z_as_relative\s*=|y_sort_enabled\s*=/);
-    for (const api of ["static func build(data: Dictionary, color_of: Callable = Callable(), scenes: Dictionary = {})", "static func apply_state(", "static func add_actor(", "static func move_actor(", "static func remove_actor(", "static func sort_key("]) {
+    for (const api of ["static func build(data: Dictionary, color_of: Callable = Callable(), scenes: Dictionary = {})", "static func apply_state(", "static func add_actor(", "static func move_actor(", "static func remove_actor(", "static func sort_key(", "static func actor_slot("]) {
       expect(adapter).toContain(api);
     }
   });
 
   it("reads the schema value of the runtime file the tool writes", () => {
-    expect(adapter).toContain('SCHEMA := "isoblock-runtime/3"');
+    expect(adapter).toContain('SCHEMA := "isoblock-runtime/4"');
     expect(adapter).not.toContain("isoblock-runtime/1");
   });
 });
