@@ -1,4 +1,4 @@
-import { boxesOverlap, sizeBox, type Box } from "../geometry";
+import { boxesOverlap, sizeBox, worldParts, type Box } from "../geometry";
 import type { CheckResult, NoOverlapCheck, Scene } from "../types";
 import { plural, selectObjects } from "./result";
 
@@ -40,10 +40,29 @@ function resultOf(spec: NoOverlapCheck, pairs: Pair[]): CheckResult {
   };
 }
 
-/** Footprints must not overlap, except declared pairs. */
+/** Drawn part boxes overlap when any box of one meets any box of the other (SPEC 9.9). */
+function partsOverlap(scene: Scene, a: Scene["objects"][number], b: Scene["objects"][number]): boolean {
+  const left = worldParts(scene, a);
+  const right = worldParts(scene, b);
+  for (const x of left) for (const y of right) if (boxesOverlap(x.box, y.box)) return true;
+  return false;
+}
+
+/** Footprints must not overlap, except declared pairs. With `parts`, part boxes are compared. */
 export function checkNoOverlap(scene: Scene, spec: NoOverlapCheck): CheckResult {
   const objects = selectObjects(scene, spec.ids);
   const allowed = allowedKeys(spec);
+  if (spec.parts === true) {
+    const pairs: Pair[] = [];
+    for (let i = 0; i < objects.length; i++) {
+      for (let j = i + 1; j < objects.length; j++) {
+        if (!partsOverlap(scene, objects[i] as Scene["objects"][number], objects[j] as Scene["objects"][number])) continue;
+        const pair = sortedPair((objects[i] as { id: string }).id, (objects[j] as { id: string }).id);
+        if (!allowed.has(pairKey(pair))) pairs.push(pair);
+      }
+    }
+    return resultOf(spec, pairs);
+  }
   const rects = objects.map((o) => sizeBox(scene, o));
   const pairs: Pair[] = [];
   for (let i = 0; i < objects.length; i++) {
@@ -62,6 +81,7 @@ export function checkNoOverlap(scene: Scene, spec: NoOverlapCheck): CheckResult 
  * all the others. Equal to `checkNoOverlap`.
  */
 export function updateNoOverlap(scene: Scene, spec: NoOverlapCheck, prev: CheckResult, changed: ReadonlySet<string>): CheckResult {
+  if (spec.parts === true) return checkNoOverlap(scene, spec);
   const objects = selectObjects(scene, spec.ids);
   const allowed = allowedKeys(spec);
   const pairs = (prev.pairs ?? []).filter(([a, b]) => !changed.has(a) && !changed.has(b));

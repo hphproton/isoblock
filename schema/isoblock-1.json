@@ -84,7 +84,8 @@
               "patternProperties": { "^x-": {} },
               "properties": {
                 "id": { "type": "string", "minLength": 1 },
-                "box": { "type": "array", "items": { "type": "number" }, "minItems": 6, "maxItems": 6 }
+                "box": { "type": "array", "items": { "type": "number" }, "minItems": 6, "maxItems": 6 },
+                "sprite": { "enum": ["own"] }
               }
             }
           },
@@ -344,7 +345,8 @@
         "allow": {
           "type": "array",
           "items": { "type": "array", "items": { "type": "string" }, "minItems": 2, "maxItems": 2 }
-        }
+        },
+        "parts": { "type": "boolean" }
       }
     },
     "checkClearance": {
@@ -496,7 +498,8 @@
         "maxPixels": { "type": "number", "minimum": 0, "default": 0 },
         "area": { "type": "string", "minLength": 1 },
         "ids": { "$ref": "#/definitions/idList" },
-        "level": { "type": "number" }
+        "level": { "type": "number" },
+        "engine": { "enum": ["key", "order"] }
       }
     },
     "checkVisibleShare": {

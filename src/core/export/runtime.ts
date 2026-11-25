@@ -1,6 +1,7 @@
 import { baseHeight, footprint, rotationOf, worldParts, worldPoint, type Box, type Rect } from "../geometry";
 import { isViewCamera, orderDirection, screenAxes } from "../projection";
 import { round } from "../round";
+import { spriteOrders } from "../sort/staticOrder";
 import { sceneSprites, type Sprite } from "../sort/sprites";
 import type { Camera, Scene, SceneObject, SceneState } from "../types";
 import { partOrders } from "./partOrder";
@@ -26,9 +27,11 @@ export interface RuntimePiece {
   readonly box: readonly number[];
 }
 
-/** A sprite (SPEC 13.4): its sort key, its footprint `[u0, v0, u1, v1]` and its pieces in drawing order. */
+/** A sprite (SPEC 13.4): its sort key, its static order, its footprint `[u0, v0, u1, v1]` and its pieces. */
 export interface RuntimeSprite {
   readonly key: number;
+  /** Static order, 0 first. Absent when the sprite has not been placed. */
+  readonly order?: number;
   readonly footprint: readonly number[];
   readonly pieces: readonly RuntimePiece[];
 }
@@ -48,9 +51,9 @@ export interface RuntimeObject {
   readonly sprites: readonly RuntimeSprite[];
 }
 
-/** The runtime file `isoblock-runtime/3` (SPEC 13.7). */
+/** The runtime file `isoblock-runtime/4` (SPEC 13.7). */
 export interface RuntimeFile {
-  readonly schema: "isoblock-runtime/3";
+  readonly schema: "isoblock-runtime/4";
   readonly scene: string;
   readonly meta: { readonly version: number | null; readonly status: string | null };
   readonly units: Readonly<Record<string, unknown>>;
@@ -81,10 +84,11 @@ const rectArray = (r: Rect): number[] => [r.u0, r.v0, r.u1, r.v1].map((x) => rou
 const boxArray = (b: Box): number[] => [b.u0, b.v0, b.h0, b.u1, b.v1, b.h1].map((x) => round(x, DECIMALS));
 const vec9 = (v: readonly number[]): number[] => v.map((x) => round(x, 9));
 
-/** A sprite as the runtime file writes it (SPEC 13.7). */
+/** A sprite as the runtime file writes it (SPEC 13.7). `order` is written only when the sprite has one. */
 export function runtimeSprite(sprite: Sprite): RuntimeSprite {
   return {
     key: round(sprite.key, DECIMALS),
+    ...(sprite.order === undefined ? {} : { order: sprite.order }),
     footprint: rectArray(sprite.footprint),
     pieces: sprite.pieces.map((p) => ({ part: p.part, box: boxArray(p.box) })),
   };
@@ -136,8 +140,9 @@ export function runtimeFile(scene: Scene): RuntimeFile {
   const axes = screenAxes(scene.camera);
   const orders = partOrders(scene);
   const sprites = sceneSprites(scene);
+  const placed = spriteOrders(scene, orderDirection(scene.camera));
   return {
-    schema: "isoblock-runtime/3",
+    schema: "isoblock-runtime/4",
     scene: scene.id,
     meta: { version: scene.meta?.version ?? null, status: scene.meta?.status ?? null },
     units: { ...scene.units },
@@ -152,7 +157,11 @@ export function runtimeFile(scene: Scene): RuntimeFile {
       })),
     },
     strips: (scene.strips ?? []).map((strip) => ({ ...strip })),
-    objects: scene.objects.map((object, i) => runtimeObject(scene, object, orders[i] as readonly number[], sprites[i] as readonly Sprite[])),
+    objects: scene.objects.map((object, i) => {
+      const numbers = placed.get(object.id) ?? [];
+      const own = (sprites[i] as readonly Sprite[]).map((sprite, k) => ({ ...sprite, order: numbers[k] ?? 0 }));
+      return runtimeObject(scene, object, orders[i] as readonly number[], own);
+    }),
     zones: (scene.zones ?? []).map((zone) => ({ ...zone })),
     lanes: (scene.lanes ?? []).map((lane) => ({ ...lane })),
     states: Object.fromEntries(Object.entries(scene.states ?? {}).map(([name, state]) => [name, runtimeState(state)])),

@@ -16,15 +16,34 @@ export interface PreparedPiece {
 
 export interface PreparedSprite {
   readonly key: number;
+  /** Static order. The key rule does not read it. */
+  readonly order: number;
   readonly pieces: readonly PreparedPiece[];
+  /** Union of the pieces' screen bounds. Empty sprites do not overlap anything. */
+  readonly screen: readonly [number, number, number, number];
+}
+
+function unionScreen(pieces: readonly PreparedPiece[]): readonly [number, number, number, number] {
+  let x0 = Infinity;
+  let y0 = Infinity;
+  let x1 = -Infinity;
+  let y1 = -Infinity;
+  for (const piece of pieces) {
+    const screen = piece.info.screen;
+    if (screen[0] < x0) x0 = screen[0];
+    if (screen[1] < y0) y0 = screen[1];
+    if (screen[2] > x1) x1 = screen[2];
+    if (screen[3] > y1) y1 = screen[3];
+  }
+  return [x0, y0, x1, y1];
 }
 
 export function prepareSprites(sprites: readonly Sprite[], camera: Camera, c: Vec3): readonly PreparedSprite[] {
   const at = projector(camera);
-  return sprites.map((s) => ({
-    key: s.key,
-    pieces: s.pieces.map((p) => ({ box: p.box, info: boxInfo(p.box, camera, c), outline: boxOutline(p.box, at) })),
-  }));
+  return sprites.map((s) => {
+    const pieces = s.pieces.map((p) => ({ box: p.box, info: boxInfo(p.box, camera, c), outline: boxOutline(p.box, at) }));
+    return { key: s.key, order: s.order ?? 0, pieces, screen: unionScreen(pieces) };
+  });
 }
 
 /** Boxes that overlap by more than EPS along u, along v and along h. */
@@ -41,7 +60,7 @@ function intersect(a: Box, b: Box): boolean {
  * when the pieces need an order (SPEC 13.4) and the engine draws them the other way round;
  * `engineFirst` is true when the engine draws `p` before `q`. Pieces whose boxes intersect give 0.
  */
-function wrongArea(p: PreparedPiece, q: PreparedPiece, engineFirst: boolean, c: Vec3): number {
+export function wrongArea(p: PreparedPiece, q: PreparedPiece, engineFirst: boolean, c: Vec3): number {
   if (intersect(p.box, q.box)) return 0;
   const need = pairOrder(p.info, q.info, c);
   if (need === 0 || (need < 0) === engineFirst) return 0;

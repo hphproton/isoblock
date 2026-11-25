@@ -1,7 +1,8 @@
 import { objectRaster, type ObjectRaster } from "../raster/raster";
 import { hiddenObjects, sceneInState, withoutObjects } from "../states";
-import type { CheckResult, CheckSpec, ImplementedCheck, Scene } from "../types";
+import type { CheckResult, CheckSpec, ImplementedCheck, Scene, SortConsistencyCheck } from "../types";
 import { runCheck } from "./index";
+import { checkSortConsistency } from "./sortConsistency";
 import { parseAnchorRef } from "./points";
 import { canonical, skipResult } from "./result";
 
@@ -66,6 +67,8 @@ export function checkInState(
 ): CheckResult {
   const restricted = restrict(scene, spec, hidden);
   if (typeof restricted === "string") return canonical(skipResult(spec, `object "${restricted}" is hidden in state "${state}"`));
+  // Static orders stay those of the scene without states (SPEC 9.9).
+  if (restricted.check === "sort_consistency") return canonical(checkSortConsistency(visible, restricted as SortConsistencyCheck, scene));
   return runCheck(visible, restricted, raster);
 }
 
