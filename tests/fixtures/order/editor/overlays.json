@@ -1,0 +1,10 @@
+{
+  "cases": [
+    {
+      "name": "o01-large-opens",
+      "scene": "tests/fixtures/order/large.scene.json",
+      "state": null,
+      "overlay": null
+    }
+  ]
+}

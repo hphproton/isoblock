@@ -1,0 +1,492 @@
+{
+  "schema": "isoblock/1",
+  "id": "order",
+  "units": {
+    "name": "u",
+    "note": "synthetic unit"
+  },
+  "camera": {
+    "elevation": 30,
+    "direction": 135,
+    "scale": 40,
+    "origin": [
+      40,
+      741
+    ]
+  },
+  "frame": {
+    "w": 1268,
+    "h": 1053,
+    "regions": [
+      {
+        "id": "view",
+        "rect": [
+          0,
+          0,
+          1268,
+          1053
+        ]
+      }
+    ]
+  },
+  "types": {
+    "podium": {
+      "size": [
+        10,
+        10,
+        2
+      ]
+    },
+    "kiosk": {
+      "size": [
+        2,
+        2,
+        1
+      ]
+    },
+    "hall": {
+      "size": [
+        8,
+        4,
+        2.5
+      ]
+    },
+    "deck": {
+      "size": [
+        12,
+        2,
+        0.3
+      ],
+      "parts": [
+        {
+          "id": "slab",
+          "box": [
+            0,
+            0,
+            0,
+            12,
+            2,
+            0.3
+          ]
+        },
+        {
+          "id": "parapet_far",
+          "box": [
+            0,
+            0,
+            0.3,
+            12,
+            0.15,
+            0.9
+          ]
+        },
+        {
+          "id": "parapet_near",
+          "box": [
+            0,
+            1.85,
+            0.3,
+            12,
+            2,
+            0.9
+          ],
+          "sprite": "own"
+        }
+      ]
+    },
+    "deck_plain": {
+      "size": [
+        12,
+        2,
+        0.3
+      ],
+      "parts": [
+        {
+          "id": "slab",
+          "box": [
+            0,
+            0,
+            0,
+            12,
+            2,
+            0.3
+          ]
+        },
+        {
+          "id": "parapet_far",
+          "box": [
+            0,
+            0,
+            0.3,
+            12,
+            0.15,
+            0.9
+          ]
+        },
+        {
+          "id": "parapet_near",
+          "box": [
+            0,
+            1.85,
+            0.3,
+            12,
+            2,
+            0.9
+          ]
+        }
+      ]
+    },
+    "carriage": {
+      "size": [
+        10,
+        1.2,
+        1
+      ]
+    },
+    "walkway": {
+      "size": [
+        8,
+        2,
+        0.2
+      ]
+    },
+    "kerb": {
+      "size": [
+        8,
+        0.3,
+        2.1
+      ],
+      "parts": [
+        {
+          "id": "wall",
+          "box": [
+            0,
+            0,
+            0,
+            8,
+            0.3,
+            1.2
+          ]
+        },
+        {
+          "id": "rail",
+          "box": [
+            0,
+            0.1,
+            1.2,
+            8,
+            0.2,
+            2.1
+          ]
+        }
+      ]
+    },
+    "bench": {
+      "size": [
+        1.5,
+        0.5,
+        0.5
+      ]
+    },
+    "shop": {
+      "size": [
+        6,
+        4,
+        4
+      ],
+      "parts": [
+        {
+          "id": "body",
+          "box": [
+            0,
+            0,
+            0,
+            6,
+            4,
+            4
+          ]
+        },
+        {
+          "id": "awning",
+          "box": [
+            0,
+            4,
+            2.4,
+            6,
+            5.2,
+            2.6
+          ],
+          "sprite": "apart"
+        }
+      ]
+    },
+    "cart": {
+      "size": [
+        1,
+        0.6,
+        1
+      ]
+    },
+    "lamp": {
+      "size": [
+        0.3,
+        0.3,
+        3
+      ]
+    },
+    "pole": {
+      "size": [
+        0.3,
+        0.3,
+        5
+      ]
+    }
+  },
+  "objects": [
+    {
+      "id": "podium",
+      "type": "podium",
+      "pos": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "kiosk",
+      "type": "kiosk",
+      "pos": [
+        8,
+        0,
+        2
+      ]
+    },
+    {
+      "id": "hall",
+      "type": "hall",
+      "pos": [
+        14,
+        -1
+      ]
+    },
+    {
+      "id": "deck",
+      "type": "deck",
+      "pos": [
+        12,
+        0,
+        3
+      ]
+    },
+    {
+      "id": "carriage",
+      "type": "carriage",
+      "pos": [
+        13,
+        0.4,
+        3.3
+      ]
+    },
+    {
+      "id": "deck_b",
+      "type": "deck_plain",
+      "pos": [
+        28,
+        0,
+        3
+      ]
+    },
+    {
+      "id": "carriage_b",
+      "type": "carriage",
+      "pos": [
+        29,
+        0.4,
+        3.3
+      ]
+    },
+    {
+      "id": "walkway",
+      "type": "walkway",
+      "pos": [
+        0,
+        14.3,
+        -1.2
+      ]
+    },
+    {
+      "id": "kerb",
+      "type": "kerb",
+      "pos": [
+        0,
+        14,
+        -1.2
+      ]
+    },
+    {
+      "id": "bench",
+      "type": "bench",
+      "pos": [
+        3,
+        15.4,
+        -1
+      ]
+    },
+    {
+      "id": "shop",
+      "type": "shop",
+      "pos": [
+        14,
+        10
+      ]
+    },
+    {
+      "id": "cart",
+      "type": "cart",
+      "pos": [
+        16,
+        14.3
+      ]
+    },
+    {
+      "id": "lamp",
+      "type": "lamp",
+      "pos": [
+        19,
+        14.5
+      ]
+    },
+    {
+      "id": "pole",
+      "type": "pole",
+      "pos": [
+        10.5,
+        6
+      ]
+    }
+  ],
+  "zones": [
+    {
+      "id": "street",
+      "kind": "walkable",
+      "points": [
+        [
+          -2,
+          -3
+        ],
+        [
+          36,
+          -3
+        ],
+        [
+          36,
+          17
+        ],
+        [
+          -2,
+          17
+        ]
+      ]
+    }
+  ],
+  "states": {
+    "night": {
+      "hide": [
+        "carriage",
+        "carriage_b"
+      ]
+    },
+    "bare": {
+      "hideParts": {
+        "shop": [
+          "awning"
+        ]
+      }
+    }
+  },
+  "checks": [
+    {
+      "id": "sort_key",
+      "check": "sort_consistency",
+      "actor": [
+        0.4,
+        0.4,
+        1.6
+      ],
+      "step": 0.25,
+      "reach": 1
+    },
+    {
+      "id": "sort_order",
+      "check": "sort_consistency",
+      "actor": [
+        0.4,
+        0.4,
+        1.6
+      ],
+      "step": 0.25,
+      "reach": 1,
+      "engine": "order"
+    },
+    {
+      "id": "sort_order_allowance",
+      "check": "sort_consistency",
+      "actor": [
+        0.4,
+        0.4,
+        1.6
+      ],
+      "step": 0.25,
+      "reach": 1,
+      "engine": "order",
+      "maxPixels": 2000
+    },
+    {
+      "id": "sort_order_street",
+      "check": "sort_consistency",
+      "actor": [
+        0.4,
+        0.4,
+        1.6
+      ],
+      "step": 0.25,
+      "reach": 1,
+      "engine": "order",
+      "area": "street",
+      "ids": [
+        "shop",
+        "cart",
+        "kerb"
+      ]
+    },
+    {
+      "id": "overlap_boxes",
+      "check": "no_overlap"
+    },
+    {
+      "id": "overlap_parts",
+      "check": "no_overlap",
+      "parts": true
+    },
+    {
+      "id": "overlap_parts_allowed",
+      "check": "no_overlap",
+      "parts": true,
+      "allow": [
+        [
+          "lamp",
+          "shop"
+        ]
+      ]
+    },
+    {
+      "id": "overlap_parts_ids",
+      "check": "no_overlap",
+      "parts": true,
+      "ids": [
+        "cart",
+        "lamp",
+        "shop"
+      ]
+    }
+  ]
+}
