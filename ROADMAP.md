@@ -317,7 +317,7 @@ Not in stage 15: rounded bends or a width per point for lanes; `front` in the ru
 
 **Done when:** all tests pass, `npm run test:godot` passes, earlier fixtures still match (with the files of `tests/fixtures/paths/earlier/` in place of those they replace), the workflow `ci` passes on the branch, `npm run check:publish` reports nothing, the branch is named `builder/stage-15`, its session log names the tool and model, gives the test counts with skipped tests and ends with the pull request's title and description, and the stage 15 criteria in SPEC section 17 hold.
 
-## Stage 16 · open
+## Stage 16 · done (0.16.0)
 
 Draw order across heights (SPEC sections 6, 9.9, 10, 13.4, 13.6, 13.7, 13.8, 14.1, 17, 18). Core, CLI, editor and the Godot adapter. The scene format grows without a break (`isoblock/1` stays: `sprite` on parts, `engine` and `pairs` on `sort_consistency`, `parts` on `no_overlap`); the runtime file becomes `isoblock-runtime/4`; no new dependency. Fixtures, all in new files so that the suite of release 0.15.0 still passes on this branch: `tests/fixtures/order/` (the scenes `order.scene.json` with objects at several heights, a deck with a carriage between its parapets, a sunken walkway, an awning over a cart and three states, `godot.scene.json` for the Godot case, and `large.scene.json`, a frame of 12,000 × 8,000 with 300 objects; `cases.json` with their check results in every state; `godot.json` with an actor path; `editor/overlays.json` with the large scene; `invalid/` with 3 broken scenes) and `tests/fixtures/runtime4/` (every runtime case of `runtime3/` as `isoblock-runtime/4`, and `order`).
 

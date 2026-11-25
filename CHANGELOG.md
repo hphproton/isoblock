@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.16.0
 
 Stage 16: draw order across heights. The scene format stays `isoblock/1` (`sprite` on parts, `engine` on `sort_consistency`, `parts` on `no_overlap`). The runtime file becomes `isoblock-runtime/4`.
 
@@ -22,7 +22,7 @@ Stage 16: draw order across heights. The scene format stays `isoblock/1` (`sprit
 `isoblock export --target runtime` now writes `isoblock-runtime/4`. Every sprite has `order` (0 first). A part marked `"sprite": "own"` adds sprites of that part alone. Keys, slices and part orders of a scene without that mark are those of `isoblock-runtime/3`.
 
 1. Export every scene again: `isoblock export <scene> --target runtime -o <game>/data/scenes/<id>.json`. The `schema` value is `isoblock-runtime/4`.
-2. In a loader of your own, accept `isoblock-runtime/4` and reject `isoblock-runtime/3`, `/2` and `/1`. Draw scene sprites in ascending `order`. Place each actor immediately after the scene sprite whose `order` equals its slot, and before every scene sprite when the slot is -1.
+2. In a loader of your own, accept `isoblock-runtime/4` and reject `isoblock-runtime/3`, `/2` and `/1`. Draw scene sprites in ascending `order`. Place each actor immediately after the scene sprite whose `order` equals its slot, and before every scene sprite when the slot is -1. Actors that share a slot go in ascending key, then in the order they were added.
 3. Copy the new `adapters/godot/isoblock_runtime.gd` into the game project. `add_actor`, `move_actor` and `apply_state` place actors by the slot, and `actor_slot` reports it.
 
 ## 0.15.0
