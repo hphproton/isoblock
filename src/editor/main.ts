@@ -69,7 +69,7 @@ function openFile(file: File): void {
   readSceneFile(file).then(
     (scene) => {
       store.open(scene, file.name);
-      store.notify(null);
+      if (store.get().notice === null) store.notify(null);
     },
     (error: unknown) => store.notify(describeError(error), "error"),
   );

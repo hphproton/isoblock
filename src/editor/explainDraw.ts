@@ -7,7 +7,7 @@ import { FACING_SHAFT, traceArrowHead } from "./facingArrow";
 import { resolveTarget } from "../core/relations/targets";
 import { evaluateRelations } from "../core/relations/evaluate";
 import type { Camera, Relation, Scene, Vec2, Vec3 } from "../core/types";
-import type { ObjectRaster } from "../core/raster/raster";
+import { maskAt, type ObjectRaster } from "../core/raster/raster";
 import type { Viewport } from "../core/viewport";
 import { raySamples, sortPointRows } from "./overlayData";
 import { sceneShown } from "./shown";
@@ -164,7 +164,7 @@ function maskBitmap(raster: ObjectRaster, scene: Scene, selected: string | null)
     const label = raster.labels[i] ?? 0;
     if (label === 0) continue;
     const slot = label - 1;
-    const covered = full !== undefined && full[i] === 1 && slot !== selectedSlot;
+    const covered = full !== undefined && maskAt(full, raster.width, i) === 1 && slot !== selectedSlot;
     const rgb = covered ? [160, 40, 32] : colors[slot] ?? [120, 120, 120];
     const offset = i * 4;
     data[offset] = rgb[0] as number;

@@ -74,16 +74,12 @@ function covers(edges: readonly Edge[], px: number, py: number): boolean {
   return true;
 }
 
-/**
- * Paint every pixel of the raster whose center lies inside `poly`. `poly` is in 1/256 px units.
- * Pixel (i, j) has its center at (256 * i + 128, 256 * j + 128).
- */
-export function paintOutline(
+/** Inclusive pixel bounds of an outline, clipped to the raster, or null when it covers no row or column. */
+export function outlinePixelBounds(
   poly: readonly Point[],
   width: number,
   height: number,
-  paint: (index: number) => void,
-): void {
+): { readonly i0: number; readonly j0: number; readonly i1: number; readonly j1: number } | null {
   let minX = Infinity;
   let minY = Infinity;
   let maxX = -Infinity;
@@ -98,7 +94,22 @@ export function paintOutline(
   const j0 = Math.max(0, Math.floor((minY - 128) / 256));
   const i1 = Math.min(width - 1, Math.floor((maxX - 128) / 256));
   const j1 = Math.min(height - 1, Math.floor((maxY - 128) / 256));
-  if (i1 < i0 || j1 < j0) return;
+  return i1 < i0 || j1 < j0 ? null : { i0, j0, i1, j1 };
+}
+
+/**
+ * Paint every pixel of the raster whose center lies inside `poly`. `poly` is in 1/256 px units.
+ * Pixel (i, j) has its center at (256 * i + 128, 256 * j + 128).
+ */
+export function paintOutline(
+  poly: readonly Point[],
+  width: number,
+  height: number,
+  paint: (index: number) => void,
+): void {
+  const bounds = outlinePixelBounds(poly, width, height);
+  if (bounds === null) return;
+  const { i0, j0, i1, j1 } = bounds;
   const edges = edgesOf(poly);
   for (let j = j0; j <= j1; j++) {
     const py = 256 * j + 128;
