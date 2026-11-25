@@ -1,5 +1,7 @@
-import { runChecks } from "../core/checks";
+import { runCheck, runChecks } from "../core/checks";
+import { checkInState } from "../core/checks/inState";
 import { resultsInState } from "../core/checks/liveState";
+import { canonical, skipResult } from "../core/checks/result";
 import type { EditResult } from "../core/edit";
 import { canRedo, canUndo, commit, redo, startHistory, undo, type History } from "../core/history";
 import { rerunResults, searchesGrid, updateResults } from "../core/incremental";
@@ -11,7 +13,8 @@ import type { VisibilityReport } from "../core/raster/visibility";
 import { evaluateRelations } from "../core/relations/evaluate";
 import { solvePatch } from "../core/solver/report";
 import type { SolveReport } from "../core/solver/solve";
-import type { CheckResult, Scene } from "../core/types";
+import { hiddenObjects, sceneInState } from "../core/states";
+import type { CheckResult, CheckSpec, Scene } from "../core/types";
 import { addLine, duplicateLine, nudgeLine } from "./edits";
 import { rastersDiffer, nextRasters } from "./rasters";
 import { activeStateName, keptSelection, shownStateName } from "./shown";
@@ -190,8 +193,44 @@ export class EditorStore {
   /**
    * Results for `scene`, reusing what is known about the scene they were computed for. During a drag
    * the grid checks keep their result and become stale; otherwise stale checks run again.
+   * A check the page cannot compute becomes `skip`, and the notice says why (SPEC 10).
    */
   private resultsFor(
+    scene: Scene,
+    dragging = false,
+    shown = this.state.shownState,
+  ): Pick<EditorState, "shownState" | "results" | "resultsScene" | "resultsState" | "highlightIds" | "stale"> & { notice?: Notice } {
+    try {
+      return this.computeResults(scene, dragging, shown);
+    } catch (error) {
+      const text = error instanceof Error ? error.message : String(error);
+      const shownState = shownStateName(scene, shown);
+      const state = activeStateName(scene, shownState);
+      const results = (scene.checks ?? []).map((spec) => this.oneCheck(scene, spec, state));
+      return {
+        shownState,
+        results,
+        resultsScene: scene,
+        resultsState: state ?? null,
+        highlightIds: this.highlighted(results, this.state.highlightCheck),
+        stale: NO_IDS,
+        notice: { kind: "error", text },
+      };
+    }
+  }
+
+  /** One check, or `skip` with the reason when the page cannot compute it. */
+  private oneCheck(scene: Scene, spec: CheckSpec, state: string | undefined): CheckResult {
+    try {
+      if (state === undefined) return runCheck(scene, spec);
+      return checkInState(scene, spec, hiddenObjects(scene, state), state, sceneInState(scene, state));
+    } catch (error) {
+      const reason = error instanceof Error ? error.message : String(error);
+      return canonical(skipResult(spec, reason));
+    }
+  }
+
+  private computeResults(
     scene: Scene,
     dragging = false,
     shown = this.state.shownState,

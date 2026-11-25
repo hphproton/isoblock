@@ -54,6 +54,8 @@ export interface Strip {
 export interface Part {
   readonly id: string;
   readonly box: Box6;
+  /** `"own"` draws this part as sprites of its own (SPEC 13.4). */
+  readonly sprite?: "own";
 }
 
 export interface Anchor {
@@ -136,6 +138,8 @@ export interface NoOverlapCheck {
   readonly check: "no_overlap";
   readonly ids?: readonly string[];
   readonly allow?: readonly (readonly [string, string])[];
+  /** Compare drawn part boxes instead of size boxes (SPEC 9.9). Default false. */
+  readonly parts?: boolean;
 }
 
 export interface ClearanceCheck {
@@ -245,6 +249,8 @@ export interface SortConsistencyCheck {
   readonly ids?: readonly string[];
   /** Height the test actor stands on. Default 0 (SPEC 9.5). */
   readonly level?: number;
+  /** `"key"` (default) or `"order"` (SPEC 9.9). */
+  readonly engine?: "key" | "order";
 }
 
 /** Share of an object's own pixels that stay visible in a frame region (SPEC 9.6). */

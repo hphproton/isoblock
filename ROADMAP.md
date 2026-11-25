@@ -317,20 +317,20 @@ Not in stage 15: rounded bends or a width per point for lanes; `front` in the ru
 
 **Done when:** all tests pass, `npm run test:godot` passes, earlier fixtures still match (with the files of `tests/fixtures/paths/earlier/` in place of those they replace), the workflow `ci` passes on the branch, `npm run check:publish` reports nothing, the branch is named `builder/stage-15`, its session log names the tool and model, gives the test counts with skipped tests and ends with the pull request's title and description, and the stage 15 criteria in SPEC section 17 hold.
 
-## Stage 16 · open
+## Stage 16 · done (0.16.0)
 
 Draw order across heights (SPEC sections 6, 9.9, 10, 13.4, 13.6, 13.7, 13.8, 14.1, 17, 18). Core, CLI, editor and the Godot adapter. The scene format grows without a break (`isoblock/1` stays: `sprite` on parts, `engine` and `pairs` on `sort_consistency`, `parts` on `no_overlap`); the runtime file becomes `isoblock-runtime/4`; no new dependency. Fixtures, all in new files so that the suite of release 0.15.0 still passes on this branch: `tests/fixtures/order/` (the scenes `order.scene.json` with objects at several heights, a deck with a carriage between its parapets, a sunken walkway, an awning over a cart and three states, `godot.scene.json` for the Godot case, and `large.scene.json`, a frame of 12,000 × 8,000 with 300 objects; `cases.json` with their check results in every state; `godot.json` with an actor path; `editor/overlays.json` with the large scene; `invalid/` with 3 broken scenes) and `tests/fixtures/runtime4/` (every runtime case of `runtime3/` as `isoblock-runtime/4`, and `order`).
 
-- [ ] Parts marked `"sprite": "own"` and their sprites, under both rules (SPEC sections 6 and 13.4)
-- [ ] The static order of sprites, the actor slot and the order rule (SPEC section 13.4)
-- [ ] `sort_consistency` with `engine: "order"` and `pairs`; `no_overlap` with `parts` (SPEC section 9.9); the schema
-- [ ] `export --target runtime` writes `isoblock-runtime/4` with `order` on every sprite (SPEC section 13.7)
-- [ ] Godot adapter: reads `isoblock-runtime/4`, draws by the order rule, places actors by their slots on add, move and state changes, `order` and `slot` metadata, `actor_slot`, masks for objects with more than one sprite (SPEC section 13.8)
-- [ ] Object raster with memory by outline boxes, in the CLI and the editor; the editor opens every valid scene and says when a check cannot be computed (SPEC sections 10 and 14.1)
-- [ ] Tests load `tests/fixtures/order/` (cases, invalid, editor overlays) and `tests/fixtures/runtime4/` in place of `tests/fixtures/runtime3/`; `npm run test:godot` runs `tests/fixtures/order/godot.json` too; the stage 2 and stage 8 frame-time tests still pass
-- [ ] `CHANGELOG.md` lists the order rule, own parts, `engine`, `pairs`, `parts`, the runtime file `isoblock-runtime/4` with its upgrade step, and the editor's memory fix
-- [ ] `docs/AGENT_GUIDE.md` covers the two rules and when to use which, marking parts `"sprite": "own"` from `pairs`, `no_overlap` with `parts`, and the runtime file's `order`
-- [ ] Session log says `branch ready for review`
+- [x] Parts marked `"sprite": "own"` and their sprites, under both rules (SPEC sections 6 and 13.4)
+- [x] The static order of sprites, the actor slot and the order rule (SPEC section 13.4)
+- [x] `sort_consistency` with `engine: "order"` and `pairs`; `no_overlap` with `parts` (SPEC section 9.9); the schema
+- [x] `export --target runtime` writes `isoblock-runtime/4` with `order` on every sprite (SPEC section 13.7)
+- [x] Godot adapter: reads `isoblock-runtime/4`, draws by the order rule, places actors by their slots on add, move and state changes, `order` and `slot` metadata, `actor_slot`, masks for objects with more than one sprite (SPEC section 13.8)
+- [x] Object raster with memory by outline boxes, in the CLI and the editor; the editor opens every valid scene and says when a check cannot be computed (SPEC sections 10 and 14.1)
+- [x] Tests load `tests/fixtures/order/` (cases, invalid, editor overlays) and `tests/fixtures/runtime4/` in place of `tests/fixtures/runtime3/`; `npm run test:godot` runs `tests/fixtures/order/godot.json` too; the stage 2 and stage 8 frame-time tests still pass
+- [x] `CHANGELOG.md` lists the order rule, own parts, `engine`, `pairs`, `parts`, the runtime file `isoblock-runtime/4` with its upgrade step, and the editor's memory fix
+- [x] `docs/AGENT_GUIDE.md` covers the two rules and when to use which, marking parts `"sprite": "own"` from `pairs`, `no_overlap` with `parts`, and the runtime file's `order`
+- [x] Session log says `branch ready for review`
 
 Not in stage 16: slices of a set length or along the short axis for long thin objects; zones and lanes drawn at their heights in depth order with the objects; `sort_consistency` results that do not flip with small moves; ordering actors among themselves by their boxes. The Rust crate license texts in `THIRD_PARTY_NOTICES.md` are a maintainer task (`MAINTAINING.md`, Before distributing a build).
 

@@ -4,13 +4,13 @@ import { parseScene } from "../../src/core/validate";
 import type { Scene } from "../../src/core/types";
 import { fixturesDir, repoRoot } from "./fixtures";
 
-export const runtimeDir = join(fixturesDir, "runtime3");
+export const runtimeDir = join(fixturesDir, "runtime4");
 
 export interface RuntimeCase {
   readonly name: string;
   /** Path of the scene file from the repository root. */
   readonly scene: string;
-  /** File name in `tests/fixtures/runtime3/`. */
+  /** File name in `tests/fixtures/runtime4/`. */
   readonly runtime: string;
 }
 

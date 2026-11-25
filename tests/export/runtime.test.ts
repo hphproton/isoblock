@@ -14,7 +14,7 @@ function runtimeOf(raw: Record<string, any>): any {
   return JSON.parse(serializeJson(runtimeFile(parseScene(JSON.stringify(raw)))));
 }
 
-describe("runtime file: every case of tests/fixtures/runtime3/cases.json", () => {
+describe("runtime file: every case of tests/fixtures/runtime4/cases.json", () => {
   for (const c of cases) {
     it(`${c.name} equals ${c.runtime} (keys in order, numbers within ${tolerance.world})`, () => {
       const text = serializeJson(runtimeFile(loadRuntimeScene(c)));
@@ -57,7 +57,7 @@ describe("runtime file: rules of SPEC 13.7", () => {
 
   it("takes scene, version and status from the scene, null when there is no meta", () => {
     const file = runtimeFile(yard);
-    expect(file.schema).toBe("isoblock-runtime/3");
+    expect(file.schema).toBe("isoblock-runtime/4");
     expect(file.scene).toBe("yard");
     expect(file.meta).toEqual({ version: 1, status: "draft" });
     const raw = rawFixture("yard");

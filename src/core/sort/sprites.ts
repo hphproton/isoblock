@@ -2,7 +2,7 @@ import { partOrders } from "../export/partOrder";
 import { baseHeight, EPS, footprint, worldParts, type Box, type Rect } from "../geometry";
 import { orderDirection } from "../projection";
 import { round } from "../round";
-import type { Scene, Vec3 } from "../types";
+import type { Scene, SceneObject, Vec3 } from "../types";
 
 /** The most slices one object is cut into (SPEC 13.4). */
 export const MAX_SLICES = 64;
@@ -18,6 +18,8 @@ export interface Piece {
 /** What an engine draws and sorts as one item (SPEC 13.4): a sort key, a footprint and the pieces to draw. */
 export interface Sprite {
   readonly key: number;
+  /** Static order in the sprite list (SPEC 13.4). Absent until that order is attached. */
+  readonly order?: number;
   readonly footprint: Rect;
   readonly pieces: readonly Piece[];
 }
@@ -98,12 +100,40 @@ const roundBox = (b: Box): Box => ({
   u1: round(b.u1, DECIMALS), v1: round(b.v1, DECIMALS), h1: round(b.h1, DECIMALS),
 });
 
+/** The scene with no parts hidden, so sprite counts stay those of the scene without states. */
+function revealed(scene: Scene): Scene {
+  return scene.hiddenParts === undefined ? scene : { ...scene, hiddenParts: undefined };
+}
+
+/**
+ * Sprites of one object (SPEC 13.4). Parts without `"sprite": "own"` are sliced together from the
+ * object's footprint and base height; each own part is then sliced alone, from its own box.
+ * A hidden part keeps its sprites, with no pieces.
+ */
+function objectSprites(view: Scene, bare: Scene, object: SceneObject, c: Vec3, orders: readonly number[]): readonly Sprite[] {
+  const typeParts = bare.types[object.type]?.parts ?? [];
+  const hidden = new Set(view.hiddenParts?.[object.id] ?? []);
+  const rows = worldParts(bare, object).map((part, k) => ({
+    id: part.id, box: roundBox(part.box), order: orders[k] as number, own: typeParts[k]?.sprite === "own",
+  }));
+  const shared = rows.filter((row) => !row.own);
+  const own = rows.filter((row) => row.own);
+  const body = rows.length > 0 && shared.length === 0 ? [] : spritesOf(c, roundRect(footprint(bare, object)), shared, baseHeight(object));
+  const extra = own.flatMap((part) => spritesOf(
+    c,
+    roundRect({ u0: part.box.u0, v0: part.box.v0, u1: part.box.u1, v1: part.box.v1 }),
+    [{ id: part.id, box: part.box, order: part.order }],
+    part.box.h0,
+  ));
+  const sprites = [...body, ...extra];
+  if (hidden.size === 0) return sprites;
+  return sprites.map((sprite) => ({ ...sprite, pieces: sprite.pieces.filter((piece) => !hidden.has(piece.part)) }));
+}
+
 /** The sprites of every object of the scene, in file order (SPEC 13.4). Flatten them for the sprite list. */
 export function sceneSprites(scene: Scene): readonly (readonly Sprite[])[] {
-  const c = orderDirection(scene.camera);
-  const orders = partOrders(scene);
-  return scene.objects.map((object, i) => {
-    const parts = worldParts(scene, object).map((p, k) => ({ id: p.id, box: roundBox(p.box), order: (orders[i] as readonly number[])[k] as number }));
-    return spritesOf(c, roundRect(footprint(scene, object)), parts, baseHeight(object));
-  });
+  const bare = revealed(scene);
+  const c = orderDirection(bare.camera);
+  const orders = partOrders(bare);
+  return scene.objects.map((object, i) => objectSprites(scene, bare, object, c, orders[i] as readonly number[]));
 }

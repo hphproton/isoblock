@@ -171,6 +171,8 @@ export function runGodotChecks(options: Options): number {
     for (const c of godot.cases) problems.push(...crossCheck(options, work, `godot ${c.name}`, c, godot.actorLimit));
     const levels = JSON.parse(readFileSync(join(fixtures, "levels", "godot.json"), "utf8")) as GodotCases;
     for (const c of levels.cases) problems.push(...crossCheck(options, work, `levels ${c.name}`, c, levels.actorLimit));
+    const order = JSON.parse(readFileSync(join(fixtures, "order", "godot.json"), "utf8")) as GodotCases;
+    for (const c of order.cases) problems.push(...crossCheck(options, work, `order ${c.name}`, c, order.actorLimit));
     for (const p of problems) console.error(`FAIL ${p}`);
     console.log(problems.length === 0 ? "godot checks passed" : `godot checks failed: ${problems.length} problems`);
     return problems.length === 0 ? 0 : 1;

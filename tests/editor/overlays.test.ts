@@ -276,6 +276,7 @@ async function occludersCase(page: Page, c: (typeof file.cases)[number], scene: 
 }
 
 const pathsFile = JSON.parse(readFileSync(join(repoRoot, "tests/fixtures/paths/editor/overlays.json"), "utf8")) as typeof file;
+const orderFile = JSON.parse(readFileSync(join(repoRoot, "tests/fixtures/order/editor/overlays.json"), "utf8")) as typeof file;
 
 describe.skipIf(!hasBrowser)("path editor overlays (SPEC 10, 17)", () => {
   it("finds the 8 cases", () => {
@@ -295,6 +296,23 @@ describe.skipIf(!hasBrowser)("path editor overlays (SPEC 10, 17)", () => {
       else if (c.overlay === "masks") await masksCase(page, c, source);
       else if (c.overlay === "occluders") await occludersCase(page, c, source);
       else await warnCase(page, c, source);
+      expect(errors, c.name).toEqual([]);
+      await context.close();
+    }, 60_000);
+  }
+});
+
+describe.skipIf(!hasBrowser)("order editor overlays (SPEC 10, 17)", () => {
+  it("finds the 1 case", () => {
+    expect(orderFile.cases).toHaveLength(1);
+  });
+
+  for (const c of orderFile.cases) {
+    it(c.name, async () => {
+      const source = parseScene(readFileSync(scenePath(c.scene), "utf8"));
+      const { page, context, errors } = await openEditor(browser, fixtureName(c.scene));
+      await chooseState(page, c.state);
+      await warnCase(page, c, source);
       expect(errors, c.name).toEqual([]);
       await context.close();
     }, 60_000);
