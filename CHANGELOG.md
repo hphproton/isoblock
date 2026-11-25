@@ -1,5 +1,30 @@
 # Changelog
 
+## Unreleased
+
+Stage 16: draw order across heights. The scene format stays `isoblock/1` (`sprite` on parts, `engine` on `sort_consistency`, `parts` on `no_overlap`). The runtime file becomes `isoblock-runtime/4`.
+
+### Changed
+
+- The Godot adapter reads `isoblock-runtime/4` and draws scene sprites in ascending static `order`. An actor is placed by its slot on `add_actor`, on `move_actor` and after `apply_state`. `z_index` stays 0. A `schema` of `isoblock-runtime/3` or older is `E_SCHEMA`.
+- The object raster keeps each object's full mask for the bounding box of its outlines. Counts and mask images are unchanged. A frame of 12,000 by 8,000 with 300 objects fits, in the CLI and in the editor. When a check cannot be computed in the page, the scene is still drawn, that row is `skip`, and a notice gives the reason.
+- `sort_consistency` with `engine: "key"` uses the sprites of parts marked `"sprite": "own"`. On a scene with no such part its results are those of 0.15.0.
+
+### Added
+
+- A part may be marked `"sprite": "own"`. Its sprites are sliced from its own box, after the sprites of the unmarked parts. Both engine rules use those sprites.
+- `sort_consistency` takes `engine`: `"key"` (the default) or `"order"`. `"order"` draws by the static order and places the actor at its slot. The result then has `pairs`, the object pairs with a static mismatch over `maxPixels`, so a part can be marked from that list. `"key"` has no `pairs`.
+- `no_overlap` takes `parts`. With `true`, drawn part boxes are compared. With `false`, or without the field, the size boxes are compared. Hidden parts do not count.
+- `actor_slot(root, size, at)` on the Godot adapter returns the slot an actor would have.
+
+### Breaking: runtime file `isoblock-runtime/4`
+
+`isoblock export --target runtime` now writes `isoblock-runtime/4`. Every sprite has `order` (0 first). A part marked `"sprite": "own"` adds sprites of that part alone. Keys, slices and part orders of a scene without that mark are those of `isoblock-runtime/3`.
+
+1. Export every scene again: `isoblock export <scene> --target runtime -o <game>/data/scenes/<id>.json`. The `schema` value is `isoblock-runtime/4`.
+2. In a loader of your own, accept `isoblock-runtime/4` and reject `isoblock-runtime/3`, `/2` and `/1`. Draw scene sprites in ascending `order`. Place each actor immediately after the scene sprite whose `order` equals its slot, and before every scene sprite when the slot is -1.
+3. Copy the new `adapters/godot/isoblock_runtime.gd` into the game project. `add_actor`, `move_actor` and `apply_state` place actors by the slot, and `actor_slot` reports it.
+
 ## 0.15.0
 
 Stage 15: lanes and levels. The scene format stays `isoblock/1` (`front` on types and anchors, `angle` on relations, `toLevel` on `reachable`). The runtime file stays `isoblock-runtime/3`.
