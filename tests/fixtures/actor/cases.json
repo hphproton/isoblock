@@ -1,0 +1,1013 @@
+{
+  "tolerance": {
+    "value": 0.01,
+    "valuePx": 1
+  },
+  "checks": [
+    {
+      "scene": "tests/fixtures/actor/actor.scene.json",
+      "state": null,
+      "checks": [
+        {
+          "id": "deck_size",
+          "check": "sort_consistency",
+          "status": "pass",
+          "value": 0,
+          "threshold": 0,
+          "ids": [],
+          "worst": 0,
+          "positions": 0,
+          "pairs": []
+        },
+        {
+          "id": "deck_parts",
+          "check": "sort_consistency",
+          "status": "fail",
+          "value": 1,
+          "threshold": 0,
+          "ids": [
+            "walkway"
+          ],
+          "worst": 719.84,
+          "positions": 513,
+          "pairs": []
+        },
+        {
+          "id": "deck_parts_key",
+          "check": "sort_consistency",
+          "status": "fail",
+          "value": 2,
+          "threshold": 0,
+          "ids": [
+            "walkway",
+            "shelter"
+          ],
+          "worst": 847.84,
+          "positions": 513
+        },
+        {
+          "id": "climb_size",
+          "check": "sort_consistency",
+          "status": "pass",
+          "value": 0,
+          "threshold": 0,
+          "ids": [],
+          "worst": 0,
+          "positions": 30,
+          "pairs": []
+        },
+        {
+          "id": "climb_parts",
+          "check": "sort_consistency",
+          "status": "fail",
+          "value": 1,
+          "threshold": 0,
+          "ids": [
+            "walkway"
+          ],
+          "worst": 591.84,
+          "positions": 408,
+          "pairs": []
+        },
+        {
+          "id": "road_order",
+          "check": "sort_consistency",
+          "status": "pass",
+          "value": 0,
+          "threshold": 0,
+          "ids": [],
+          "worst": 0,
+          "positions": 150,
+          "pairs": []
+        },
+        {
+          "id": "road_key",
+          "check": "sort_consistency",
+          "status": "pass",
+          "value": 0,
+          "threshold": 0,
+          "ids": [],
+          "worst": 0,
+          "positions": 150
+        },
+        {
+          "id": "road_allowance",
+          "check": "sort_consistency",
+          "status": "pass",
+          "value": 0,
+          "threshold": 0,
+          "ids": [],
+          "worst": 0,
+          "positions": 150,
+          "pairs": []
+        },
+        {
+          "id": "under_viaduct",
+          "check": "sort_consistency",
+          "status": "pass",
+          "value": 0,
+          "threshold": 0,
+          "ids": [],
+          "worst": 0,
+          "positions": 493,
+          "pairs": [],
+          "allowed": [
+            [
+              "viaduct",
+              "carriage"
+            ]
+          ]
+        },
+        {
+          "id": "under_viaduct_key",
+          "check": "sort_consistency",
+          "status": "fail",
+          "value": 2,
+          "threshold": 0,
+          "ids": [
+            "viaduct",
+            "carriage"
+          ],
+          "worst": 1216,
+          "positions": 493
+        },
+        {
+          "id": "stub_lane",
+          "check": "sort_consistency",
+          "status": "skip",
+          "value": null,
+          "threshold": null,
+          "ids": [],
+          "message": "lane \"stub\" has zero length"
+        },
+        {
+          "id": "tower_grid",
+          "check": "sort_consistency",
+          "status": "pass",
+          "value": 0,
+          "threshold": 0,
+          "ids": [],
+          "worst": 0,
+          "positions": 64,
+          "pairs": []
+        },
+        {
+          "id": "tower_edges",
+          "check": "sort_consistency",
+          "status": "pass",
+          "value": 0,
+          "threshold": 0,
+          "ids": [],
+          "worst": 0,
+          "positions": 92,
+          "pairs": []
+        },
+        {
+          "id": "tower_edges_key",
+          "check": "sort_consistency",
+          "status": "pass",
+          "value": 0,
+          "threshold": 0,
+          "ids": [],
+          "worst": 0,
+          "positions": 92
+        },
+        {
+          "id": "viaduct_plain",
+          "check": "sort_consistency",
+          "status": "fail",
+          "value": 2,
+          "threshold": 0,
+          "ids": [
+            "viaduct",
+            "carriage"
+          ],
+          "worst": 1216,
+          "positions": 284,
+          "pairs": [
+            [
+              "carriage",
+              "viaduct"
+            ]
+          ]
+        },
+        {
+          "id": "viaduct_pair",
+          "check": "sort_consistency",
+          "status": "pass",
+          "value": 0,
+          "threshold": 0,
+          "ids": [],
+          "worst": 0,
+          "positions": 284,
+          "pairs": [],
+          "allowed": [
+            [
+              "viaduct",
+              "carriage"
+            ]
+          ]
+        },
+        {
+          "id": "viaduct_id",
+          "check": "sort_consistency",
+          "status": "fail",
+          "value": 1,
+          "threshold": 0,
+          "ids": [
+            "viaduct"
+          ],
+          "worst": 1216,
+          "positions": 284,
+          "pairs": [
+            [
+              "carriage",
+              "viaduct"
+            ]
+          ],
+          "allowed": [
+            "carriage"
+          ]
+        },
+        {
+          "id": "viaduct_key",
+          "check": "sort_consistency",
+          "status": "pass",
+          "value": 0,
+          "threshold": 0,
+          "ids": [],
+          "worst": 0,
+          "positions": 284,
+          "allowed": [
+            [
+              "carriage",
+              "viaduct"
+            ]
+          ]
+        },
+        {
+          "id": "whole",
+          "check": "sort_consistency",
+          "status": "pass",
+          "value": 0,
+          "threshold": 0,
+          "ids": [],
+          "worst": 0,
+          "positions": 847,
+          "pairs": [],
+          "allowed": [
+            [
+              "viaduct",
+              "carriage"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "scene": "tests/fixtures/actor/actor.scene.json",
+      "state": "bare",
+      "checks": [
+        {
+          "id": "deck_size",
+          "check": "sort_consistency",
+          "status": "pass",
+          "value": 0,
+          "threshold": 0,
+          "ids": [],
+          "worst": 0,
+          "positions": 0,
+          "pairs": []
+        },
+        {
+          "id": "deck_parts",
+          "check": "sort_consistency",
+          "status": "fail",
+          "value": 1,
+          "threshold": 0,
+          "ids": [
+            "walkway"
+          ],
+          "worst": 719.84,
+          "positions": 513,
+          "pairs": []
+        },
+        {
+          "id": "deck_parts_key",
+          "check": "sort_consistency",
+          "status": "fail",
+          "value": 2,
+          "threshold": 0,
+          "ids": [
+            "walkway",
+            "shelter"
+          ],
+          "worst": 847.84,
+          "positions": 513
+        },
+        {
+          "id": "climb_size",
+          "check": "sort_consistency",
+          "status": "pass",
+          "value": 0,
+          "threshold": 0,
+          "ids": [],
+          "worst": 0,
+          "positions": 30,
+          "pairs": []
+        },
+        {
+          "id": "climb_parts",
+          "check": "sort_consistency",
+          "status": "fail",
+          "value": 1,
+          "threshold": 0,
+          "ids": [
+            "walkway"
+          ],
+          "worst": 591.84,
+          "positions": 408,
+          "pairs": []
+        },
+        {
+          "id": "road_order",
+          "check": "sort_consistency",
+          "status": "pass",
+          "value": 0,
+          "threshold": 0,
+          "ids": [],
+          "worst": 0,
+          "positions": 150,
+          "pairs": []
+        },
+        {
+          "id": "road_key",
+          "check": "sort_consistency",
+          "status": "pass",
+          "value": 0,
+          "threshold": 0,
+          "ids": [],
+          "worst": 0,
+          "positions": 150
+        },
+        {
+          "id": "road_allowance",
+          "check": "sort_consistency",
+          "status": "pass",
+          "value": 0,
+          "threshold": 0,
+          "ids": [],
+          "worst": 0,
+          "positions": 150,
+          "pairs": []
+        },
+        {
+          "id": "under_viaduct",
+          "check": "sort_consistency",
+          "status": "pass",
+          "value": 0,
+          "threshold": 0,
+          "ids": [],
+          "worst": 0,
+          "positions": 493,
+          "pairs": [],
+          "allowed": [
+            [
+              "viaduct",
+              "carriage"
+            ]
+          ]
+        },
+        {
+          "id": "under_viaduct_key",
+          "check": "sort_consistency",
+          "status": "fail",
+          "value": 2,
+          "threshold": 0,
+          "ids": [
+            "viaduct",
+            "carriage"
+          ],
+          "worst": 1216,
+          "positions": 493
+        },
+        {
+          "id": "stub_lane",
+          "check": "sort_consistency",
+          "status": "skip",
+          "value": null,
+          "threshold": null,
+          "ids": [],
+          "message": "lane \"stub\" has zero length"
+        },
+        {
+          "id": "tower_grid",
+          "check": "sort_consistency",
+          "status": "pass",
+          "value": 0,
+          "threshold": 0,
+          "ids": [],
+          "worst": 0,
+          "positions": 64,
+          "pairs": []
+        },
+        {
+          "id": "tower_edges",
+          "check": "sort_consistency",
+          "status": "pass",
+          "value": 0,
+          "threshold": 0,
+          "ids": [],
+          "worst": 0,
+          "positions": 92,
+          "pairs": []
+        },
+        {
+          "id": "tower_edges_key",
+          "check": "sort_consistency",
+          "status": "pass",
+          "value": 0,
+          "threshold": 0,
+          "ids": [],
+          "worst": 0,
+          "positions": 92
+        },
+        {
+          "id": "viaduct_plain",
+          "check": "sort_consistency",
+          "status": "fail",
+          "value": 2,
+          "threshold": 0,
+          "ids": [
+            "viaduct",
+            "carriage"
+          ],
+          "worst": 1216,
+          "positions": 284,
+          "pairs": [
+            [
+              "carriage",
+              "viaduct"
+            ]
+          ]
+        },
+        {
+          "id": "viaduct_pair",
+          "check": "sort_consistency",
+          "status": "pass",
+          "value": 0,
+          "threshold": 0,
+          "ids": [],
+          "worst": 0,
+          "positions": 284,
+          "pairs": [],
+          "allowed": [
+            [
+              "viaduct",
+              "carriage"
+            ]
+          ]
+        },
+        {
+          "id": "viaduct_id",
+          "check": "sort_consistency",
+          "status": "fail",
+          "value": 1,
+          "threshold": 0,
+          "ids": [
+            "viaduct"
+          ],
+          "worst": 1216,
+          "positions": 284,
+          "pairs": [
+            [
+              "carriage",
+              "viaduct"
+            ]
+          ],
+          "allowed": [
+            "carriage"
+          ]
+        },
+        {
+          "id": "viaduct_key",
+          "check": "sort_consistency",
+          "status": "pass",
+          "value": 0,
+          "threshold": 0,
+          "ids": [],
+          "worst": 0,
+          "positions": 284,
+          "allowed": [
+            [
+              "carriage",
+              "viaduct"
+            ]
+          ]
+        },
+        {
+          "id": "whole",
+          "check": "sort_consistency",
+          "status": "pass",
+          "value": 0,
+          "threshold": 0,
+          "ids": [],
+          "worst": 0,
+          "positions": 847,
+          "pairs": [],
+          "allowed": [
+            [
+              "viaduct",
+              "carriage"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "scene": "tests/fixtures/actor/actor.scene.json",
+      "state": "quiet",
+      "checks": [
+        {
+          "id": "deck_size",
+          "check": "sort_consistency",
+          "status": "pass",
+          "value": 0,
+          "threshold": 0,
+          "ids": [],
+          "worst": 0,
+          "positions": 0,
+          "pairs": []
+        },
+        {
+          "id": "deck_parts",
+          "check": "sort_consistency",
+          "status": "fail",
+          "value": 1,
+          "threshold": 0,
+          "ids": [
+            "walkway"
+          ],
+          "worst": 719.84,
+          "positions": 513,
+          "pairs": []
+        },
+        {
+          "id": "deck_parts_key",
+          "check": "sort_consistency",
+          "status": "fail",
+          "value": 2,
+          "threshold": 0,
+          "ids": [
+            "walkway",
+            "shelter"
+          ],
+          "worst": 847.84,
+          "positions": 513
+        },
+        {
+          "id": "climb_size",
+          "check": "sort_consistency",
+          "status": "pass",
+          "value": 0,
+          "threshold": 0,
+          "ids": [],
+          "worst": 0,
+          "positions": 30,
+          "pairs": []
+        },
+        {
+          "id": "climb_parts",
+          "check": "sort_consistency",
+          "status": "fail",
+          "value": 1,
+          "threshold": 0,
+          "ids": [
+            "walkway"
+          ],
+          "worst": 591.84,
+          "positions": 408,
+          "pairs": []
+        },
+        {
+          "id": "road_order",
+          "check": "sort_consistency",
+          "status": "pass",
+          "value": 0,
+          "threshold": 0,
+          "ids": [],
+          "worst": 0,
+          "positions": 133,
+          "pairs": []
+        },
+        {
+          "id": "road_key",
+          "check": "sort_consistency",
+          "status": "pass",
+          "value": 0,
+          "threshold": 0,
+          "ids": [],
+          "worst": 0,
+          "positions": 133
+        },
+        {
+          "id": "road_allowance",
+          "check": "sort_consistency",
+          "status": "pass",
+          "value": 0,
+          "threshold": 0,
+          "ids": [],
+          "worst": 0,
+          "positions": 133,
+          "pairs": []
+        },
+        {
+          "id": "under_viaduct",
+          "check": "sort_consistency",
+          "status": "pass",
+          "value": 0,
+          "threshold": 0,
+          "ids": [],
+          "worst": 0,
+          "positions": 493,
+          "pairs": [],
+          "allowed": [
+            [
+              "viaduct",
+              "carriage"
+            ]
+          ]
+        },
+        {
+          "id": "under_viaduct_key",
+          "check": "sort_consistency",
+          "status": "fail",
+          "value": 2,
+          "threshold": 0,
+          "ids": [
+            "viaduct",
+            "carriage"
+          ],
+          "worst": 1216,
+          "positions": 493
+        },
+        {
+          "id": "stub_lane",
+          "check": "sort_consistency",
+          "status": "skip",
+          "value": null,
+          "threshold": null,
+          "ids": [],
+          "message": "lane \"stub\" has zero length"
+        },
+        {
+          "id": "tower_grid",
+          "check": "sort_consistency",
+          "status": "pass",
+          "value": 0,
+          "threshold": 0,
+          "ids": [],
+          "worst": 0,
+          "positions": 64,
+          "pairs": []
+        },
+        {
+          "id": "tower_edges",
+          "check": "sort_consistency",
+          "status": "pass",
+          "value": 0,
+          "threshold": 0,
+          "ids": [],
+          "worst": 0,
+          "positions": 92,
+          "pairs": []
+        },
+        {
+          "id": "tower_edges_key",
+          "check": "sort_consistency",
+          "status": "pass",
+          "value": 0,
+          "threshold": 0,
+          "ids": [],
+          "worst": 0,
+          "positions": 92
+        },
+        {
+          "id": "viaduct_plain",
+          "check": "sort_consistency",
+          "status": "fail",
+          "value": 2,
+          "threshold": 0,
+          "ids": [
+            "viaduct",
+            "carriage"
+          ],
+          "worst": 1216,
+          "positions": 284,
+          "pairs": [
+            [
+              "carriage",
+              "viaduct"
+            ]
+          ]
+        },
+        {
+          "id": "viaduct_pair",
+          "check": "sort_consistency",
+          "status": "pass",
+          "value": 0,
+          "threshold": 0,
+          "ids": [],
+          "worst": 0,
+          "positions": 284,
+          "pairs": [],
+          "allowed": [
+            [
+              "viaduct",
+              "carriage"
+            ]
+          ]
+        },
+        {
+          "id": "viaduct_id",
+          "check": "sort_consistency",
+          "status": "fail",
+          "value": 1,
+          "threshold": 0,
+          "ids": [
+            "viaduct"
+          ],
+          "worst": 1216,
+          "positions": 284,
+          "pairs": [
+            [
+              "carriage",
+              "viaduct"
+            ]
+          ],
+          "allowed": [
+            "carriage"
+          ]
+        },
+        {
+          "id": "viaduct_key",
+          "check": "sort_consistency",
+          "status": "pass",
+          "value": 0,
+          "threshold": 0,
+          "ids": [],
+          "worst": 0,
+          "positions": 284,
+          "allowed": [
+            [
+              "carriage",
+              "viaduct"
+            ]
+          ]
+        },
+        {
+          "id": "whole",
+          "check": "sort_consistency",
+          "status": "pass",
+          "value": 0,
+          "threshold": 0,
+          "ids": [],
+          "worst": 0,
+          "positions": 790,
+          "pairs": [],
+          "allowed": [
+            [
+              "viaduct",
+              "carriage"
+            ]
+          ]
+        }
+      ]
+    }
+  ],
+  "occluders": [
+    {
+      "name": "on_deck",
+      "scene": "tests/fixtures/actor/actor.scene.json",
+      "state": null,
+      "lane": "on_deck",
+      "actor": [
+        0.4,
+        0.4,
+        1.6
+      ],
+      "step": 0.25,
+      "parts": false,
+      "expected": {
+        "scene": "actor",
+        "state": null,
+        "area": {
+          "kind": "lane",
+          "id": "on_deck",
+          "level": 2.2
+        },
+        "actor": [
+          0.4,
+          0.4,
+          1.6
+        ],
+        "step": 0.25,
+        "positions": 0,
+        "occluders": []
+      }
+    },
+    {
+      "name": "on_deck_parts",
+      "scene": "tests/fixtures/actor/actor.scene.json",
+      "state": null,
+      "lane": "on_deck",
+      "actor": [
+        0.4,
+        0.4,
+        1.6
+      ],
+      "step": 0.25,
+      "parts": true,
+      "expected": {
+        "scene": "actor",
+        "state": null,
+        "area": {
+          "kind": "lane",
+          "id": "on_deck",
+          "level": 2.2
+        },
+        "actor": [
+          0.4,
+          0.4,
+          1.6
+        ],
+        "step": 0.25,
+        "positions": 160,
+        "occluders": [
+          {
+            "id": "walkway",
+            "positions": 138,
+            "area": 511.84
+          },
+          {
+            "id": "shelter",
+            "positions": 21,
+            "area": 316.93
+          },
+          {
+            "id": "tower",
+            "positions": 90,
+            "area": 1382.14
+          }
+        ]
+      }
+    },
+    {
+      "name": "on_deck_bare",
+      "scene": "tests/fixtures/actor/actor.scene.json",
+      "state": "bare",
+      "lane": "on_deck",
+      "actor": [
+        0.4,
+        0.4,
+        1.6
+      ],
+      "step": 0.25,
+      "parts": false,
+      "expected": {
+        "scene": "actor",
+        "state": "bare",
+        "area": {
+          "kind": "lane",
+          "id": "on_deck",
+          "level": 2.2
+        },
+        "actor": [
+          0.4,
+          0.4,
+          1.6
+        ],
+        "step": 0.25,
+        "positions": 0,
+        "occluders": []
+      }
+    },
+    {
+      "name": "on_deck_parts_bare",
+      "scene": "tests/fixtures/actor/actor.scene.json",
+      "state": "bare",
+      "lane": "on_deck",
+      "actor": [
+        0.4,
+        0.4,
+        1.6
+      ],
+      "step": 0.25,
+      "parts": true,
+      "expected": {
+        "scene": "actor",
+        "state": "bare",
+        "area": {
+          "kind": "lane",
+          "id": "on_deck",
+          "level": 2.2
+        },
+        "actor": [
+          0.4,
+          0.4,
+          1.6
+        ],
+        "step": 0.25,
+        "positions": 160,
+        "occluders": [
+          {
+            "id": "walkway",
+            "positions": 138,
+            "area": 511.84
+          },
+          {
+            "id": "tower",
+            "positions": 90,
+            "area": 1382.14
+          }
+        ]
+      }
+    },
+    {
+      "name": "on_deck_quiet",
+      "scene": "tests/fixtures/actor/actor.scene.json",
+      "state": "quiet",
+      "lane": "on_deck",
+      "actor": [
+        0.4,
+        0.4,
+        1.6
+      ],
+      "step": 0.25,
+      "parts": false,
+      "expected": {
+        "scene": "actor",
+        "state": "quiet",
+        "area": {
+          "kind": "lane",
+          "id": "on_deck",
+          "level": 2.2
+        },
+        "actor": [
+          0.4,
+          0.4,
+          1.6
+        ],
+        "step": 0.25,
+        "positions": 0,
+        "occluders": []
+      }
+    },
+    {
+      "name": "on_deck_parts_quiet",
+      "scene": "tests/fixtures/actor/actor.scene.json",
+      "state": "quiet",
+      "lane": "on_deck",
+      "actor": [
+        0.4,
+        0.4,
+        1.6
+      ],
+      "step": 0.25,
+      "parts": true,
+      "expected": {
+        "scene": "actor",
+        "state": "quiet",
+        "area": {
+          "kind": "lane",
+          "id": "on_deck",
+          "level": 2.2
+        },
+        "actor": [
+          0.4,
+          0.4,
+          1.6
+        ],
+        "step": 0.25,
+        "positions": 160,
+        "occluders": [
+          {
+            "id": "walkway",
+            "positions": 138,
+            "area": 511.84
+          },
+          {
+            "id": "shelter",
+            "positions": 21,
+            "area": 316.93
+          },
+          {
+            "id": "tower",
+            "positions": 90,
+            "area": 1382.14
+          }
+        ]
+      }
+    }
+  ]
+}
