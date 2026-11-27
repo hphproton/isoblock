@@ -1,0 +1,103 @@
+{
+  "cases": [
+    {
+      "file": "parts-value.invalid.json",
+      "code": "E_SCHEMA",
+      "scene": "actor",
+      "contains": [
+        "parts"
+      ],
+      "excludes": []
+    },
+    {
+      "file": "edges-value.invalid.json",
+      "code": "E_SCHEMA",
+      "scene": "actor",
+      "contains": [
+        "edges"
+      ],
+      "excludes": []
+    },
+    {
+      "file": "lanes-empty.invalid.json",
+      "code": "E_SCHEMA",
+      "scene": "actor",
+      "contains": [
+        "lanes"
+      ],
+      "excludes": []
+    },
+    {
+      "file": "lanes-twice.invalid.json",
+      "code": "E_SCHEMA",
+      "scene": "actor",
+      "contains": [
+        "lanes"
+      ],
+      "excludes": []
+    },
+    {
+      "file": "lanes-area.invalid.json",
+      "code": "E_SCHEMA",
+      "scene": "actor",
+      "contains": [
+        "lanes"
+      ],
+      "excludes": []
+    },
+    {
+      "file": "lanes-level.invalid.json",
+      "code": "E_SCHEMA",
+      "scene": "actor",
+      "contains": [
+        "lanes"
+      ],
+      "excludes": []
+    },
+    {
+      "file": "lanes-edges.invalid.json",
+      "code": "E_SCHEMA",
+      "scene": "actor",
+      "contains": [
+        "lanes"
+      ],
+      "excludes": []
+    },
+    {
+      "file": "lanes-unknown.invalid.json",
+      "code": "E_REF",
+      "scene": "actor",
+      "contains": [
+        "rood"
+      ],
+      "excludes": []
+    },
+    {
+      "file": "allow-same.invalid.json",
+      "code": "E_SCHEMA",
+      "scene": "actor",
+      "contains": [
+        "allow"
+      ],
+      "excludes": []
+    },
+    {
+      "file": "allow-three.invalid.json",
+      "code": "E_SCHEMA",
+      "scene": "actor",
+      "contains": [
+        "allow"
+      ],
+      "excludes": []
+    },
+    {
+      "file": "allow-unknown.invalid.json",
+      "code": "E_REF",
+      "scene": "actor",
+      "contains": [
+        "carrige"
+      ],
+      "excludes": []
+    }
+  ]
+}

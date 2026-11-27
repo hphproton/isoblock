@@ -1,0 +1,780 @@
+{
+  "schema": "isoblock/1",
+  "id": "actor",
+  "units": {
+    "name": "u"
+  },
+  "camera": {
+    "elevation": 30,
+    "direction": 135,
+    "scale": 40,
+    "origin": [
+      154,
+      362
+    ]
+  },
+  "frame": {
+    "w": 1325,
+    "h": 713,
+    "regions": [
+      {
+        "id": "view",
+        "rect": [
+          0,
+          0,
+          1325,
+          713
+        ]
+      }
+    ]
+  },
+  "types": {
+    "walkway": {
+      "size": [
+        8,
+        2,
+        1.2
+      ],
+      "parts": [
+        {
+          "id": "slab",
+          "box": [
+            0,
+            0,
+            0,
+            8,
+            2,
+            0.2
+          ]
+        },
+        {
+          "id": "rail_n",
+          "box": [
+            0,
+            0,
+            0.2,
+            8,
+            0.1,
+            1.2
+          ]
+        },
+        {
+          "id": "rail_s",
+          "box": [
+            0,
+            1.9,
+            0.2,
+            8,
+            2,
+            1.2
+          ]
+        }
+      ]
+    },
+    "shelter": {
+      "size": [
+        3,
+        2,
+        2.8
+      ],
+      "parts": [
+        {
+          "id": "slab",
+          "box": [
+            0,
+            0,
+            0,
+            3,
+            2,
+            0.2
+          ]
+        },
+        {
+          "id": "post_a",
+          "box": [
+            0,
+            0,
+            0.2,
+            0.2,
+            0.2,
+            2.6
+          ]
+        },
+        {
+          "id": "post_b",
+          "box": [
+            2.8,
+            1.8,
+            0.2,
+            3,
+            2,
+            2.6
+          ]
+        },
+        {
+          "id": "roof",
+          "box": [
+            0,
+            0,
+            2.6,
+            3,
+            2,
+            2.8
+          ],
+          "sprite": "own"
+        }
+      ]
+    },
+    "tower": {
+      "size": [
+        3,
+        3,
+        6
+      ]
+    },
+    "kiosk": {
+      "size": [
+        1.5,
+        1.5,
+        2
+      ]
+    },
+    "sign": {
+      "size": [
+        0.2,
+        0.2,
+        3
+      ]
+    },
+    "viaduct": {
+      "size": [
+        8,
+        2,
+        0.3
+      ],
+      "parts": [
+        {
+          "id": "slab",
+          "box": [
+            0,
+            0,
+            0,
+            8,
+            2,
+            0.3
+          ]
+        },
+        {
+          "id": "far",
+          "box": [
+            0,
+            0,
+            0.3,
+            8,
+            0.15,
+            0.9
+          ]
+        },
+        {
+          "id": "near",
+          "box": [
+            0,
+            1.85,
+            0.3,
+            8,
+            2,
+            0.9
+          ]
+        }
+      ]
+    },
+    "carriage": {
+      "size": [
+        6,
+        1.2,
+        1
+      ]
+    }
+  },
+  "objects": [
+    {
+      "id": "walkway",
+      "type": "walkway",
+      "pos": [
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "id": "shelter",
+      "type": "shelter",
+      "pos": [
+        10,
+        2,
+        2
+      ]
+    },
+    {
+      "id": "tower",
+      "type": "tower",
+      "pos": [
+        4,
+        5.5
+      ]
+    },
+    {
+      "id": "kiosk",
+      "type": "kiosk",
+      "pos": [
+        19.2,
+        13
+      ]
+    },
+    {
+      "id": "sign",
+      "type": "sign",
+      "pos": [
+        16.4,
+        10.4
+      ]
+    },
+    {
+      "id": "viaduct",
+      "type": "viaduct",
+      "pos": [
+        2,
+        14,
+        3
+      ]
+    },
+    {
+      "id": "carriage",
+      "type": "carriage",
+      "pos": [
+        3,
+        14.4,
+        3.3
+      ]
+    }
+  ],
+  "zones": [
+    {
+      "id": "ground",
+      "kind": "walkable",
+      "points": [
+        [
+          -4,
+          0
+        ],
+        [
+          22,
+          0
+        ],
+        [
+          22,
+          18
+        ],
+        [
+          -4,
+          18
+        ]
+      ]
+    },
+    {
+      "id": "deck_top",
+      "kind": "walkable",
+      "h": 2.2,
+      "points": [
+        [
+          2.2,
+          2.3
+        ],
+        [
+          12.8,
+          2.3
+        ],
+        [
+          12.8,
+          3.7
+        ],
+        [
+          2.2,
+          3.7
+        ]
+      ]
+    },
+    {
+      "id": "corner_block",
+      "kind": "blocked",
+      "points": [
+        [
+          17.4,
+          11.4
+        ],
+        [
+          18.6,
+          11.4
+        ],
+        [
+          18.6,
+          12.6
+        ],
+        [
+          17.4,
+          12.6
+        ]
+      ]
+    }
+  ],
+  "lanes": [
+    {
+      "id": "road",
+      "kind": "vehicle",
+      "width": 1.4,
+      "points": [
+        [
+          11,
+          12
+        ],
+        [
+          18,
+          12
+        ],
+        [
+          18,
+          4
+        ]
+      ]
+    },
+    {
+      "id": "ramp",
+      "kind": "walk",
+      "width": 1.2,
+      "points": [
+        [
+          -3,
+          3,
+          0
+        ],
+        [
+          2,
+          3,
+          2.2
+        ]
+      ]
+    },
+    {
+      "id": "on_deck",
+      "kind": "walk",
+      "width": 1.2,
+      "h": 2.2,
+      "points": [
+        [
+          2.4,
+          3
+        ],
+        [
+          12.6,
+          3
+        ]
+      ]
+    },
+    {
+      "id": "diag",
+      "kind": "vehicle",
+      "width": 1.4,
+      "points": [
+        [
+          -1,
+          10
+        ],
+        [
+          7,
+          18
+        ]
+      ]
+    },
+    {
+      "id": "stub",
+      "kind": "walk",
+      "width": 1,
+      "points": [
+        [
+          20,
+          1
+        ],
+        [
+          20,
+          1
+        ]
+      ]
+    }
+  ],
+  "states": {
+    "bare": {
+      "hideParts": {
+        "shelter": [
+          "roof"
+        ]
+      }
+    },
+    "quiet": {
+      "hide": [
+        "kiosk"
+      ]
+    }
+  },
+  "checks": [
+    {
+      "id": "deck_size",
+      "check": "sort_consistency",
+      "actor": [
+        0.4,
+        0.4,
+        1.6
+      ],
+      "step": 0.2,
+      "engine": "order",
+      "area": "deck_top",
+      "level": 2.2,
+      "ids": [
+        "walkway",
+        "shelter",
+        "tower"
+      ]
+    },
+    {
+      "id": "deck_parts",
+      "check": "sort_consistency",
+      "actor": [
+        0.4,
+        0.4,
+        1.6
+      ],
+      "step": 0.2,
+      "engine": "order",
+      "area": "deck_top",
+      "level": 2.2,
+      "ids": [
+        "walkway",
+        "shelter",
+        "tower"
+      ],
+      "parts": "yes"
+    },
+    {
+      "id": "deck_parts_key",
+      "check": "sort_consistency",
+      "actor": [
+        0.4,
+        0.4,
+        1.6
+      ],
+      "step": 0.2,
+      "engine": "key",
+      "area": "deck_top",
+      "level": 2.2,
+      "ids": [
+        "walkway",
+        "shelter",
+        "tower"
+      ],
+      "parts": true
+    },
+    {
+      "id": "climb_size",
+      "check": "sort_consistency",
+      "actor": [
+        0.4,
+        0.4,
+        1.6
+      ],
+      "step": 0.2,
+      "engine": "order",
+      "lanes": [
+        "ramp",
+        "on_deck"
+      ],
+      "ids": [
+        "walkway",
+        "shelter",
+        "tower"
+      ]
+    },
+    {
+      "id": "climb_parts",
+      "check": "sort_consistency",
+      "actor": [
+        0.4,
+        0.4,
+        1.6
+      ],
+      "step": 0.2,
+      "engine": "order",
+      "lanes": [
+        "ramp",
+        "on_deck"
+      ],
+      "ids": [
+        "walkway",
+        "shelter",
+        "tower"
+      ],
+      "parts": true
+    },
+    {
+      "id": "road_order",
+      "check": "sort_consistency",
+      "actor": [
+        2,
+        1,
+        1
+      ],
+      "step": 0.2,
+      "engine": "order",
+      "lanes": [
+        "road"
+      ],
+      "ids": [
+        "kiosk",
+        "sign",
+        "tower"
+      ]
+    },
+    {
+      "id": "road_key",
+      "check": "sort_consistency",
+      "actor": [
+        2,
+        1,
+        1
+      ],
+      "step": 0.2,
+      "engine": "key",
+      "lanes": [
+        "road"
+      ],
+      "ids": [
+        "kiosk",
+        "sign",
+        "tower"
+      ]
+    },
+    {
+      "id": "road_allowance",
+      "check": "sort_consistency",
+      "actor": [
+        2,
+        1,
+        1
+      ],
+      "step": 0.2,
+      "engine": "order",
+      "lanes": [
+        "road"
+      ],
+      "ids": [
+        "kiosk",
+        "sign",
+        "tower"
+      ],
+      "maxPixels": 50
+    },
+    {
+      "id": "under_viaduct",
+      "check": "sort_consistency",
+      "actor": [
+        2,
+        1,
+        1
+      ],
+      "step": 0.2,
+      "engine": "order",
+      "lanes": [
+        "diag"
+      ],
+      "ids": [
+        "viaduct",
+        "carriage"
+      ],
+      "allow": [
+        [
+          "viaduct",
+          "carriage"
+        ]
+      ]
+    },
+    {
+      "id": "under_viaduct_key",
+      "check": "sort_consistency",
+      "actor": [
+        2,
+        1,
+        1
+      ],
+      "step": 0.2,
+      "engine": "key",
+      "lanes": [
+        "diag"
+      ],
+      "ids": [
+        "viaduct",
+        "carriage"
+      ]
+    },
+    {
+      "id": "stub_lane",
+      "check": "sort_consistency",
+      "actor": [
+        0.4,
+        0.4,
+        1.6
+      ],
+      "step": 0.2,
+      "engine": "order",
+      "lanes": [
+        "stub"
+      ]
+    },
+    {
+      "id": "tower_grid",
+      "check": "sort_consistency",
+      "actor": [
+        0.4,
+        0.4,
+        1.6
+      ],
+      "step": 0.5,
+      "engine": "order",
+      "ids": [
+        "tower"
+      ]
+    },
+    {
+      "id": "tower_edges",
+      "check": "sort_consistency",
+      "actor": [
+        0.4,
+        0.4,
+        1.6
+      ],
+      "step": 0.5,
+      "engine": "order",
+      "ids": [
+        "tower"
+      ],
+      "edges": true
+    },
+    {
+      "id": "tower_edges_key",
+      "check": "sort_consistency",
+      "actor": [
+        0.4,
+        0.4,
+        1.6
+      ],
+      "step": 0.5,
+      "engine": "key",
+      "ids": [
+        "tower"
+      ],
+      "edges": true
+    },
+    {
+      "id": "viaduct_plain",
+      "check": "sort_consistency",
+      "actor": [
+        0.4,
+        0.4,
+        1.6
+      ],
+      "step": 0.5,
+      "engine": "order",
+      "ids": [
+        "viaduct",
+        "carriage"
+      ]
+    },
+    {
+      "id": "viaduct_pair",
+      "check": "sort_consistency",
+      "actor": [
+        0.4,
+        0.4,
+        1.6
+      ],
+      "step": 0.5,
+      "engine": "order",
+      "ids": [
+        "viaduct",
+        "carriage"
+      ],
+      "allow": [
+        [
+          "viaduct",
+          "carriage"
+        ]
+      ]
+    },
+    {
+      "id": "viaduct_id",
+      "check": "sort_consistency",
+      "actor": [
+        0.4,
+        0.4,
+        1.6
+      ],
+      "step": 0.5,
+      "engine": "order",
+      "ids": [
+        "viaduct",
+        "carriage"
+      ],
+      "allow": [
+        "carriage",
+        "kiosk"
+      ]
+    },
+    {
+      "id": "viaduct_key",
+      "check": "sort_consistency",
+      "actor": [
+        0.4,
+        0.4,
+        1.6
+      ],
+      "step": 0.5,
+      "engine": "key",
+      "ids": [
+        "viaduct",
+        "carriage"
+      ],
+      "allow": [
+        [
+          "carriage",
+          "viaduct"
+        ]
+      ]
+    },
+    {
+      "id": "whole",
+      "check": "sort_consistency",
+      "actor": [
+        0.4,
+        0.4,
+        1.6
+      ],
+      "step": 0.5,
+      "engine": "order",
+      "parts": true,
+      "edges": true,
+      "allow": [
+        [
+          "viaduct",
+          "carriage"
+        ]
+      ]
+    }
+  ]
+}
