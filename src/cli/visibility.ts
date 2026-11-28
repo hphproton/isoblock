@@ -20,7 +20,9 @@ export function runVisibilityCommand(args: Extract<Parsed, { kind: "visibility" 
 /** `occluders`: objects that hide an actor in a lane or a zone (SPEC 11.4). */
 export function runOccludersCommand(args: Extract<Parsed, { kind: "occluders" }>, io: Io): number {
   const scene = parseScene(io.readText(args.file));
-  const report = occludersReport(scene, args.state ?? null, args.actor, args.step ?? DEFAULT_STEP, args.lane, args.zone);
+  const report = occludersReport(
+    scene, args.state ?? null, args.actor, args.step ?? DEFAULT_STEP, args.lane, args.zone, args.parts === true,
+  );
   if (args.json) printJson(io, report);
   else io.out(`${formatOccluders(report)}\n`);
   return 0;

@@ -174,7 +174,13 @@ function checkErrors(scene: Scene, check: CheckSpec, names: Names, pools: Pools)
     }
     case "sort_consistency": {
       const c = check as Extract<CheckSpec, { check: "sort_consistency" }>;
-      return [...(c.area === undefined ? [] : need(names.zones, pools.zone, "zone", c.area, owner)), ...objects(c.ids)];
+      const allowIds = (c.allow ?? []).flatMap((entry) => (typeof entry === "string" ? [entry] : [...entry]));
+      return [
+        ...(c.area === undefined ? [] : need(names.zones, pools.zone, "zone", c.area, owner)),
+        ...objects(c.ids),
+        ...(c.lanes ?? []).flatMap((id) => need(names.lanes, pools.lane, "lane", id, owner)),
+        ...objects(allowIds),
+      ];
     }
     case "visible_share": {
       const c = check as Extract<CheckSpec, { check: "visible_share" }>;

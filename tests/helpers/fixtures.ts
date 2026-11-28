@@ -81,9 +81,10 @@ export function expectMatchesExpected(
     near(act.value, exp.value, tol, `${tag} value`);
     near(act.threshold, exp.threshold, 1e-9, `${tag} threshold`);
     expect(act.ids, `${tag} ids`).toEqual(exp.ids);
-    for (const key of ["pairs", "occluders", "accepted", "rejected"]) {
+    for (const key of ["pairs", "occluders", "accepted", "rejected", "allowed"]) {
       if (key in exp) expect(act[key], `${tag} ${key}`).toEqual(exp[key]);
     }
+    if (!("allowed" in exp)) expect(act, `${tag} has no allowed`).not.toHaveProperty("allowed");
     for (const key of ["outside", "overlap"] as const) {
       if (key in exp) near(act[key], exp[key], expected.tolerance.value, `${tag} ${key}`);
       else expect(key in act, `${tag} has no ${key}`).toBe(false);

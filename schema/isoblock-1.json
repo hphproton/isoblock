@@ -499,8 +499,39 @@
         "area": { "type": "string", "minLength": 1 },
         "ids": { "$ref": "#/definitions/idList" },
         "level": { "type": "number" },
-        "engine": { "enum": ["key", "order"] }
-      }
+        "engine": { "enum": ["key", "order"] },
+        "parts": { "type": "boolean" },
+        "lanes": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "edges": { "type": "boolean" },
+        "allow": {
+          "type": "array",
+          "items": {
+            "anyOf": [
+              { "type": "string", "minLength": 1 },
+              {
+                "type": "array",
+                "items": { "type": "string", "minLength": 1 },
+                "minItems": 2,
+                "maxItems": 2,
+                "uniqueItems": true
+              }
+            ]
+          }
+        }
+      },
+      "if": {
+        "anyOf": [
+          { "required": ["area"] },
+          { "required": ["level"] },
+          { "required": ["edges"] }
+        ]
+      },
+      "then": { "properties": { "lanes": false } }
     },
     "checkVisibleShare": {
       "type": "object",

@@ -57,8 +57,9 @@ export function occludersReport(
   step: number,
   lane: string | undefined,
   zone: string | undefined,
+  parts = false,
 ): OccludersReport {
-  return occludersStudy(scene, state, actor, step, lane, zone).report;
+  return occludersStudy(scene, state, actor, step, lane, zone, parts).report;
 }
 
 /** Same measurement as `occludersReport`, also listing each used position (SPEC 11.4, editor overlay). */
@@ -69,6 +70,7 @@ export function occludersStudy(
   step: number,
   lane: string | undefined,
   zone: string | undefined,
+  parts = false,
 ): OccludersStudy {
   if (actor.length !== 3 || actor.some((n) => !(n > 0))) {
     throw new IsoblockError("E_USAGE", "actor must be three numbers above 0, written w,d,h");
@@ -87,10 +89,12 @@ export function occludersStudy(
     throw new IsoblockError("E_USAGE", `the area covers ${grid} grid points; use a larger step`);
   }
   const blocked = blockedZones(scene);
-  const boxes = viewed.objects.map((object) => sizeBox(viewed, object));
+  const boxes = parts
+    ? viewed.objects.flatMap((object) => worldParts(viewed, object).map((part) => part.box))
+    : viewed.objects.map((object) => sizeBox(viewed, object));
   const c = orderDirection(viewed.camera);
   const at = projector(viewed.camera);
-  const parts = viewed.objects.flatMap((object) =>
+  const drawn = viewed.objects.flatMap((object) =>
     worldParts(viewed, object).map((part) => ({
       id: object.id,
       box: part.box,
@@ -115,7 +119,7 @@ export function occludersStudy(
       const info = boxInfo(actorBox, viewed.camera, c);
       const outline = boxOutline(actorBox, at);
       const best = new Map<string, number>();
-      for (const part of parts) {
+      for (const part of drawn) {
         if (boxesOverlap(part.box, actorBox)) continue;
         if (pairOrder(info, part.info, c) !== -1) continue;
         const overlap = convexOverlapArea(outline, part.outline);

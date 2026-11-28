@@ -43,8 +43,17 @@ function restrict(scene: Scene, spec: CheckSpec, hidden: ReadonlySet<string>): I
         ...(check.ids === undefined ? {} : { ids: keep(check.ids) }),
         ...(check.allow === undefined ? {} : { allow: keep(check.allow) }),
       };
-    case "sort_consistency":
-      return check.ids === undefined ? check : { ...check, ids: keep(check.ids) };
+    case "sort_consistency": {
+      const allow = check.allow?.filter((entry) =>
+        typeof entry === "string" ? !hidden.has(entry) : !entry.some((id) => hidden.has(id)),
+      );
+      if (check.ids === undefined && allow === undefined) return check;
+      return {
+        ...check,
+        ...(check.ids === undefined ? {} : { ids: keep(check.ids) }),
+        ...(allow === undefined ? {} : { allow }),
+      };
+    }
     case "visible_share":
       return check.ids === undefined ? check : { ...check, ids: keep(check.ids) };
     default:

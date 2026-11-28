@@ -71,7 +71,7 @@ export function wrongArea(p: PreparedPiece, q: PreparedPiece, engineFirst: boole
  * The largest wrong area between the sprites of two different objects `x` and `y` (object
  * indices, so that equal keys fall back to the sprite list order).
  */
-function pairWorst(x: number, a: readonly PreparedSprite[], y: number, b: readonly PreparedSprite[], c: Vec3): number {
+export function keyPairWorst(x: number, a: readonly PreparedSprite[], y: number, b: readonly PreparedSprite[], c: Vec3): number {
   let worst = 0;
   for (const s of a) {
     for (const t of b) {
@@ -91,7 +91,7 @@ export function staticWorst(objects: readonly (readonly PreparedSprite[])[], wan
   for (let x = 0; x < objects.length; x++) {
     for (let y = x + 1; y < objects.length; y++) {
       if (!wanted.has(x) && !wanted.has(y)) continue;
-      const area = pairWorst(x, objects[x] as readonly PreparedSprite[], y, objects[y] as readonly PreparedSprite[], c);
+      const area = keyPairWorst(x, objects[x] as readonly PreparedSprite[], y, objects[y] as readonly PreparedSprite[], c);
       worst[x] = Math.max(worst[x] as number, area);
       worst[y] = Math.max(worst[y] as number, area);
     }

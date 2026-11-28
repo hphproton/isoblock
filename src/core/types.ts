@@ -251,6 +251,14 @@ export interface SortConsistencyCheck {
   readonly level?: number;
   /** `"key"` (default) or `"order"` (SPEC 9.9). */
   readonly engine?: "key" | "order";
+  /** Stand on drawn part boxes instead of object boxes. Default false (SPEC 9.10). */
+  readonly parts?: boolean;
+  /** Positions follow these lanes instead of the grid (SPEC 9.10). */
+  readonly lanes?: readonly string[];
+  /** Add contact positions on the sides of each examined object. Default false (SPEC 9.10). */
+  readonly edges?: boolean;
+  /** Object ids, or pairs of ids, whose mismatches do not count (SPEC 9.10). */
+  readonly allow?: readonly (string | readonly [string, string])[];
 }
 
 /** Share of an object's own pixels that stay visible in a frame region (SPEC 9.6). */
@@ -355,6 +363,8 @@ export interface CheckResult {
   /** `sort_consistency`: the largest area (px squared, 2 decimals) drawn in the wrong order, and the number of actor positions used. */
   readonly worst?: number;
   readonly positions?: number;
+  /** `sort_consistency`: entries of `allow` that stopped a mismatch over `maxPixels`. Absent without `allow`. */
+  readonly allowed?: readonly (string | readonly [string, string])[];
   /** `in_region` with `measure: "drawn"`: share of each failing object's drawn box that lies outside the region. */
   readonly outside?: readonly number[];
   /** `lane_apart`: area of the overlap between the lane and its target. Absent when the check is skipped. */

@@ -88,6 +88,8 @@ export type Parsed =
       readonly zone?: string;
       readonly step?: number;
       readonly state?: string;
+      /** `--parts`: a position overlaps no drawn part box (SPEC 9.10, 11.4). */
+      readonly parts?: boolean;
     }
   | {
       readonly kind: "compare";
@@ -125,7 +127,7 @@ export const USAGE = [
   "                                             write the runtime file, generation boxes or masks",
   "  isoblock visibility <scene.json> [--region ID] [--state NAME] [--json]",
   "                                             shares and coverage of objects in a region",
-  "  isoblock occluders <scene.json> --actor w,d,h (--lane ID | --zone ID) [--step S] [--state NAME] [--json]",
+  "  isoblock occluders <scene.json> --actor w,d,h (--lane ID | --zone ID) [--step S] [--state NAME] [--parts] [--json]",
   "                                             objects that hide an actor in a lane or a zone",
   "  isoblock --help",
   "",
@@ -165,6 +167,7 @@ const FLAG_COMMANDS: Readonly<Record<string, readonly string[]>> = {
   "--lane": ["occluders"],
   "--zone": ["occluders"],
   "--step": ["occluders"],
+  "--parts": ["occluders"],
 };
 const FORMATS: readonly string[] = ["text", "md", "json"];
 const MAX_VARIANTS = 4;
@@ -187,6 +190,7 @@ interface Scanned {
   readonly states: boolean;
   readonly failing: boolean;
   readonly rotate: boolean;
+  readonly parts: boolean;
   readonly variants: readonly string[];
   /** The value of each flag that takes one, except `--variant`, which may repeat. */
   readonly values: Readonly<Record<string, string>>;
@@ -202,6 +206,7 @@ function scan(command: string, rest: readonly string[]): Scanned {
   let states = false;
   let failing = false;
   let rotate = false;
+  let parts = false;
   for (let i = 0; i < rest.length; i++) {
     const [flag, inline] = split(rest[i] as string);
     // `-` is the patch file name that means standard input, not a flag.
@@ -219,6 +224,7 @@ function scan(command: string, rest: readonly string[]): Scanned {
     else if (flag === "--states") states = true;
     else if (flag === "--failing") failing = true;
     else if (flag === "--rotate") rotate = true;
+    else if (flag === "--parts") parts = true;
     else {
       const value = inline ?? rest[++i];
       if (value === undefined) throw usage(`flag '${flag}' needs a value`);
@@ -226,7 +232,7 @@ function scan(command: string, rest: readonly string[]): Scanned {
       else values[flag] = value;
     }
   }
-  return { positional, json, dryRun, relations, states, failing, rotate, variants, values };
+  return { positional, json, dryRun, relations, states, failing, rotate, parts, variants, values };
 }
 
 /** `--only a,b`: ids separated by commas, none empty; repeated ids count once. */
@@ -328,6 +334,7 @@ function parseOccluders(file: string, s: Scanned): Parsed {
     ...(zone === undefined ? {} : { zone }),
     ...(step === undefined ? {} : { step }),
     ...(state === undefined ? {} : { state }),
+    ...(s.parts ? { parts: true } : {}),
   };
 }
 
