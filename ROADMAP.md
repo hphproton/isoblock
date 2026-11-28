@@ -340,17 +340,17 @@ Not in stage 16: slices of a set length or along the short axis for long thin ob
 
 Test positions of `sort_consistency` (SPEC sections 9.10, 11.4, 17, 18). Core and CLI; the editor's check panel shows the new results as it shows the others, and nothing else changes in the editor, the runtime file or the Godot adapter. The scene format grows without a break (`isoblock/1` stays: `parts`, `lanes`, `edges` and `allow` on `sort_consistency`, `--parts` on `occluders`); no new dependency. Fixtures, all in new files so that the suite of release 0.16.0 still passes on this branch: `tests/fixtures/actor/` (the scene `actor.scene.json` with a raised walkway whose parts are a slab and two rails, a roofed shelter, a ramp lane, an L-shaped road lane with a blocked corner, a diagonal lane under a viaduct, a lane of zero length and two states; `cases.json` with the check results in every state and occluders with and without `--parts`; `invalid/`).
 
-- [ ] `parts` on `sort_consistency`: drawn part boxes refuse an actor position instead of object boxes, hidden parts excluded (SPEC section 9.10)
-- [ ] `lanes` on `sort_consistency`: positions inside the named lanes' pieces, the level from the piece's surface, the actor's length along the piece, the blocked zones at that level, the skip rules (SPEC section 9.10)
-- [ ] `edges` on `sort_consistency`: contact positions on the four sides of each examined object, counted once with a grid point they meet (SPEC section 9.10)
-- [ ] `allow` on `sort_consistency`: object ids and pairs, the field `allowed`, lists losing hidden objects (SPEC section 9.10)
-- [ ] The four parameters under both engines, `key` and `order`; a check without them gives the results of release 0.16.0
-- [ ] Schema and references: the types of the four parameters, `lanes` with `area`, `level` or `edges` refused, unknown lanes and objects (`E_SCHEMA`, `E_REF`)
-- [ ] `occluders --parts` (SPEC section 11.4)
-- [ ] Tests load `tests/fixtures/actor/` (cases with checks and occluders, invalid); the stage 2 and stage 8 frame-time tests still pass
-- [ ] `CHANGELOG.md` lists the four parameters and `--parts`
-- [ ] `docs/AGENT_GUIDE.md` covers when to use `parts` (actors on decks and under roofs), `lanes` (vehicles, boats and trains along their lanes, and what a diagonal piece does), `edges` and `allow`
-- [ ] Session log says `branch ready for review`
+- [x] `parts` on `sort_consistency`: drawn part boxes refuse an actor position instead of object boxes, hidden parts excluded (SPEC section 9.10)
+- [x] `lanes` on `sort_consistency`: positions inside the named lanes' pieces, the level from the piece's surface, the actor's length along the piece, the blocked zones at that level, the skip rules (SPEC section 9.10)
+- [x] `edges` on `sort_consistency`: contact positions on the four sides of each examined object, counted once with a grid point they meet (SPEC section 9.10)
+- [x] `allow` on `sort_consistency`: object ids and pairs, the field `allowed`, lists losing hidden objects (SPEC section 9.10)
+- [x] The four parameters under both engines, `key` and `order`; a check without them gives the results of release 0.16.0
+- [x] Schema and references: the types of the four parameters, `lanes` with `area`, `level` or `edges` refused, unknown lanes and objects (`E_SCHEMA`, `E_REF`)
+- [x] `occluders --parts` (SPEC section 11.4)
+- [x] Tests load `tests/fixtures/actor/` (cases with checks and occluders, invalid); the stage 2 and stage 8 frame-time tests still pass
+- [x] `CHANGELOG.md` lists the four parameters and `--parts`
+- [x] `docs/AGENT_GUIDE.md` covers when to use `parts` (actors on decks and under roofs), `lanes` (vehicles, boats and trains along their lanes, and what a diagonal piece does), `edges` and `allow`
+- [x] Session log says `branch ready for review`
 
 Not in stage 17: fewer sprites for long objects or rows; zones and lanes drawn at their heights in depth order with the objects; slices of a set length for long thin objects; an actor turned along a diagonal lane as a turned box rather than its bounding rectangle. The Rust crate license texts in `THIRD_PARTY_NOTICES.md` are a maintainer task (`MAINTAINING.md`, Before distributing a build).
 

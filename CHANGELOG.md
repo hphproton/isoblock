@@ -1,5 +1,21 @@
 # Changelog
 
+## Unreleased
+
+Stage 17: test positions of `sort_consistency`. The scene format stays `isoblock/1` (`parts`, `lanes`, `edges` and `allow` on `sort_consistency`, `--parts` on `occluders`). The runtime file stays `isoblock-runtime/4`.
+
+### Added
+
+- `sort_consistency` takes `parts`. With `true`, a position is used when the actor box overlaps no drawn part box. An actor can stand on a deck between its rails, or under a roof the same object holds. Hidden parts do not count. An object without parts keeps its size box.
+- `sort_consistency` takes `lanes`, a non-empty list of lane ids. Positions are the grid points inside those pieces, at the surface height, with the actor's length along the piece and its width across it. On a diagonal piece the footprint is the axis-parallel rectangle around the turned box. A lane with no piece skips the check. `lanes` together with `area`, `level` or `edges` is `E_SCHEMA`.
+- `sort_consistency` takes `edges`. Contact positions along the four sides of each examined object are added to the grid. A contact that meets a grid point counts once, so a move smaller than `step` does not drop the closest approach.
+- `sort_consistency` takes `allow`: object ids and pairs of object ids whose mismatches do not count. The result has `allowed`, the entries that stopped a mismatch over `maxPixels`, in the order they were written. Without `allow` there is no `allowed`.
+- `occluders` takes `--parts`. A position is used when the actor box overlaps no drawn part box. The JSON output is unchanged. The editor overlay does not pass the flag.
+
+### Changed
+
+- A `sort_consistency` check without `parts`, `lanes`, `edges` and `allow` gives the results of release 0.16.0.
+
 ## 0.16.0
 
 Stage 16: draw order across heights. The scene format stays `isoblock/1` (`sprite` on parts, `engine` on `sort_consistency`, `parts` on `no_overlap`). The runtime file becomes `isoblock-runtime/4`.
